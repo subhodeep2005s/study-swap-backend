@@ -10,7 +10,7 @@ const EnvSchema = z.object({
 
   DB_SSL: z
     .preprocess((value) => value === "true" || value === "1" || value === true, z.boolean())
-    .default(false),
+    .default(true),
   DB_POOL_MAX: z.coerce.number().int().positive().default(10),
   DB_IDLE_TIMEOUT_MS: z.coerce.number().int().positive().default(30000),
   DB_CONNECTION_TIMEOUT_MS: z.coerce.number().int().positive().default(30000),

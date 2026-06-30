@@ -1,6 +1,6 @@
-import { Resend } from 'resend';
-import { env } from './env';
-import logger from './logger';
+import { Resend } from "resend";
+import { env } from "./env";
+import logger from "./logger";
 
 export const resend = new Resend(env.RESEND_API_KEY);
 

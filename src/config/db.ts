@@ -8,6 +8,9 @@ const poolConfig: PoolConfig = {
   max: env.DB_POOL_MAX,
   idleTimeoutMillis: env.DB_IDLE_TIMEOUT_MS,
   connectionTimeoutMillis: env.DB_CONNECTION_TIMEOUT_MS,
+  ssl: {
+    rejectUnauthorized: false,
+  },
 };
 
 export const pool = new Pool(poolConfig);
