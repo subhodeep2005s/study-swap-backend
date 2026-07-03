@@ -10,6 +10,9 @@ export enum Event {
   USER_UPDATE_PROFILE = "user.update-profile",
   USER_DELETE_PROFILE = "user.delete-profile",
 
+  MENTOR_SESSION_BOOKED = "mentor.session-booked",
+  MATCHES_REFRESHED = "matches.refreshed",
+
   AUDIT_LOG = "audit.log",
 }
 
@@ -54,6 +57,15 @@ export type EventPayload = {
     userId: string;
     email: string;
     role: string;
+  };
+
+  [Event.MENTOR_SESSION_BOOKED]: {
+    studentId: string;
+    bookingId: string;
+  };
+
+  [Event.MATCHES_REFRESHED]: {
+    userId: string;
   };
 
   [Event.AUDIT_LOG]: {

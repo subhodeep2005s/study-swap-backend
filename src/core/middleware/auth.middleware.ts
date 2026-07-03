@@ -7,9 +7,9 @@ import type { NextFunction, Request, Response } from "express";
 interface UserRow {
   id: string;
   email: string;
-  is_active: boolean;
-  is_deleted: boolean;
-  is_verified: boolean;
+  role: "admin" | "student" | "mentor";
+  email_verified: boolean;
+  onboarding_completed: boolean;
 }
 
 export async function authMiddleware(
@@ -33,11 +33,13 @@ export async function authMiddleware(
       throw new AppError("Invalid token", 401);
     }
 
-    if (decoded.role === "admin" && decoded.id === "admin") {
+    if (decoded.role === "admin") {
       req.user = {
-        id: "admin",
+        id: decoded.id,
         email: decoded.email,
         role: "admin",
+        emailVerified: true,
+        onboardingCompleted: true,
       };
       logger.debug({ role: "admin" }, "Admin auth successful");
       next();
@@ -45,7 +47,7 @@ export async function authMiddleware(
     }
 
     const result = await query<UserRow>(
-      "SELECT id, email, is_active, is_deleted, is_verified FROM users WHERE id = $1",
+      "SELECT id, email, role, email_verified, onboarding_completed FROM users WHERE id = $1",
       [decoded.id],
     );
 
@@ -56,24 +58,15 @@ export async function authMiddleware(
 
     const user = result.rows[0]!;
 
-    if (user.is_deleted) {
-      logger.warn({ userId: user.id }, "Auth failed: Account deleted");
-      throw new AppError("Account has been deleted", 401);
-    }
-
-    if (!user.is_active) {
-      logger.warn({ userId: user.id }, "Auth failed: Account inactive");
-      throw new AppError("Account is inactive", 401);
-    }
-
     req.user = {
       id: user.id,
       email: user.email,
-      role: "user",
-      isVerified: user.is_verified,
+      role: user.role,
+      emailVerified: user.email_verified,
+      onboardingCompleted: user.onboarding_completed,
     };
 
-    logger.debug({ userId: user.id, role: "user" }, "Auth successful");
+    logger.debug({ userId: user.id, role: user.role }, "Auth successful");
     next();
   } catch (error) {
     next(error);

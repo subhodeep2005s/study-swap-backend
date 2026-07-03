@@ -1,42 +1,37 @@
 import { z } from "zod";
 
-export const registerSchema = z.object({
+export const sendOtpSchema = z.object({
   body: z.object({
-    email: z.email("Invalid email format"),
-    password: z.string().min(8, "Password must be at least 8 characters"),
-    firstName: z.string().min(1, "First name is required"),
-    lastName: z.string().min(1, "Last name is required"),
-    mobileNumber: z.string().min(10, "Mobile number must be at least 10 digits"),
-  }),
-});
-
-export const loginSchema = z.object({
-  body: z.object({
-    email: z.email("Invalid email format"),
-    password: z.string().min(1, "Password is required"),
-  }),
-});
-
-export const adminLoginSchema = z.object({
-  body: z.object({
-    email: z.email("Invalid email format"),
-    password: z.string().min(1, "Password is required"),
+    email: z.string().email("Invalid email address").toLowerCase(),
   }),
 });
 
 export const verifyOtpSchema = z.object({
   body: z.object({
-    email: z.email("Invalid email format"),
-    otp: z.string().min(1, "OTP is required"),
+    email: z.string().email("Invalid email address").toLowerCase(),
+    otp: z.string().length(6, "OTP must be 6 digits"),
   }),
 });
 
-export const resendOtpSchema = z.object({
-  body: z.object({
-    email: z.email("Invalid email format"),
-  }),
+export const authUserResponseSchema = z.object({
+  id: z.string().uuid(),
+  email: z.string().email(),
+  role: z.string(),
+  emailVerified: z.boolean(),
+  onboardingCompleted: z.boolean(),
+  createdAt: z.string().or(z.date()),
+  fullName: z.string().nullable().optional(),
+  profileImage: z.string().nullable().optional(),
+  age: z.number().nullable().optional(),
+  gender: z.string().nullable().optional(),
+  state: z.string().nullable().optional(),
+  countryId: z.string().uuid().nullable().optional(),
+  bio: z.string().nullable().optional(),
+  strongIn: z.string().nullable().optional(),
+  needHelpWith: z.string().nullable().optional(),
+  studyTime: z.string().nullable().optional(),
+  lookingFor: z.array(z.string()).nullable().optional(),
 });
 
-export type RegisterInput = z.infer<typeof registerSchema>["body"];
-export type LoginInput = z.infer<typeof loginSchema>["body"];
-export type AdminLoginInput = z.infer<typeof adminLoginSchema>["body"];
+export type SendOtpInput = z.infer<typeof sendOtpSchema>["body"];
+export type VerifyOtpInput = z.infer<typeof verifyOtpSchema>["body"];

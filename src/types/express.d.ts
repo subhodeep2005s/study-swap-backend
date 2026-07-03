@@ -6,8 +6,9 @@ declare global {
       user?: {
         id: string;
         email: string;
-        role: "admin" | "user";
-        isVerified?: boolean;
+        role: "admin" | "student" | "mentor";
+        emailVerified: boolean;
+        onboardingCompleted: boolean;
       };
     }
   }

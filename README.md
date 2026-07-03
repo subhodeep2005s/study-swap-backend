@@ -59,7 +59,7 @@ src/
 ├── types/           # TypeScript type declarations
 ├── utils/           # Cache service, rate limiting
 ├── app.ts           # Express app setup
-├── server.ts        # Server entry poin
+├── server.ts        # Server entry point
 ```
 
 ## Adding a New Module
@@ -70,10 +70,11 @@ src/
    - `your-module.service.ts` — Business logic
    - `your-module.controller.ts` — Request handlers
    - `your-module.routes.ts` — Route definitions
-   - `your-module.openapi.ts` — Swagger/OpenAPI registration
+   - `your-module.openapi.ts` — OpenAPI registration
 3. Register routes in `src/app.ts`
 4. Create a migration: `pnpm db:migrate:new your-migration-name`
 
 ## API Documentation
 
-Swagger UI is available at `/docs` when the server is running.
+Scalar API reference is available at `/docs` when the server is running.
+The raw OpenAPI document is available at `/openapi`.

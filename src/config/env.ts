@@ -1,6 +1,8 @@
 import "dotenv/config";
 import { z } from "zod";
 
+const emptyToUndefined = (value: unknown) => (value === "" ? undefined : value);
+
 const EnvSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   PORT: z.coerce.number().int().positive().default(3000),
@@ -20,13 +22,24 @@ const EnvSchema = z.object({
 
   REDIS_URL: z.url().default("redis://localhost:6379"),
 
-  RESEND_API_KEY: z.string().optional(),
-  RESEND_MAIL: z.email().optional(),
+  RESEND_API_KEY: z.preprocess(emptyToUndefined, z.string().min(1).optional()),
+  RESEND_MAIL: z.preprocess(emptyToUndefined, z.email().optional()),
 
   CORS_ORIGINS: z.string().optional().default("http://localhost:3000"),
 
+  GEMINI_API_KEY: z.preprocess(
+    emptyToUndefined,
+    z.string().min(1, "GEMINI_API_KEY is required").optional()
+  ),
+  COUNTRY_STATE_CITY_API_KEY: z.preprocess(emptyToUndefined, z.string().min(1).optional()),
+
   ADMIN_EMAIL: z.email("ADMIN_EMAIL must be a valid email"),
   ADMIN_PASSWORD: z.string().min(8, "ADMIN_PASSWORD must be at least 8 characters"),
+  
+  AWS_ACCESS_KEY: z.string().min(1, "AWS_ACCESS_KEY is required"),
+  AWS_SECRET_KEY: z.string().min(1, "AWS_SECRET_KEY is required"),
+  BUCKET_NAME: z.string().min(1, "BUCKET_NAME is required"),
+  REGION_NAME: z.string().min(1, "REGION_NAME is required"),
 });
 
 const parsed = EnvSchema.safeParse(process.env);

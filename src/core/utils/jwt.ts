@@ -4,7 +4,7 @@ import { env } from "../../config/env";
 export interface JWTPayload {
   id: string;
   email: string;
-  role: "admin" | "user";
+  role: "admin" | "student" | "mentor";
 }
 
 export function generateToken(payload: JWTPayload): string {

@@ -25,7 +25,6 @@ export function errorHandler(err: Error, req: Request, res: Response, _next: Nex
       errorResponse.stack = err.stack;
     }
   } else {
-    logger.error(err, "Unhandled error");
     errorResponse.statusCode = 500;
     if (process.env.NODE_ENV !== "production") {
       errorResponse.stack = err.stack;
@@ -33,6 +32,13 @@ export function errorHandler(err: Error, req: Request, res: Response, _next: Nex
   }
 
   const statusCode = (err as AppError).statusCode || 500;
+  
+  if (err instanceof AppError) {
+    logger.warn(err, `[AppError] ${req.method} ${req.originalUrl} - ${statusCode}: ${err.message}`);
+  } else {
+    logger.error(err, `[UnhandledError] ${req.method} ${req.originalUrl} - ${statusCode}: ${err.message}`);
+  }
+
   res.status(statusCode).json(errorResponse);
 }
 

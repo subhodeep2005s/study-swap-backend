@@ -1,90 +1,63 @@
-import { Event, eventEmitter } from "@/config/event";
-import { logger } from "@/config/logger";
+import type { Request, Response } from "express";
 import { asyncHandler } from "@/core/utils/async-handler";
-import type { NextFunction, Request, Response } from "express";
-import type { AdminLoginInput, LoginInput, RegisterInput } from "./auth.schema";
 import * as authService from "./auth.service";
+import type { SendOtpInput, VerifyOtpInput } from "./auth.schema";
 
-export const register = asyncHandler(
-  async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
-    const input = req.body as RegisterInput;
-    logger.debug({ email: input.email }, "Register attempt");
-    const result = await authService.register(input);
-    logger.debug({ id: result.id }, "Register successful");
-
-    const otp = await authService.generateOTP({ userId: result.id });
-
-    eventEmitter.emit(Event.USER_REGISTERED, {
-      userId: result.id,
-      email: result.email,
-      role: "user",
-      otp: otp,
-    });
-
-    res.status(201).json({
-      success: true,
-      data: result,
-    });
-  },
-);
-
-export const login = asyncHandler(
-  async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
-    const input = req.body as LoginInput;
-    logger.debug({ email: input.email }, "Login attempt");
-    const result = await authService.login(input);
-    logger.debug("Login successful");
+export const sendOtp = asyncHandler(
+  async (req: Request<unknown, unknown, SendOtpInput>, res: Response) => {
+    await authService.sendOtp(req.body.email);
     res.status(200).json({
       success: true,
-      data: result,
+      message: "OTP sent successfully to your email",
+      data: {},
     });
   },
 );
 
-export const adminLogin = asyncHandler(
-  async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
-    const input = req.body as AdminLoginInput;
-    logger.debug({ email: input.email }, "Admin login attempt");
-    const result = await authService.adminLogin(input);
-    logger.debug("Admin login successful");
+export const resendOtp = asyncHandler(
+  async (req: Request<unknown, unknown, SendOtpInput>, res: Response) => {
+    await authService.resendOtp(req.body.email);
     res.status(200).json({
       success: true,
-      data: result,
+      message: "OTP resent successfully to your email",
+      data: {},
     });
   },
 );
 
-export const verifyOTP = asyncHandler(
-  async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
-    const input = req.body as { email: string; otp: string };
-    logger.debug({ email: input.email }, "Verify OTP attempt");
-    const result = await authService.verifyOTP(input);
-    logger.debug({ userId: result.id }, "Verify OTP successful");
+export const verifyOtp = asyncHandler(
+  async (req: Request<unknown, unknown, VerifyOtpInput>, res: Response) => {
+    const data = await authService.verifyOtp(req.body.email, req.body.otp);
     res.status(200).json({
       success: true,
-      message: "OTP verified successfully.",
-      data: result,
+      message: "Login successful",
+      data,
     });
   },
 );
 
-export const resendOTP = asyncHandler(
-  async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
-    const input = req.body as { email: string };
-    logger.debug({ email: input.email }, "Resend OTP attempt");
-    const result = await authService.resendOTP(input);
-    logger.debug({ userId: result.id }, "Resend OTP successful");
-
-    eventEmitter.emit(Event.USER_REGISTERED, {
-      userId: result.id,
-      email: input.email,
-      role: result.role,
-      otp: result.otp,
+export const getMe = asyncHandler(async (req: Request, res: Response) => {
+  if (!req.user) {
+    res.status(401).json({
+      success: false,
+      message: "Unauthorized",
+      errors: [],
     });
+    return;
+  }
 
-    res.status(200).json({
-      success: true,
-      message: "OTP sent successfully.",
-    });
-  },
-);
+  const user = await authService.getMe(req.user.id);
+  res.status(200).json({
+    success: true,
+    message: "User fetched successfully",
+    data: { user },
+  });
+});
+
+export const logout = asyncHandler(async (_req: Request, res: Response) => {
+  res.status(200).json({
+    success: true,
+    message: "Logged out successfully",
+    data: {},
+  });
+});

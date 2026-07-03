@@ -13,8 +13,8 @@ export async function sendMail({
   subject: string;
   html: string;
 }) {
-  if (!env.RESEND_MAIL) {
-    logger.warn("RESEND_MAIL not configured, skipping email send");
+  if (!env.RESEND_API_KEY || !env.RESEND_MAIL) {
+    logger.warn("Resend is not configured, skipping email send");
     return;
   }
   logger.debug({ to, subject }, "Sending email to");

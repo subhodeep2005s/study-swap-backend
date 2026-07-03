@@ -2,21 +2,22 @@ import { z } from "zod";
 import {
   extendZodWithOpenApi,
   OpenAPIRegistry,
-  OpenApiGeneratorV3,
+  OpenApiGeneratorV31,
 } from "@asteasolutions/zod-to-openapi";
 
 extendZodWithOpenApi(z);
 
 export const registry = new OpenAPIRegistry();
+
 export function generateOpenApiDocument() {
-  const generator = new OpenApiGeneratorV3(registry.definitions);
+  const generator = new OpenApiGeneratorV31(registry.definitions);
 
   return generator.generateDocument({
-    openapi: "3.0.0",
+    openapi: "3.1.0",
     info: {
       version: "1.0.0",
-      title: "API",
-      description: "Backend API documentation",
+      title: "StudySwap API",
+      description: "Backend API documentation for StudySwap",
     },
     servers: [
       {
@@ -24,11 +25,11 @@ export function generateOpenApiDocument() {
         description: "API server",
       },
     ],
-    security: [{ BearerAuth: [] }],
+    security: [{ bearerAuth: [] }],
   });
 }
 
-registry.registerComponent("securitySchemes", "BearerAuth", {
+registry.registerComponent("securitySchemes", "bearerAuth", {
   type: "http",
   scheme: "bearer",
   bearerFormat: "JWT",

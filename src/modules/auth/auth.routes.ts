@@ -1,16 +1,17 @@
 import { Router } from "express";
 import { validate } from "../../core/middleware/validate.middleware";
+import { authMiddleware } from "../../core/middleware/auth.middleware";
 import * as authController from "./auth.controller";
-import { loginSchema, registerSchema, adminLoginSchema, verifyOtpSchema, resendOtpSchema } from "./auth.schema";
+import { sendOtpSchema, verifyOtpSchema } from "./auth.schema";
 import "./auth.openapi";
 
 const router = Router();
 
-router.post("/register", validate(registerSchema), authController.register);
-router.post("/login", validate(loginSchema), authController.login);
-router.post("/admin/login", validate(adminLoginSchema), authController.adminLogin);
+router.post("/send-otp", validate(sendOtpSchema), authController.sendOtp);
+router.post("/resend-otp", validate(sendOtpSchema), authController.resendOtp);
+router.post("/verify-otp", validate(verifyOtpSchema), authController.verifyOtp);
 
-router.post("/verify-otp", validate(verifyOtpSchema), authController.verifyOTP);
-router.post("/resend-otp", validate(resendOtpSchema), authController.resendOTP);
+router.get("/me", authMiddleware, authController.getMe);
+router.post("/logout", authMiddleware, authController.logout);
 
 export default router;
