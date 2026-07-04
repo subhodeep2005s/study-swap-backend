@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import { asyncHandler } from "@/core/utils/async-handler";
 import * as onboardingService from "./onboarding.service";
-import type { CountryInput, ProfileInput, ExamsInput, StudyInput, PreferencesInput, EnhanceBioInput } from "./onboarding.schema";
+import type { CountryInput, ProfileInput, ExamsInput, StudyInput, PreferencesInput, EnhanceBioInput, MentorApplicationInput } from "./onboarding.schema";
 
 export const getStatus = asyncHandler(async (req: Request, res: Response) => {
   const data = await onboardingService.getStatus(req.user!.id);
@@ -46,4 +46,9 @@ export const completeOnboarding = asyncHandler(async (req: Request, res: Respons
 export const enhanceBio = asyncHandler(async (req: Request<unknown, unknown, EnhanceBioInput>, res: Response) => {
   const enhancedBio = await onboardingService.enhanceBio(req.body.bio);
   res.status(200).json({ success: true, message: "Bio enhanced successfully.", data: { bio: enhancedBio } });
+});
+
+export const applyForMentor = asyncHandler(async (req: Request<unknown, unknown, MentorApplicationInput>, res: Response) => {
+  await onboardingService.applyForMentor(req.user!.id, req.body);
+  res.status(200).json({ success: true, message: "Mentor application submitted successfully", data: {} });
 });

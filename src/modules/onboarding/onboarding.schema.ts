@@ -47,9 +47,20 @@ export const enhanceBioSchema = z.object({
   }),
 });
 
+export const mentorApplicationSchema = z.object({
+  body: z.object({
+    title: z.string().min(2, "Title must be at least 2 characters").max(100),
+    qualification: z.string().min(2, "Qualification must be at least 2 characters").max(100),
+    experienceYears: z.number().int().min(0, "Experience cannot be negative"),
+    hourlyPrice: z.number().min(0, "Hourly price cannot be negative"),
+    about: z.string().max(1000, "About section is too long").optional(),
+  }),
+});
+
 export type CountryInput = z.infer<typeof countrySchema>["body"];
 export type ProfileInput = z.infer<typeof profileSchema>["body"];
 export type ExamsInput = z.infer<typeof examsSchema>["body"];
 export type StudyInput = z.infer<typeof studySchema>["body"];
 export type PreferencesInput = z.infer<typeof preferencesSchema>["body"];
 export type EnhanceBioInput = z.infer<typeof enhanceBioSchema>["body"];
+export type MentorApplicationInput = z.infer<typeof mentorApplicationSchema>["body"];

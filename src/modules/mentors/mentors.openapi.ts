@@ -72,6 +72,21 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
+  path: "/api/mentors/my-exams-mentors",
+  tags,
+  security,
+  summary: "Get mentors by user exams",
+  description: "Browse verified mentors that match the user's selected exams.",
+  responses: {
+    200: {
+      description: "Mentors fetched successfully",
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.array(Mentor) }) } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "get",
   path: "/api/mentors/{id}",
   tags,
   security,

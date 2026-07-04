@@ -17,6 +17,7 @@ import { mentorsRoutes } from "@/modules/mentors/mentors.routes";
 import { mentorBookingsRoutes } from "@/modules/mentor-bookings/mentor-bookings.routes";
 import { uploadsRoutes } from "@/modules/uploads/uploads.routes";
 import storiesRoutes from "@/modules/stories/stories.routes";
+import communicationRoutes from "@/modules/communication/communication.routes";
 
 import { env } from "./config/env";
 import { scalarMiddleware } from "./config/scalar";
@@ -60,6 +61,7 @@ export function createApp(): Application {
   app.use("/api/mentor", mentorBookingsRoutes);
   app.use("/api/uploads", uploadsRoutes);
   app.use("/api/stories", storiesRoutes);
+  app.use("/api/communication", communicationRoutes);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

@@ -1,18 +1,18 @@
-import { query } from "@/config/db";
 import { AppError } from "@/core/errors/AppError";
 import { env } from "@/config/env";
 import { logger } from "@/config/logger";
 import { redis } from "@/config/redis";
+import { CountriesRepository } from "./countries.repository";
 
 export async function getCountries() {
   const cacheKey = "cache:countries";
   const cached = await redis.get(cacheKey);
   if (cached) return JSON.parse(cached);
 
-  const result = await query("SELECT id, name, flag, iso_code FROM countries ORDER BY name ASC");
+  const result = await CountriesRepository.getCountries();
   
-  await redis.set(cacheKey, JSON.stringify(result.rows), "EX", 86400); // 24 hours
-  return result.rows;
+  await redis.set(cacheKey, JSON.stringify(result), "EX", 86400); // 24 hours
+  return result;
 }
 
 export async function getStatesByCountry(countryCode: string) {

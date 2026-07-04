@@ -1,10 +1,11 @@
 import { registry } from "@/config/openapi";
 import { z } from "zod";
-import { sendOtpSchema, verifyOtpSchema, authUserResponseSchema } from "./auth.schema";
+import { sendOtpSchema, verifyOtpSchema, authUserResponseSchema, updateNotificationTokenSchema } from "./auth.schema";
 
 const SendOtpInput = registry.register("SendOtpInput", sendOtpSchema.shape.body);
 const VerifyOtpInput = registry.register("VerifyOtpInput", verifyOtpSchema.shape.body);
 const AuthUserResponse = registry.register("AuthUserResponse", authUserResponseSchema);
+const UpdateNotificationTokenInput = registry.register("UpdateNotificationTokenInput", updateNotificationTokenSchema.shape.body);
 
 registry.registerPath({
   method: "post",
@@ -153,6 +154,59 @@ registry.registerPath({
           schema: z.object({
             success: z.boolean().openapi({ example: true }),
             message: z.string().openapi({ example: "Logged out successfully" }),
+            data: z.object({}).openapi({ example: {} }),
+          }),
+        },
+      },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "delete",
+  path: "/api/auth/me",
+  tags: ["Auth"],
+  summary: "Delete account",
+  description: "Permanently deletes the currently authenticated user account and all associated data including profiles, matches, bookings, and messages.",
+  security: [{ bearerAuth: [] }],
+  responses: {
+    200: {
+      description: "Account deleted successfully",
+      content: {
+        "application/json": {
+          schema: z.object({
+            success: z.boolean().openapi({ example: true }),
+            message: z.string().openapi({ example: "Account deleted successfully" }),
+            data: z.object({}).openapi({ example: {} }),
+          }),
+        },
+      },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "patch",
+  path: "/api/auth/notification-token",
+  tags: ["Auth"],
+  summary: "Update notification token",
+  description: "Updates the push notification token for the user.",
+  security: [{ bearerAuth: [] }],
+  request: {
+    body: {
+      content: {
+        "application/json": { schema: UpdateNotificationTokenInput },
+      },
+    },
+  },
+  responses: {
+    200: {
+      description: "Notification token updated successfully",
+      content: {
+        "application/json": {
+          schema: z.object({
+            success: z.boolean().openapi({ example: true }),
+            message: z.string().openapi({ example: "Notification token updated successfully" }),
             data: z.object({}).openapi({ example: {} }),
           }),
         },

@@ -3,6 +3,8 @@ import { env } from "./config/env";
 import { logger } from "./config/logger";
 import { closePool } from "./config/db";
 import { closeRedis } from "./config/redis";
+import { initSocketIO } from "./modules/communication/communication.socket";
+import { startCommunicationScheduler } from "./modules/communication/communication.scheduler";
 
 async function startServer(): Promise<void> {
   try {
@@ -10,6 +12,9 @@ async function startServer(): Promise<void> {
     const server = app.listen(env.PORT, () => {
       logger.info(`Server running on port ${env.PORT} in ${env.NODE_ENV} mode`);
     });
+
+    await initSocketIO(server);
+    startCommunicationScheduler();
 
     let isShuttingDown = false;
 

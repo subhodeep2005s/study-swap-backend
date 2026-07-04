@@ -10,6 +10,13 @@ export const verifyOtpSchema = z.object({
   body: z.object({
     email: z.string().email("Invalid email address").toLowerCase(),
     otp: z.string().length(6, "OTP must be 6 digits"),
+    role: z.enum(["student", "mentor"]).optional(),
+  }),
+});
+
+export const updateNotificationTokenSchema = z.object({
+  body: z.object({
+    notificationToken: z.string().min(1, "Notification token is required"),
   }),
 });
 
@@ -35,3 +42,4 @@ export const authUserResponseSchema = z.object({
 
 export type SendOtpInput = z.infer<typeof sendOtpSchema>["body"];
 export type VerifyOtpInput = z.infer<typeof verifyOtpSchema>["body"];
+export type UpdateNotificationTokenInput = z.infer<typeof updateNotificationTokenSchema>["body"];

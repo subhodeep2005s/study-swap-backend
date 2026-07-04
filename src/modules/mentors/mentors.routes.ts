@@ -13,6 +13,7 @@ router.use(authMiddleware);
 
 // Browse mentors
 router.get("/", controller.getMentors);
+router.get("/my-exams-mentors", controller.getMentorsByMyExams);
 router.get("/bookings", controller.getStudentBookings);
 router.get("/bookings/:id", controller.getStudentBooking);
 router.patch("/bookings/:id/cancel", controller.cancelBooking);

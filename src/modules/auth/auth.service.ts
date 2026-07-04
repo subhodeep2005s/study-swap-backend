@@ -1,11 +1,11 @@
-import { query } from "@/config/db";
-import { logger } from "@/config/logger";
-import { redis } from "@/config/redis";
-import { resend } from "@/config/resend";
 import { AppError } from "@/core/errors/AppError";
 import { generateToken } from "@/core/utils/jwt";
 import { otpEmailTemplate } from "@/core/utils/email-templates";
 import { env } from "@/config/env";
+import { AuthRepository } from "./auth.repository";
+import { redis } from "@/config/redis";
+import { logger } from "@/config/logger";
+import { resend } from "@/config/resend";
 
 export async function sendOtp(email: string): Promise<void> {
   if (!env.RESEND_API_KEY || !env.RESEND_MAIL) {
@@ -61,7 +61,7 @@ export async function resendOtp(email: string): Promise<void> {
   }
 }
 
-export async function verifyOtp(email: string, otp: string) {
+export async function verifyOtp(email: string, otp: string, requestedRole?: "student" | "mentor") {
   const redisKey = `otp:${email}`;
   const storedOtp = await redis.get(redisKey);
 
@@ -77,26 +77,25 @@ export async function verifyOtp(email: string, otp: string) {
   await redis.del(redisKey);
   await redis.del(`otp_resend_count:${email}`); // Reset resend count on successful login
 
-  const userResult = await query(
-    "SELECT id, email, role, onboarding_completed FROM users WHERE email = $1",
-    [email],
-  );
+  const userResult = await AuthRepository.getUserByEmail(email);
 
   let user: { id: string; email: string; role: "admin" | "student" | "mentor"; onboarding_completed: boolean };
 
-  if (userResult.rows.length === 0) {
+  if (!userResult) {
     // Create new user if they don't exist
-    const insertResult = await query(
-      `INSERT INTO users (email, email_verified, role, onboarding_completed) 
-       VALUES ($1, true, 'student', false) RETURNING id, email, role, onboarding_completed`,
-      [email],
-    );
-    user = insertResult.rows[0] as typeof user;
+    user = await AuthRepository.createUser(email, requestedRole || 'student') as any;
     logger.info({ userId: user.id }, "New user created via OTP login");
   } else {
-    user = userResult.rows[0] as typeof user;
+    user = userResult as any;
     // Ensure email is marked as verified
-    await query("UPDATE users SET email_verified = true WHERE email = $1", [email]);
+    await AuthRepository.markEmailVerified(email);
+    
+    // If they explicitly requested a mentor role during login, upgrade them
+    if (requestedRole === "mentor" && user.role !== "mentor" && user.role !== "admin") {
+      await AuthRepository.updateUserRole(email, "mentor");
+      user.role = "mentor";
+    }
+    
     logger.info({ userId: user.id }, "Existing user logged in via OTP");
   }
 
@@ -118,21 +117,11 @@ export async function verifyOtp(email: string, otp: string) {
 }
 
 export async function getMe(userId: string) {
-  const result = await query(
-    `SELECT u.id, u.email, u.role, u.email_verified, u.onboarding_completed, u.created_at, 
-            p.full_name, p.profile_image, p.age, p.gender, p.state, p.country_id, p.bio, 
-            p.strong_in, p.need_help_with, p.study_time, p.looking_for
-     FROM users u
-     LEFT JOIN profiles p ON u.id = p.user_id
-     WHERE u.id = $1`,
-    [userId],
-  );
+  const user = await AuthRepository.getMe(userId);
 
-  if (result.rows.length === 0) {
+  if (!user) {
     throw new AppError("User not found", 404);
   }
-
-  const user = result.rows[0]!;
   return {
     id: user.id,
     email: user.email,
@@ -152,4 +141,18 @@ export async function getMe(userId: string) {
     studyTime: user.study_time,
     lookingFor: user.looking_for,
   };
+}
+
+export async function deleteAccount(userId: string) {
+  const user = await AuthRepository.getMe(userId);
+  if (!user) {
+    throw new AppError("User not found", 404);
+  }
+  
+  await AuthRepository.deleteAccount(userId);
+  logger.info({ userId }, "User account deleted successfully");
+}
+
+export async function updateNotificationToken(userId: string, token: string) {
+  await AuthRepository.updateNotificationToken(userId, token);
 }

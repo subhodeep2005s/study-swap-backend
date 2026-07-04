@@ -40,6 +40,11 @@ const EnvSchema = z.object({
   AWS_SECRET_KEY: z.string().min(1, "AWS_SECRET_KEY is required"),
   BUCKET_NAME: z.string().min(1, "BUCKET_NAME is required"),
   REGION_NAME: z.string().min(1, "REGION_NAME is required"),
+
+  LIVEKIT_API_KEY: z.preprocess(emptyToUndefined, z.string().min(1).optional()),
+  LIVEKIT_API_SECRET: z.preprocess(emptyToUndefined, z.string().min(1).optional()),
+  LIVEKIT_WS_URL: z.preprocess(emptyToUndefined, z.string().url().optional()),
+  LIVEKIT_API_URL: z.preprocess(emptyToUndefined, z.string().url().optional()),
 });
 
 const parsed = EnvSchema.safeParse(process.env);

@@ -7,6 +7,7 @@ import {
   studySchema,
   preferencesSchema,
   enhanceBioSchema,
+  mentorApplicationSchema,
 } from "./onboarding.schema";
 
 const tags = ["Onboarding"];
@@ -18,6 +19,7 @@ const ExamsInput = registry.register("ExamsInput", examsSchema.shape.body);
 const StudyInput = registry.register("StudyInput", studySchema.shape.body);
 const PreferencesInput = registry.register("PreferencesInput", preferencesSchema.shape.body);
 const EnhanceBioInput = registry.register("EnhanceBioInput", enhanceBioSchema.shape.body);
+const MentorApplicationInput = registry.register("MentorApplicationInput", mentorApplicationSchema.shape.body);
 
 registry.registerPath({
   method: "get",
@@ -267,6 +269,36 @@ registry.registerPath({
             data: z.object({
               bio: z.string(),
             }),
+          }),
+        },
+      },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "post",
+  path: "/api/onboarding/mentor-application",
+  tags,
+  security,
+  summary: "Apply for mentor",
+  description: "Submit an application to become a mentor.",
+  request: {
+    body: {
+      content: {
+        "application/json": { schema: MentorApplicationInput },
+      },
+    },
+  },
+  responses: {
+    200: {
+      description: "Success",
+      content: {
+        "application/json": {
+          schema: z.object({
+            success: z.boolean(),
+            message: z.string(),
+            data: z.object({}),
           }),
         },
       },

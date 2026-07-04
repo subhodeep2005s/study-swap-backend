@@ -1,6 +1,6 @@
 import { redis } from "@/config/redis";
-import { query } from "@/config/db";
 import { AppError } from "@/core/errors/AppError";
+import { StoriesRepository } from "./stories.repository";
 
 export async function uploadStory(userId: string, imageUrl: string) {
   // Store the story in Redis with a TTL of 24 hours (86400 seconds)
@@ -52,14 +52,5 @@ export async function getStoryViews(ownerId: string) {
   const viewsKey = `story_views:${ownerId}`;
   const viewerIds = await redis.smembers(viewsKey);
 
-  if (viewerIds.length === 0) return [];
-
-  const result = await query(
-    `SELECT user_id AS "userId", full_name AS "fullName", profile_image AS "profileImage" 
-     FROM profiles 
-     WHERE user_id = ANY($1)`,
-    [viewerIds]
-  );
-
-  return result.rows;
+  return await StoriesRepository.getStoryViews(viewerIds);
 }

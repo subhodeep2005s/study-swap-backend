@@ -1,27 +1,14 @@
-import { query } from "@/config/db";
 import { AppError } from "@/core/errors/AppError";
+import { AdminRepository } from "../admin.repository";
 
 export async function getMentors() {
-  const result = await query(`
-    SELECT m.*, p.full_name, p.profile_image, u.email
-    FROM mentors m
-    JOIN profiles p ON p.user_id = m.user_id
-    JOIN users u ON u.id = m.user_id
-    ORDER BY m.created_at DESC
-  `);
-  return result.rows;
+  return await AdminRepository.getAdminMentors();
 }
 
 export async function getMentor(id: string) {
-  const result = await query(`
-    SELECT m.*, p.full_name, p.profile_image, u.email
-    FROM mentors m
-    JOIN profiles p ON p.user_id = m.user_id
-    JOIN users u ON u.id = m.user_id
-    WHERE m.id = $1
-  `, [id]);
-  if (result.rows.length === 0) throw new AppError("Mentor not found", 404);
-  return result.rows[0];
+  const result = await AdminRepository.getAdminMentor(id);
+  if (!result) throw new AppError("Mentor not found", 404);
+  return result;
 }
 
 export async function updateMentor(id: string, data: any) {
@@ -37,63 +24,31 @@ export async function updateMentor(id: string, data: any) {
 
   if (fields.length === 0) throw new AppError("No fields to update", 400);
 
-  fields.push(`updated_at = NOW()`);
-  values.push(id);
-
-  const result = await query(`
-    UPDATE mentors SET ${fields.join(", ")} WHERE id = $${idx} RETURNING *
-  `, values);
+  const result = await AdminRepository.updateAdminMentor(id, fields, values);
   
-  if (result.rows.length === 0) throw new AppError("Mentor not found", 404);
-  return result.rows[0];
+  if (!result) throw new AppError("Mentor not found", 404);
+  return result;
 }
 
 export async function deleteMentor(id: string) {
-  const result = await query("DELETE FROM mentors WHERE id = $1 RETURNING id", [id]);
-  if (result.rows.length === 0) throw new AppError("Mentor not found", 404);
+  const deleted = await AdminRepository.deleteAdminMentor(id);
+  if (!deleted) throw new AppError("Mentor not found", 404);
 }
 
 export async function verifyMentor(id: string) {
-  const result = await query("UPDATE mentors SET is_verified = true, updated_at = NOW() WHERE id = $1 RETURNING *", [id]);
-  if (result.rows.length === 0) throw new AppError("Mentor not found", 404);
-  return result.rows[0];
+  const result = await AdminRepository.verifyAdminMentor(id);
+  if (!result) throw new AppError("Mentor not found", 404);
+  return result;
 }
 
 export async function getBookings() {
-  const result = await query(`
-    SELECT 
-      b.*,
-      s.start_time, s.end_time,
-      p.title as plan_title,
-      u.email as student_email,
-      prof.full_name as student_name
-    FROM mentor_bookings b
-    JOIN mentor_slots s ON s.id = b.slot_id
-    JOIN mentor_plans p ON p.id = b.plan_id
-    JOIN users u ON u.id = b.student_id
-    JOIN profiles prof ON prof.user_id = u.id
-    ORDER BY b.created_at DESC
-  `);
-  return result.rows;
+  return await AdminRepository.getAdminBookings();
 }
 
 export async function getBooking(id: string) {
-  const result = await query(`
-    SELECT 
-      b.*,
-      s.start_time, s.end_time,
-      p.title as plan_title,
-      u.email as student_email,
-      prof.full_name as student_name
-    FROM mentor_bookings b
-    JOIN mentor_slots s ON s.id = b.slot_id
-    JOIN mentor_plans p ON p.id = b.plan_id
-    JOIN users u ON u.id = b.student_id
-    JOIN profiles prof ON prof.user_id = u.id
-    WHERE b.id = $1
-  `, [id]);
-  if (result.rows.length === 0) throw new AppError("Booking not found", 404);
-  return result.rows[0];
+  const result = await AdminRepository.getAdminBooking(id);
+  if (!result) throw new AppError("Booking not found", 404);
+  return result;
 }
 
 export async function updateBooking(id: string, data: any) {
@@ -106,18 +61,13 @@ export async function updateBooking(id: string, data: any) {
 
   if (fields.length === 0) throw new AppError("No fields to update", 400);
 
-  fields.push(`updated_at = NOW()`);
-  values.push(id);
-
-  const result = await query(`
-    UPDATE mentor_bookings SET ${fields.join(", ")} WHERE id = $${idx} RETURNING *
-  `, values);
+  const result = await AdminRepository.updateAdminBooking(id, fields, values);
   
-  if (result.rows.length === 0) throw new AppError("Booking not found", 404);
-  return result.rows[0];
+  if (!result) throw new AppError("Booking not found", 404);
+  return result;
 }
 
 export async function deleteBooking(id: string) {
-  const result = await query("DELETE FROM mentor_bookings WHERE id = $1 RETURNING id", [id]);
-  if (result.rows.length === 0) throw new AppError("Booking not found", 404);
+  const deleted = await AdminRepository.deleteAdminBooking(id);
+  if (!deleted) throw new AppError("Booking not found", 404);
 }
