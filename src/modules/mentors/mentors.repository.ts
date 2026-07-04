@@ -98,6 +98,14 @@ export class MentorsRepository {
   
       // Mark slot as booked
       await client.query("UPDATE mentor_slots SET is_booked = true, updated_at = NOW() WHERE id = $1", [slotId]);
+
+      // Get slot times for Google Meet
+      const slotTimeRes = await client.query(
+        "SELECT start_time, end_time FROM mentor_slots WHERE id = $1",
+        [slotId]
+      );
+      const slotStartTime = slotTimeRes.rows[0].start_time;
+      const slotEndTime = slotTimeRes.rows[0].end_time;
   
       // Create booking
       const insertRes = await client.query(
@@ -107,14 +115,11 @@ export class MentorsRepository {
       );
   
       const bookingId = insertRes.rows[0].id;
-      const meetingLink = `https://meet.studyswap.app/${bookingId}`;
-  
-      await client.query("UPDATE mentor_bookings SET meeting_link = $1 WHERE id = $2", [meetingLink, bookingId]);
   
       // Get mentor's user_id for push notification
       const mentorUserRes = await client.query("SELECT user_id FROM mentors WHERE id = $1", [mentorId]);
-      if (mentorUserRes.rows.length > 0) {
-        const mentorUserId = mentorUserRes.rows[0].user_id;
+      const mentorUserId = mentorUserRes.rows[0]?.user_id;
+      if (mentorUserId) {
         NotificationService.sendToUser(
           mentorUserId,
           "New Booking!",
@@ -124,7 +129,7 @@ export class MentorsRepository {
       }
 
       await client.query("COMMIT");
-      return { success: true, bookingId, meetingLink };
+      return { success: true, bookingId, slotStartTime, slotEndTime, mentorUserId, planDuration: null };
     } catch (error) {
       await client.query("ROLLBACK");
       throw error;
@@ -133,10 +138,25 @@ export class MentorsRepository {
     }
   }
 
+  static async updateBookingMeetingDetails(
+    bookingId: string,
+    googleEventId: string,
+    googleMeetUrl: string,
+    googleCalendarUrl: string
+  ) {
+    await query(
+      `UPDATE mentor_bookings 
+       SET google_event_id = $2, google_meet_url = $3, google_calendar_url = $4, meeting_link = $3, updated_at = NOW()
+       WHERE id = $1`,
+      [bookingId, googleEventId, googleMeetUrl, googleCalendarUrl]
+    );
+  }
+
   static async getStudentBookings(studentId: string) {
     const result = await query(`
       SELECT 
         b.id, b.status, b.payment_status, b.amount, b.meeting_link, b.created_at,
+        b.google_meet_url, b.google_calendar_url, b.meeting_provider,
         p.title as plan_title, p.duration_minutes,
         s.start_time, s.end_time,
         m.title as mentor_title,
@@ -156,6 +176,7 @@ export class MentorsRepository {
     const result = await query(`
       SELECT 
         b.id, b.status, b.payment_status, b.amount, b.meeting_link, b.created_at,
+        b.google_meet_url, b.google_calendar_url, b.meeting_provider,
         p.title as plan_title, p.duration_minutes,
         s.start_time, s.end_time,
         m.title as mentor_title,
@@ -175,7 +196,7 @@ export class MentorsRepository {
     try {
       await client.query("BEGIN");
       
-      const bookingRes = await client.query("SELECT slot_id, status FROM mentor_bookings WHERE id = $1 AND student_id = $2 FOR UPDATE", [bookingId, studentId]);
+      const bookingRes = await client.query("SELECT slot_id, status, google_event_id FROM mentor_bookings WHERE id = $1 AND student_id = $2 FOR UPDATE", [bookingId, studentId]);
       if (bookingRes.rows.length === 0) {
         await client.query("ROLLBACK");
         return { error: "Booking not found", code: 404 };
@@ -198,7 +219,7 @@ export class MentorsRepository {
       await client.query("UPDATE mentor_bookings SET status = 'cancelled', updated_at = NOW() WHERE id = $1", [bookingId]);
       
       await client.query("COMMIT");
-      return { success: true };
+      return { success: true, googleEventId: booking.google_event_id };
     } catch (error) {
       await client.query("ROLLBACK");
       throw error;

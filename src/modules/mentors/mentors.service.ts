@@ -1,7 +1,11 @@
 import { AppError } from "@/core/errors/AppError";
 import { Event, eventEmitter } from "@/config/event";
 import { redis } from "@/config/redis";
+import { logger } from "@/config/logger";
+import { query } from "@/config/db";
+import { sendMail } from "@/config/resend";
 import { MentorsRepository } from "./mentors.repository";
+import { GoogleService } from "@/modules/google/google.service";
 
 export async function getMentors() {
   const cacheKey = "cache:mentors:list";
@@ -50,7 +54,149 @@ export async function bookSession(studentId: string, mentorId: string, planId: s
     bookingId: result.bookingId,
   });
 
-  return { bookingId: result.bookingId, meetingLink: result.meetingLink };
+  // --- Google Meet + Emails (async, non-blocking) ---
+  createMeetingAndNotify(
+    result.bookingId,
+    studentId,
+    mentorId,
+    result.slotStartTime,
+    result.slotEndTime,
+    result.mentorUserId
+  ).catch(err => logger.error({ err, bookingId: result.bookingId }, "Failed in post-booking Google Meet flow"));
+
+  return { bookingId: result.bookingId };
+}
+
+/**
+ * Creates Google Meet, updates booking, and sends confirmation emails.
+ * Runs asynchronously after the booking transaction commits.
+ * If Google fails, the booking still exists — meetingStatus remains PENDING.
+ */
+async function createMeetingAndNotify(
+  bookingId: string,
+  studentId: string,
+  mentorId: string,
+  slotStartTime: string,
+  slotEndTime: string,
+  mentorUserId: string | null
+) {
+  // 1. Fetch names and emails
+  const studentInfo = await query(
+    `SELECT u.email, p.full_name FROM users u JOIN profiles p ON p.user_id = u.id WHERE u.id = $1`,
+    [studentId]
+  );
+  const studentEmail = studentInfo.rows[0]?.email;
+  const studentName = studentInfo.rows[0]?.full_name || "Student";
+
+  let mentorEmail = "";
+  let mentorName = "Mentor";
+  if (mentorUserId) {
+    const mentorInfo = await query(
+      `SELECT u.email, p.full_name FROM users u JOIN profiles p ON p.user_id = u.id WHERE u.id = $1`,
+      [mentorUserId]
+    );
+    mentorEmail = mentorInfo.rows[0]?.email || "";
+    mentorName = mentorInfo.rows[0]?.full_name || "Mentor";
+  }
+
+  const startDate = new Date(slotStartTime);
+  const endDate = new Date(slotEndTime);
+  const durationMinutes = Math.round((endDate.getTime() - startDate.getTime()) / 60000);
+  const formattedDate = startDate.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric", timeZone: "UTC" });
+  const formattedTime = startDate.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", timeZone: "UTC" });
+
+  // 2. Create Google Meet
+  let meetUrl = "";
+  let calendarUrl = "";
+
+  if (GoogleService.isConfigured()) {
+    try {
+      const meetResult = await GoogleService.createMeeting({
+        mentorName,
+        mentorEmail,
+        studentName,
+        studentEmail,
+        bookingId,
+        title: "StudySwap Mentorship Session",
+        description: `Booking ID: ${bookingId}\nMentor: ${mentorName}\nStudent: ${studentName}`,
+        startTime: startDate.toISOString(),
+        endTime: endDate.toISOString(),
+      });
+
+      await MentorsRepository.updateBookingMeetingDetails(
+        bookingId,
+        meetResult.eventId,
+        meetResult.meetUrl,
+        meetResult.calendarUrl
+      );
+
+      meetUrl = meetResult.meetUrl;
+      calendarUrl = meetResult.calendarUrl;
+
+      logger.info({ bookingId, meetUrl }, "Google Meet created and saved for booking");
+    } catch (error) {
+      logger.error({ error, bookingId }, "Google Meet creation failed — booking remains valid");
+    }
+  } else {
+    logger.warn({ bookingId }, "Google Calendar not configured — skipping Meet creation");
+  }
+
+  // 3. Send confirmation emails
+  const meetButton = meetUrl
+    ? `<a href="${meetUrl}" style="display: inline-block; padding: 12px 24px; background: #4285F4; color: #fff; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 16px 0;">Join Google Meet</a>`
+    : `<p style="color: #666;">Meeting link will be available soon.</p>`;
+
+  // Student email
+  try {
+    await sendMail({
+      to: studentEmail,
+      subject: "Booking Confirmed — StudySwap",
+      html: `
+        <div style="font-family: 'Segoe UI', sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e0e0e0; border-radius: 12px;">
+          <h2 style="color: #1a73e8; margin-top: 0;">Booking Confirmed! ✅</h2>
+          <p>Hi <strong>${studentName}</strong>,</p>
+          <p>Your mentorship session has been confirmed:</p>
+          <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
+            <tr><td style="padding: 8px 0; color: #666;">Mentor</td><td style="padding: 8px 0; font-weight: bold;">${mentorName}</td></tr>
+            <tr><td style="padding: 8px 0; color: #666;">Date</td><td style="padding: 8px 0; font-weight: bold;">${formattedDate}</td></tr>
+            <tr><td style="padding: 8px 0; color: #666;">Time</td><td style="padding: 8px 0; font-weight: bold;">${formattedTime} (UTC)</td></tr>
+            <tr><td style="padding: 8px 0; color: #666;">Duration</td><td style="padding: 8px 0; font-weight: bold;">${durationMinutes} minutes</td></tr>
+          </table>
+          ${meetButton}
+          <p style="color: #999; font-size: 12px; margin-top: 24px;">Booking ID: ${bookingId}</p>
+        </div>
+      `,
+    });
+  } catch (err) {
+    logger.error({ err, bookingId, studentEmail }, "Failed to send student booking email");
+  }
+
+  // Mentor email
+  if (mentorEmail) {
+    try {
+      await sendMail({
+        to: mentorEmail,
+        subject: "New Mentorship Booking — StudySwap",
+        html: `
+          <div style="font-family: 'Segoe UI', sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e0e0e0; border-radius: 12px;">
+            <h2 style="color: #1a73e8; margin-top: 0;">New Booking! 📚</h2>
+            <p>Hi <strong>${mentorName}</strong>,</p>
+            <p>A student has booked a session with you:</p>
+            <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
+              <tr><td style="padding: 8px 0; color: #666;">Student</td><td style="padding: 8px 0; font-weight: bold;">${studentName}</td></tr>
+              <tr><td style="padding: 8px 0; color: #666;">Date</td><td style="padding: 8px 0; font-weight: bold;">${formattedDate}</td></tr>
+              <tr><td style="padding: 8px 0; color: #666;">Time</td><td style="padding: 8px 0; font-weight: bold;">${formattedTime} (UTC)</td></tr>
+              <tr><td style="padding: 8px 0; color: #666;">Duration</td><td style="padding: 8px 0; font-weight: bold;">${durationMinutes} minutes</td></tr>
+            </table>
+            ${meetButton}
+            <p style="color: #999; font-size: 12px; margin-top: 24px;">Booking ID: ${bookingId}</p>
+          </div>
+        `,
+      });
+    } catch (err) {
+      logger.error({ err, bookingId, mentorEmail }, "Failed to send mentor booking email");
+    }
+  }
 }
 
 export async function getStudentBookings(studentId: string) {
@@ -67,5 +213,12 @@ export async function cancelBooking(studentId: string, bookingId: string) {
   const result = await MentorsRepository.cancelBookingTransaction(studentId, bookingId);
   if (result.error) {
     throw new AppError(result.error, result.code);
+  }
+
+  // Delete Google Calendar event if it exists (fire-and-forget)
+  if (result.googleEventId) {
+    GoogleService.deleteMeeting(result.googleEventId).catch(err =>
+      logger.error({ err, bookingId, eventId: result.googleEventId }, "Failed to delete Google Calendar event")
+    );
   }
 }

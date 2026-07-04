@@ -21,16 +21,34 @@ export class CommunicationRepository {
     try {
       await client.query("BEGIN");
       
-      const existing = await client.query(
-        "SELECT id FROM conversations WHERE match_id = $1",
+      // 1. Get the users for this match
+      const matchInfo = await client.query(
+        "SELECT user_id, matched_user_id FROM user_matches WHERE id = $1",
         [matchId]
       );
+      
+      if (matchInfo.rows.length === 0) {
+        throw new Error("Match not found");
+      }
+      
+      const { user_id, matched_user_id } = matchInfo.rows[0];
 
-      if (existing.rowCount && existing.rowCount > 0) {
+      // 2. Check if a conversation ALREADY exists between these two users (via any match)
+      const existingConversation = await client.query(`
+        SELECT c.id 
+        FROM conversations c
+        JOIN user_matches um ON um.id = c.match_id
+        WHERE (um.user_id = $1 AND um.matched_user_id = $2)
+           OR (um.user_id = $2 AND um.matched_user_id = $1)
+        LIMIT 1
+      `, [user_id, matched_user_id]);
+
+      if (existingConversation.rowCount && existingConversation.rowCount > 0) {
         await client.query("COMMIT");
-        return existing.rows[0].id;
+        return existingConversation.rows[0].id;
       }
 
+      // 3. Otherwise, create a new conversation
       const created = await client.query(
         "INSERT INTO conversations (match_id) VALUES ($1) RETURNING id",
         [matchId]

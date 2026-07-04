@@ -45,6 +45,12 @@ const EnvSchema = z.object({
   LIVEKIT_API_SECRET: z.preprocess(emptyToUndefined, z.string().min(1).optional()),
   LIVEKIT_WS_URL: z.preprocess(emptyToUndefined, z.string().url().optional()),
   LIVEKIT_API_URL: z.preprocess(emptyToUndefined, z.string().url().optional()),
+
+  GOOGLE_CLIENT_ID: z.preprocess(emptyToUndefined, z.string().min(1).optional()),
+  GOOGLE_CLIENT_SECRET: z.preprocess(emptyToUndefined, z.string().min(1).optional()),
+  GOOGLE_REDIRECT_URI: z.preprocess(emptyToUndefined, z.string().url().optional()),
+  GOOGLE_REFRESH_TOKEN: z.preprocess(emptyToUndefined, z.string().min(1).optional()),
+  GOOGLE_CALENDAR_ID: z.preprocess(emptyToUndefined, z.string().min(1).optional()).default("primary"),
 });
 
 const parsed = EnvSchema.safeParse(process.env);
