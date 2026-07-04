@@ -8,12 +8,15 @@ import { redis } from "@/config/redis";
 import { v4 as uuidv4 } from "uuid";
 import { NotificationService } from "@/modules/notifications/notification.service";
 
-async function getProfileName(userId: string): Promise<string> {
+async function getProfileInfo(userId: string): Promise<{name: string, image: string | null}> {
   const result = await query(
-    "SELECT full_name FROM profiles WHERE user_id = $1",
+    "SELECT full_name, profile_image FROM profiles WHERE user_id = $1",
     [userId]
   );
-  return result.rows[0]?.full_name || 'User';
+  return {
+    name: result.rows[0]?.full_name || 'User',
+    image: result.rows[0]?.profile_image || null
+  };
 }
 
 export class FocusService {
@@ -34,11 +37,12 @@ export class FocusService {
       
       await client.query("COMMIT");
 
-      // Generate a LiveKit token for the initiator so they can join the room immediately
-      const initiatorName = await getProfileName(userId);
-      const token = await LiveKitService.generateToken(roomName, initiatorName, userId);
+      // Generate a LiveKit token for the initiator
+      const initiatorInfo = await getProfileInfo(userId);
+      const token = await LiveKitService.generateToken(roomName, initiatorInfo.name, userId);
       const url = LiveKitService.getLiveKitUrl();
 
+      // Emit after commit
       const io = getIO();
       const payload = {
         conversationId,
@@ -47,7 +51,9 @@ export class FocusService {
         focusId: focus.id,
         initiatorId: userId,
         durationSeconds,
-        roomName
+        roomName,
+        partnerName: initiatorInfo.name,
+        partnerImage: initiatorInfo.image
       };
       
       io.to(`user_${partnerId}`).emit("incoming_focus_session", payload);
@@ -55,7 +61,7 @@ export class FocusService {
       NotificationService.sendToUser(
         partnerId,
         "Focus Session",
-        `${initiatorName} invited you to a focus session`,
+        `${initiatorInfo.name} wants to start a focus session`,
         { type: "incoming_focus_session", conversationId, focusId: focus.id, roomName },
         "high"
       ).catch(err => console.error("Push error", err));
