@@ -13,6 +13,8 @@ pnpm install
 cp .env.example .env
 ```
 
+
+ghj
 Edit `.env` with your configuration values.
 
 3. **Run database migrations**
