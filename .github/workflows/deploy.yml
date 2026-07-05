@@ -52,7 +52,10 @@ jobs:
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            source /root/.bashrc
+            # Load environment settings safely (user-agnostic)
+            if [ -f ~/.bashrc ]; then source ~/.bashrc; fi
+            if [ -f ~/.profile ]; then source ~/.profile; fi
+
             set -e
             cd ${{ secrets.APP_DIR }}
 
@@ -60,6 +63,11 @@ jobs:
             pnpm install --prod --frozen-lockfile
 
             echo ">>> Running database migrations..."
+            # Extract DATABASE_URL from .env if present and pass it to db:migrate
+            if [ -f .env ]; then
+              DATABASE_URL=$(grep -E "^DATABASE_URL=" .env | cut -d'=' -f2- | sed -e 's/^"//' -e 's/"$//')
+              export DATABASE_URL
+            fi
             pnpm db:migrate
 
             echo ">>> Restarting app with PM2..."

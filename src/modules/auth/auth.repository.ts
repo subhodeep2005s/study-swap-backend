@@ -34,7 +34,14 @@ export class AuthRepository {
     const result = await query(
       `SELECT u.id, u.email, u.role, u.email_verified, u.onboarding_completed, u.created_at, 
               p.full_name, p.profile_image, p.age, p.gender, p.state, p.country_id, p.bio, 
-              p.strong_in, p.need_help_with, p.study_time, p.looking_for
+              p.strong_in, p.need_help_with, p.study_time, p.looking_for,
+              COALESCE(
+                (SELECT json_agg(json_build_object('id', e.id, 'name', e.name))
+                 FROM user_exams ue
+                 JOIN exams e ON ue.exam_id = e.id
+                 WHERE ue.user_id = u.id),
+                '[]'::json
+              ) AS exams
        FROM users u
        LEFT JOIN profiles p ON u.id = p.user_id
        WHERE u.id = $1`,

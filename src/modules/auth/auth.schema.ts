@@ -38,6 +38,10 @@ export const authUserResponseSchema = z.object({
   needHelpWith: z.string().nullable().optional(),
   studyTime: z.string().nullable().optional(),
   lookingFor: z.array(z.string()).nullable().optional(),
+  exams: z.array(z.object({
+    id: z.string().uuid(),
+    name: z.string(),
+  })).optional(),
 });
 
 export type SendOtpInput = z.infer<typeof sendOtpSchema>["body"];
