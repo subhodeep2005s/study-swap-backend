@@ -53,7 +53,7 @@ const conversationResponseSchema = z.object({
 
 registry.registerPath({
   method: "get",
-  path: "/api/communication/conversations",
+  path: "/communication/conversations",
   summary: "Get conversations",
   description: "Get a list of all active conversations for the current user",
   tags: ["Communication"],
@@ -72,7 +72,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/api/communication/conversations/{conversationId}",
+  path: "/communication/conversations/{conversationId}",
   summary: "Get conversation by ID",
   description: "Get details for a specific conversation",
   tags: ["Communication"],
@@ -102,7 +102,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/api/communication/conversations/{conversationId}/messages",
+  path: "/communication/conversations/{conversationId}/messages",
   summary: "Get messages",
   description: "Get paginated messages for a conversation",
   tags: ["Communication"],
@@ -132,7 +132,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "post",
-  path: "/api/communication/conversations/{conversationId}/messages",
+  path: "/communication/conversations/{conversationId}/messages",
   summary: "Send a message",
   description: "Send a text or media message in a conversation",
   tags: ["Communication"],
@@ -163,7 +163,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "patch",
-  path: "/api/communication/messages/{messageId}",
+  path: "/communication/messages/{messageId}",
   summary: "Edit a message",
   description: "Edit a previously sent text message",
   tags: ["Communication"],
@@ -194,7 +194,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "delete",
-  path: "/api/communication/messages/{messageId}",
+  path: "/communication/messages/{messageId}",
   summary: "Delete a message",
   description: "Delete a previously sent message",
   tags: ["Communication"],
@@ -218,7 +218,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "post",
-  path: "/api/communication/calls",
+  path: "/communication/calls",
   summary: "Start a call",
   description: "Initiate a voice or video call",
   tags: ["Communication"],
@@ -256,7 +256,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "patch",
-  path: "/api/communication/calls/{callId}/accept",
+  path: "/communication/calls/{callId}/accept",
   summary: "Accept a call",
   description: "Accept an incoming call",
   tags: ["Communication"],
@@ -284,7 +284,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "patch",
-  path: "/api/communication/calls/{callId}/end",
+  path: "/communication/calls/{callId}/end",
   summary: "End a call",
   description: "End an active call",
   tags: ["Communication"],
@@ -312,7 +312,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "post",
-  path: "/api/communication/focus",
+  path: "/communication/focus",
   summary: "Start a focus session",
   description: "Initiate a synchronized focus session with a partner",
   tags: ["Communication"],
@@ -348,7 +348,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "patch",
-  path: "/api/communication/focus/{focusId}/accept",
+  path: "/communication/focus/{focusId}/accept",
   summary: "Accept a focus session",
   description: "Accept an incoming focus session request",
   tags: ["Communication"],
@@ -378,7 +378,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "patch",
-  path: "/api/communication/focus/{focusId}/end",
+  path: "/communication/focus/{focusId}/end",
   summary: "End a focus session",
   description: "End an active focus session early",
   tags: ["Communication"],

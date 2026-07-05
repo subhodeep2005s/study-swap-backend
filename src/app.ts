@@ -51,17 +51,17 @@ export function createApp(): Application {
 
   app.use(auditMiddleware);
 
-  app.use("/api/auth", authRoutes);
-  app.use("/api/onboarding", onboardingRoutes);
-  app.use("/api/countries", countriesRoutes);
-  app.use("/api/exams", examsRoutes);
-  app.use("/api/admin", adminRoutes);
-  app.use("/api/matches", matchesRoutes);
-  app.use("/api/mentors", mentorsRoutes);
-  app.use("/api/mentor", mentorBookingsRoutes);
-  app.use("/api/uploads", uploadsRoutes);
-  app.use("/api/stories", storiesRoutes);
-  app.use("/api/communication", communicationRoutes);
+  app.use("/auth", authRoutes);
+  app.use("/onboarding", onboardingRoutes);
+  app.use("/countries", countriesRoutes);
+  app.use("/exams", examsRoutes);
+  app.use("/admin", adminRoutes);
+  app.use("/matches", matchesRoutes);
+  app.use("/mentors", mentorsRoutes);
+  app.use("/mentor", mentorBookingsRoutes);
+  app.use("/uploads", uploadsRoutes);
+  app.use("/stories", storiesRoutes);
+  app.use("/communication", communicationRoutes);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

@@ -57,7 +57,7 @@ const BookSessionInput = registry.register("BookSessionInput", bookSessionSchema
 
 registry.registerPath({
   method: "get",
-  path: "/api/mentors",
+  path: "/mentors",
   tags,
   security,
   summary: "Get all verified mentors",
@@ -72,7 +72,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/api/mentors/my-exams-mentors",
+  path: "/mentors/my-exams-mentors",
   tags,
   security,
   summary: "Get mentors by user exams",
@@ -87,7 +87,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/api/mentors/{id}",
+  path: "/mentors/{id}",
   tags,
   security,
   summary: "Get mentor profile",
@@ -103,7 +103,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/api/mentors/{id}/plans",
+  path: "/mentors/{id}/plans",
   tags,
   security,
   summary: "Get mentor plans",
@@ -119,7 +119,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/api/mentors/{id}/slots",
+  path: "/mentors/{id}/slots",
   tags,
   security,
   summary: "Get mentor slots",
@@ -135,7 +135,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "post",
-  path: "/api/mentors/book",
+  path: "/mentors/book",
   tags,
   security,
   summary: "Book mentor session",
@@ -153,7 +153,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/api/mentors/bookings",
+  path: "/mentors/bookings",
   tags,
   security,
   summary: "Get student bookings",
@@ -168,7 +168,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/api/mentors/bookings/{id}",
+  path: "/mentors/bookings/{id}",
   tags,
   security,
   summary: "Get student booking",
@@ -184,7 +184,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "patch",
-  path: "/api/mentors/bookings/{id}/cancel",
+  path: "/mentors/bookings/{id}/cancel",
   tags,
   security,
   summary: "Cancel student booking",

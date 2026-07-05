@@ -35,7 +35,7 @@ describe("Mentor Module - E2E Journey", () => {
   describe("1. Mentor Account Creation & Auth", () => {
     it("should send OTP to mentor email", async () => {
       const res = await request(app)
-        .post("/api/auth/send-otp")
+        .post("/auth/send-otp")
         .send({ email: testMentorEmail });
         
       expect(res.status).toBe(200);
@@ -48,7 +48,7 @@ describe("Mentor Module - E2E Journey", () => {
       expect(otp).toBeTruthy();
 
       const res = await request(app)
-        .post("/api/auth/verify-otp")
+        .post("/auth/verify-otp")
         .send({ 
           email: testMentorEmail, 
           otp,
@@ -68,7 +68,7 @@ describe("Mentor Module - E2E Journey", () => {
   describe("2. Mentor Onboarding", () => {
     it("should allow mentor to update basic profile", async () => {
       const res = await request(app)
-        .patch("/api/onboarding/profile")
+        .patch("/onboarding/profile")
         .set("Authorization", `Bearer ${mentorToken}`)
         .send({
           fullName: "Expert Test Mentor",
@@ -82,7 +82,7 @@ describe("Mentor Module - E2E Journey", () => {
 
     it("should allow mentor to apply and auto-verify", async () => {
       const res = await request(app)
-        .post("/api/onboarding/mentor-application")
+        .post("/onboarding/mentor-application")
         .set("Authorization", `Bearer ${mentorToken}`)
         .send({
           title: "Senior Test Engineer",
@@ -100,7 +100,7 @@ describe("Mentor Module - E2E Journey", () => {
   describe("3. Mentor Dashboard Management", () => {
     it("should fetch mentor profile from dashboard", async () => {
       const res = await request(app)
-        .get("/api/mentor/profile")
+        .get("/mentor/profile")
         .set("Authorization", `Bearer ${mentorToken}`);
 
       expect(res.status).toBe(200);
@@ -110,7 +110,7 @@ describe("Mentor Module - E2E Journey", () => {
 
     it("should create a mentor plan", async () => {
       const res = await request(app)
-        .post("/api/mentor/plans")
+        .post("/mentor/plans")
         .set("Authorization", `Bearer ${mentorToken}`)
         .send({
           title: "1-on-1 Test Coaching",
@@ -128,7 +128,7 @@ describe("Mentor Module - E2E Journey", () => {
 
     it("should list mentor plans", async () => {
       const res = await request(app)
-        .get("/api/mentor/plans")
+        .get("/mentor/plans")
         .set("Authorization", `Bearer ${mentorToken}`);
 
       expect(res.status).toBe(200);
@@ -144,7 +144,7 @@ describe("Mentor Module - E2E Journey", () => {
       endTime.setHours(endTime.getHours() + 1);
 
       const res = await request(app)
-        .post("/api/mentor/slots")
+        .post("/mentor/slots")
         .set("Authorization", `Bearer ${mentorToken}`)
         .send({
           start_time: startTime.toISOString(),
@@ -160,7 +160,7 @@ describe("Mentor Module - E2E Journey", () => {
 
     it("should list mentor slots", async () => {
       const res = await request(app)
-        .get("/api/mentor/slots")
+        .get("/mentor/slots")
         .set("Authorization", `Bearer ${mentorToken}`);
 
       expect(res.status).toBe(200);
@@ -171,7 +171,7 @@ describe("Mentor Module - E2E Journey", () => {
   describe("4. Public Visibility", () => {
     it("should appear in the public mentor directory", async () => {
       const res = await request(app)
-        .get("/api/mentors")
+        .get("/mentors")
         // Can be authenticated as any user, or we just pass the mentor's token
         .set("Authorization", `Bearer ${mentorToken}`);
 

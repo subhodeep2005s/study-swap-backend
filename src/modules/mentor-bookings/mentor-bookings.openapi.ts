@@ -13,7 +13,7 @@ const UpdateSlotInput = registry.register("UpdateSlotInput", schema.updateSlotSc
 
 registry.registerPath({
   method: "get",
-  path: "/api/mentor/profile",
+  path: "/mentor/profile",
   tags,
   security,
   summary: "Get mentor profile",
@@ -28,7 +28,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "patch",
-  path: "/api/mentor/profile",
+  path: "/mentor/profile",
   tags,
   security,
   summary: "Update mentor profile",
@@ -46,7 +46,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/api/mentor/plans",
+  path: "/mentor/plans",
   tags,
   security,
   summary: "Get mentor plans",
@@ -61,7 +61,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "post",
-  path: "/api/mentor/plans",
+  path: "/mentor/plans",
   tags,
   security,
   summary: "Create plan",
@@ -79,7 +79,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "patch",
-  path: "/api/mentor/plans/{id}",
+  path: "/mentor/plans/{id}",
   tags,
   security,
   summary: "Update plan",
@@ -98,7 +98,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "delete",
-  path: "/api/mentor/plans/{id}",
+  path: "/mentor/plans/{id}",
   tags,
   security,
   summary: "Delete plan",
@@ -116,7 +116,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/api/mentor/slots",
+  path: "/mentor/slots",
   tags,
   security,
   summary: "Get slots",
@@ -131,7 +131,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "post",
-  path: "/api/mentor/slots",
+  path: "/mentor/slots",
   tags,
   security,
   summary: "Create slot",
@@ -149,7 +149,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "patch",
-  path: "/api/mentor/slots/{id}",
+  path: "/mentor/slots/{id}",
   tags,
   security,
   summary: "Update slot",
@@ -168,7 +168,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "delete",
-  path: "/api/mentor/slots/{id}",
+  path: "/mentor/slots/{id}",
   tags,
   security,
   summary: "Delete slot",
@@ -186,7 +186,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/api/mentor/bookings",
+  path: "/mentor/bookings",
   tags,
   security,
   summary: "Get bookings",
@@ -201,7 +201,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/api/mentor/bookings/{id}",
+  path: "/mentor/bookings/{id}",
   tags,
   security,
   summary: "Get booking",
@@ -219,7 +219,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "patch",
-  path: "/api/mentor/bookings/{id}/confirm",
+  path: "/mentor/bookings/{id}/confirm",
   tags,
   security,
   summary: "Confirm booking",
@@ -237,7 +237,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "patch",
-  path: "/api/mentor/bookings/{id}/complete",
+  path: "/mentor/bookings/{id}/complete",
   tags,
   security,
   summary: "Complete booking",
@@ -255,7 +255,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "patch",
-  path: "/api/mentor/bookings/{id}/cancel",
+  path: "/mentor/bookings/{id}/cancel",
   tags,
   security,
   summary: "Cancel booking",

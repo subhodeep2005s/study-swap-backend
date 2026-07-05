@@ -39,7 +39,7 @@ describe("StudySwap Backend End-to-End Tests", () => {
   describe("Authentication & Onboarding", () => {
     it("should send OTP and login the student", async () => {
       // Send OTP
-      let res = await request(app).post("/api/auth/send-otp").send({ email: testStudentEmail });
+      let res = await request(app).post("/auth/send-otp").send({ email: testStudentEmail });
       expect(res.status).toBe(200);
 
       // Retrieve OTP from Redis directly
@@ -47,7 +47,7 @@ describe("StudySwap Backend End-to-End Tests", () => {
       expect(otp).toBeTruthy();
 
       // Verify OTP and Login
-      res = await request(app).post("/api/auth/verify-otp").send({ email: testStudentEmail, otp });
+      res = await request(app).post("/auth/verify-otp").send({ email: testStudentEmail, otp });
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
       expect(res.body.data.token).toBeDefined();
@@ -58,14 +58,14 @@ describe("StudySwap Backend End-to-End Tests", () => {
 
     it("should send OTP and login the mentor", async () => {
       // Send OTP
-      let res = await request(app).post("/api/auth/send-otp").send({ email: testMentorEmail });
+      let res = await request(app).post("/auth/send-otp").send({ email: testMentorEmail });
       expect(res.status).toBe(200);
 
       // Retrieve OTP
       const otp = await redis.get(`otp:${testMentorEmail}`);
 
       // Verify OTP and Login
-      res = await request(app).post("/api/auth/verify-otp").send({ email: testMentorEmail, otp });
+      res = await request(app).post("/auth/verify-otp").send({ email: testMentorEmail, otp });
       expect(res.status).toBe(200);
       expect(res.body.data.token).toBeDefined();
 
@@ -74,14 +74,14 @@ describe("StudySwap Backend End-to-End Tests", () => {
     });
 
     it("should fetch countries and complete onboarding for student", async () => {
-      let res = await request(app).get("/api/countries");
+      let res = await request(app).get("/countries");
       expect(res.status).toBe(200);
       expect(Array.isArray(res.body.data.countries)).toBe(true);
       
       const countryId = res.body.data.countries.length > 0 ? res.body.data.countries[0].id : null;
 
       res = await request(app)
-        .patch("/api/onboarding/profile")
+        .patch("/onboarding/profile")
         .set("Authorization", `Bearer ${studentToken}`)
         .send({
           fullName: "E2E Student",
@@ -99,7 +99,7 @@ describe("StudySwap Backend End-to-End Tests", () => {
   describe("Matching Module", () => {
     it("should refresh matches for student", async () => {
       const res = await request(app)
-        .post("/api/matches/refresh")
+        .post("/matches/refresh")
         .set("Authorization", `Bearer ${studentToken}`);
       
       expect(res.status).toBe(200);
@@ -108,7 +108,7 @@ describe("StudySwap Backend End-to-End Tests", () => {
 
     it("should fetch pending matches", async () => {
       const res = await request(app)
-        .get("/api/matches")
+        .get("/matches")
         .set("Authorization", `Bearer ${studentToken}`);
       expect(res.status).toBe(200);
       expect(Array.isArray(res.body.data)).toBe(true);
@@ -118,7 +118,7 @@ describe("StudySwap Backend End-to-End Tests", () => {
   describe("Communication Module", () => {
     it("should return an empty conversations list initially", async () => {
       const res = await request(app)
-        .get("/api/communication/conversations")
+        .get("/communication/conversations")
         .set("Authorization", `Bearer ${studentToken}`);
       
       expect(res.status).toBe(200);
@@ -129,7 +129,7 @@ describe("StudySwap Backend End-to-End Tests", () => {
   describe("Account Deletion", () => {
     it("should successfully delete the student account", async () => {
       const res = await request(app)
-        .delete("/api/auth/me")
+        .delete("/auth/me")
         .set("Authorization", `Bearer ${studentToken}`);
       
       expect(res.status).toBe(200);
@@ -140,7 +140,7 @@ describe("StudySwap Backend End-to-End Tests", () => {
 
     it("should successfully delete the mentor account", async () => {
       const res = await request(app)
-        .delete("/api/auth/me")
+        .delete("/auth/me")
         .set("Authorization", `Bearer ${mentorToken}`);
       
       expect(res.status).toBe(200);

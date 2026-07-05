@@ -50,7 +50,7 @@ describe("Booking Flow - E2E (Google Meet Integration)", () => {
     it("should register mentor via OTP", async () => {
       // Send OTP
       const sendRes = await request(app)
-        .post("/api/auth/send-otp")
+        .post("/auth/send-otp")
         .send({ email: mentorEmail });
       expect(sendRes.status).toBe(200);
 
@@ -60,7 +60,7 @@ describe("Booking Flow - E2E (Google Meet Integration)", () => {
 
       // Verify OTP with mentor role
       const verifyRes = await request(app)
-        .post("/api/auth/verify-otp")
+        .post("/auth/verify-otp")
         .send({ email: mentorEmail, otp, role: "mentor" });
 
       expect(verifyRes.status).toBe(200);
@@ -71,7 +71,7 @@ describe("Booking Flow - E2E (Google Meet Integration)", () => {
 
     it("should complete mentor profile", async () => {
       const res = await request(app)
-        .patch("/api/onboarding/profile")
+        .patch("/onboarding/profile")
         .set("Authorization", `Bearer ${mentorToken}`)
         .send({
           fullName: "Booking Test Mentor",
@@ -83,7 +83,7 @@ describe("Booking Flow - E2E (Google Meet Integration)", () => {
 
     it("should apply as mentor and auto-verify", async () => {
       const res = await request(app)
-        .post("/api/onboarding/mentor-application")
+        .post("/onboarding/mentor-application")
         .set("Authorization", `Bearer ${mentorToken}`)
         .send({
           title: "Booking Test Specialist",
@@ -102,7 +102,7 @@ describe("Booking Flow - E2E (Google Meet Integration)", () => {
 
     it("should create a plan", async () => {
       const res = await request(app)
-        .post("/api/mentor/plans")
+        .post("/mentor/plans")
         .set("Authorization", `Bearer ${mentorToken}`)
         .send({
           title: "1-Hour Session",
@@ -124,7 +124,7 @@ describe("Booking Flow - E2E (Google Meet Integration)", () => {
       endTime.setHours(endTime.getHours() + 1);
 
       const res = await request(app)
-        .post("/api/mentor/slots")
+        .post("/mentor/slots")
         .set("Authorization", `Bearer ${mentorToken}`)
         .send({
           start_time: startTime.toISOString(),
@@ -143,7 +143,7 @@ describe("Booking Flow - E2E (Google Meet Integration)", () => {
   describe("2. Student Setup", () => {
     it("should register student via OTP", async () => {
       const sendRes = await request(app)
-        .post("/api/auth/send-otp")
+        .post("/auth/send-otp")
         .send({ email: studentEmail });
       expect(sendRes.status).toBe(200);
 
@@ -151,7 +151,7 @@ describe("Booking Flow - E2E (Google Meet Integration)", () => {
       expect(otp).toBeTruthy();
 
       const verifyRes = await request(app)
-        .post("/api/auth/verify-otp")
+        .post("/auth/verify-otp")
         .send({ email: studentEmail, otp });
 
       expect(verifyRes.status).toBe(200);
@@ -162,7 +162,7 @@ describe("Booking Flow - E2E (Google Meet Integration)", () => {
 
     it("should complete student profile", async () => {
       const res = await request(app)
-        .patch("/api/onboarding/profile")
+        .patch("/onboarding/profile")
         .set("Authorization", `Bearer ${studentToken}`)
         .send({
           fullName: "Booking Test Student",
@@ -179,7 +179,7 @@ describe("Booking Flow - E2E (Google Meet Integration)", () => {
   describe("3. Book Session", () => {
     it("should book a session successfully", async () => {
       const res = await request(app)
-        .post("/api/mentors/book")
+        .post("/mentors/book")
         .set("Authorization", `Bearer ${studentToken}`)
         .send({
           mentorId,
@@ -195,7 +195,7 @@ describe("Booking Flow - E2E (Google Meet Integration)", () => {
 
     it("should not double-book the same slot", async () => {
       const res = await request(app)
-        .post("/api/mentors/book")
+        .post("/mentors/book")
         .set("Authorization", `Bearer ${studentToken}`)
         .send({
           mentorId,
@@ -214,7 +214,7 @@ describe("Booking Flow - E2E (Google Meet Integration)", () => {
   describe("4. Student Booking View", () => {
     it("should list student bookings with Google Meet fields", async () => {
       const res = await request(app)
-        .get("/api/mentors/bookings")
+        .get("/mentors/bookings")
         .set("Authorization", `Bearer ${studentToken}`);
 
       expect(res.status).toBe(200);
@@ -250,7 +250,7 @@ describe("Booking Flow - E2E (Google Meet Integration)", () => {
   describe("5. Mentor Booking View", () => {
     it("should list mentor bookings from dashboard", async () => {
       const res = await request(app)
-        .get("/api/mentor/bookings")
+        .get("/mentor/bookings")
         .set("Authorization", `Bearer ${mentorToken}`);
 
       expect(res.status).toBe(200);

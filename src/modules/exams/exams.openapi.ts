@@ -4,7 +4,7 @@ import { getExamsSchema } from "./exams.schema";
 
 registry.registerPath({
   method: "get",
-  path: "/api/exams/{countryId}",
+  path: "/exams/{countryId}",
   tags: ["Exams"],
   summary: "Get exams by country",
   description: "Returns a list of active exams for a given country.",

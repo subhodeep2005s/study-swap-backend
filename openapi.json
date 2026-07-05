@@ -2095,7 +2095,7 @@
     "parameters": {}
   },
   "paths": {
-    "/api/auth/send-otp": {
+    "/auth/send-otp": {
       "post": {
         "tags": [
           "Auth"
@@ -2145,7 +2145,7 @@
         }
       }
     },
-    "/api/auth/resend-otp": {
+    "/auth/resend-otp": {
       "post": {
         "tags": [
           "Auth"
@@ -2224,7 +2224,7 @@
         }
       }
     },
-    "/api/auth/verify-otp": {
+    "/auth/verify-otp": {
       "post": {
         "tags": [
           "Auth"
@@ -2310,7 +2310,7 @@
         }
       }
     },
-    "/api/auth/me": {
+    "/auth/me": {
       "get": {
         "tags": [
           "Auth"
@@ -2406,7 +2406,7 @@
         }
       }
     },
-    "/api/auth/logout": {
+    "/auth/logout": {
       "post": {
         "tags": [
           "Auth"
@@ -2452,7 +2452,7 @@
         }
       }
     },
-    "/api/auth/notification-token": {
+    "/auth/notification-token": {
       "patch": {
         "tags": [
           "Auth"
@@ -2507,7 +2507,7 @@
         }
       }
     },
-    "/api/onboarding/status": {
+    "/onboarding/status": {
       "get": {
         "tags": [
           "Onboarding"
@@ -2557,7 +2557,7 @@
         }
       }
     },
-    "/api/onboarding/country": {
+    "/onboarding/country": {
       "post": {
         "tags": [
           "Onboarding"
@@ -2609,7 +2609,7 @@
         }
       }
     },
-    "/api/onboarding/profile": {
+    "/onboarding/profile": {
       "patch": {
         "tags": [
           "Onboarding"
@@ -2661,7 +2661,7 @@
         }
       }
     },
-    "/api/onboarding/exams": {
+    "/onboarding/exams": {
       "get": {
         "tags": [
           "Onboarding"
@@ -2776,7 +2776,7 @@
         }
       }
     },
-    "/api/onboarding/study": {
+    "/onboarding/study": {
       "patch": {
         "tags": [
           "Onboarding"
@@ -2828,7 +2828,7 @@
         }
       }
     },
-    "/api/onboarding/preferences": {
+    "/onboarding/preferences": {
       "patch": {
         "tags": [
           "Onboarding"
@@ -2880,7 +2880,7 @@
         }
       }
     },
-    "/api/onboarding/complete": {
+    "/onboarding/complete": {
       "post": {
         "tags": [
           "Onboarding"
@@ -2923,7 +2923,7 @@
         }
       }
     },
-    "/api/onboarding/enhance-bio": {
+    "/onboarding/enhance-bio": {
       "post": {
         "tags": [
           "Onboarding"
@@ -2982,7 +2982,7 @@
         }
       }
     },
-    "/api/onboarding/mentor-application": {
+    "/onboarding/mentor-application": {
       "post": {
         "tags": [
           "Onboarding"
@@ -3034,7 +3034,7 @@
         }
       }
     },
-    "/api/countries": {
+    "/countries": {
       "get": {
         "tags": [
           "Countries"
@@ -3110,7 +3110,7 @@
         }
       }
     },
-    "/api/countries/{countryCode}/states": {
+    "/countries/{countryCode}/states": {
       "get": {
         "tags": [
           "Countries"
@@ -3171,7 +3171,7 @@
         }
       }
     },
-    "/api/exams/{countryId}": {
+    "/exams/{countryId}": {
       "get": {
         "tags": [
           "Exams"
@@ -3245,7 +3245,7 @@
         }
       }
     },
-    "/api/admin/auth/login": {
+    "/admin/auth/login": {
       "post": {
         "tags": [
           "Admin"
@@ -3319,7 +3319,7 @@
         }
       }
     },
-    "/api/admin/auth/me": {
+    "/admin/auth/me": {
       "get": {
         "tags": [
           "Admin"
@@ -3364,7 +3364,7 @@
         }
       }
     },
-    "/api/admin/dashboard": {
+    "/admin/dashboard": {
       "get": {
         "tags": [
           "Admin"
@@ -3406,7 +3406,7 @@
         }
       }
     },
-    "/api/admin/countries": {
+    "/admin/countries": {
       "get": {
         "tags": [
           "Admin"
@@ -3564,7 +3564,7 @@
         }
       }
     },
-    "/api/admin/countries/{id}": {
+    "/admin/countries/{id}": {
       "patch": {
         "tags": [
           "Admin"
@@ -3686,7 +3686,7 @@
         }
       }
     },
-    "/api/admin/countries/{countryId}/exams": {
+    "/admin/countries/{countryId}/exams": {
       "get": {
         "tags": [
           "Admin"
@@ -3750,7 +3750,7 @@
         }
       }
     },
-    "/api/admin/exams": {
+    "/admin/exams": {
       "get": {
         "tags": [
           "Admin"
@@ -3908,7 +3908,7 @@
         }
       }
     },
-    "/api/admin/exams/{id}": {
+    "/admin/exams/{id}": {
       "patch": {
         "tags": [
           "Admin"
@@ -4030,7 +4030,7 @@
         }
       }
     },
-    "/api/admin/users": {
+    "/admin/users": {
       "get": {
         "tags": [
           "Admin"
@@ -4131,7 +4131,7 @@
         }
       }
     },
-    "/api/admin/users/students": {
+    "/admin/users/students": {
       "get": {
         "tags": [
           "Admin"
@@ -4232,7 +4232,7 @@
         }
       }
     },
-    "/api/admin/users/mentors": {
+    "/admin/users/mentors": {
       "get": {
         "tags": [
           "Admin"
@@ -4333,7 +4333,7 @@
         }
       }
     },
-    "/api/admin/users/{id}": {
+    "/admin/users/{id}": {
       "get": {
         "tags": [
           "Admin"
@@ -4446,7 +4446,7 @@
         }
       }
     },
-    "/api/admin/users/students/{id}": {
+    "/admin/users/students/{id}": {
       "patch": {
         "tags": [
           "Admin"
@@ -4516,7 +4516,7 @@
         }
       }
     },
-    "/api/admin/users/mentors/{id}": {
+    "/admin/users/mentors/{id}": {
       "patch": {
         "tags": [
           "Admin"
@@ -4586,7 +4586,7 @@
         }
       }
     },
-    "/api/admin/matches": {
+    "/admin/matches": {
       "get": {
         "tags": [
           "Admin"
@@ -4679,7 +4679,7 @@
         }
       }
     },
-    "/api/admin/matches/user/{userId}": {
+    "/admin/matches/user/{userId}": {
       "get": {
         "tags": [
           "Admin"
@@ -4743,7 +4743,7 @@
         }
       }
     },
-    "/api/admin/matches/{id}": {
+    "/admin/matches/{id}": {
       "delete": {
         "tags": [
           "Admin"
@@ -4797,7 +4797,7 @@
         }
       }
     },
-    "/api/admin/audit-logs": {
+    "/admin/audit-logs": {
       "get": {
         "tags": [
           "Admin"
@@ -4923,7 +4923,7 @@
         }
       }
     },
-    "/api/admin/mentors": {
+    "/admin/mentors": {
       "get": {
         "tags": [
           "Admin"
@@ -4968,7 +4968,7 @@
         }
       }
     },
-    "/api/admin/mentors/{id}": {
+    "/admin/mentors/{id}": {
       "get": {
         "tags": [
           "Admin"
@@ -5133,7 +5133,7 @@
         }
       }
     },
-    "/api/admin/mentors/{id}/verify": {
+    "/admin/mentors/{id}/verify": {
       "patch": {
         "tags": [
           "Admin"
@@ -5186,7 +5186,7 @@
         }
       }
     },
-    "/api/admin/mentors/bookings": {
+    "/admin/mentors/bookings": {
       "get": {
         "tags": [
           "Admin"
@@ -5301,7 +5301,7 @@
         }
       }
     },
-    "/api/admin/mentors/{id}/bookings": {
+    "/admin/mentors/{id}/bookings": {
       "get": {
         "tags": [
           "Admin"
@@ -5365,7 +5365,7 @@
         }
       }
     },
-    "/api/admin/mentors/bookings/{id}": {
+    "/admin/mentors/bookings/{id}": {
       "get": {
         "tags": [
           "Admin"
@@ -5530,7 +5530,7 @@
         }
       }
     },
-    "/api/admin/mentors/bookings/{id}/regenerate-meet": {
+    "/admin/mentors/bookings/{id}/regenerate-meet": {
       "patch": {
         "tags": [
           "Admin"
@@ -5599,7 +5599,7 @@
         }
       }
     },
-    "/api/admin/mentors/{id}/slots": {
+    "/admin/mentors/{id}/slots": {
       "get": {
         "tags": [
           "Admin"
@@ -5663,7 +5663,7 @@
         }
       }
     },
-    "/api/admin/mentors/slots/{id}": {
+    "/admin/mentors/slots/{id}": {
       "delete": {
         "tags": [
           "Admin"
@@ -5717,7 +5717,7 @@
         }
       }
     },
-    "/api/admin/mentors/{id}/plans": {
+    "/admin/mentors/{id}/plans": {
       "get": {
         "tags": [
           "Admin"
@@ -5781,7 +5781,7 @@
         }
       }
     },
-    "/api/admin/mentors/plans/{id}": {
+    "/admin/mentors/plans/{id}": {
       "patch": {
         "tags": [
           "Admin"
@@ -5895,7 +5895,7 @@
         }
       }
     },
-    "/api/matches": {
+    "/matches": {
       "get": {
         "tags": [
           "Matches"
@@ -5940,7 +5940,7 @@
         }
       }
     },
-    "/api/matches/{id}": {
+    "/matches/{id}": {
       "get": {
         "tags": [
           "Matches"
@@ -6052,7 +6052,7 @@
         }
       }
     },
-    "/api/matches/refresh": {
+    "/matches/refresh": {
       "post": {
         "tags": [
           "Matches"
@@ -6096,7 +6096,7 @@
         }
       }
     },
-    "/api/matches/{id}/accept": {
+    "/matches/{id}/accept": {
       "patch": {
         "tags": [
           "Matches"
@@ -6146,7 +6146,7 @@
         }
       }
     },
-    "/api/matches/{id}/reject": {
+    "/matches/{id}/reject": {
       "patch": {
         "tags": [
           "Matches"
@@ -6196,7 +6196,7 @@
         }
       }
     },
-    "/api/matches/{id}/save": {
+    "/matches/{id}/save": {
       "patch": {
         "tags": [
           "Matches"
@@ -6246,7 +6246,7 @@
         }
       }
     },
-    "/api/matches/saved": {
+    "/matches/saved": {
       "get": {
         "tags": [
           "Matches"
@@ -6291,7 +6291,7 @@
         }
       }
     },
-    "/api/matches/accepted": {
+    "/matches/accepted": {
       "get": {
         "tags": [
           "Matches"
@@ -6336,7 +6336,7 @@
         }
       }
     },
-    "/api/matches/mymatches": {
+    "/matches/mymatches": {
       "get": {
         "tags": [
           "Matches"
@@ -6381,7 +6381,7 @@
         }
       }
     },
-    "/api/matches/chats": {
+    "/matches/chats": {
       "get": {
         "tags": [
           "Matches"
@@ -6426,7 +6426,7 @@
         }
       }
     },
-    "/api/mentors": {
+    "/mentors": {
       "get": {
         "tags": [
           "Mentors (Student View)"
@@ -6471,7 +6471,7 @@
         }
       }
     },
-    "/api/mentors/my-exams-mentors": {
+    "/mentors/my-exams-mentors": {
       "get": {
         "tags": [
           "Mentors (Student View)"
@@ -6516,7 +6516,7 @@
         }
       }
     },
-    "/api/mentors/{id}": {
+    "/mentors/{id}": {
       "get": {
         "tags": [
           "Mentors (Student View)"
@@ -6587,7 +6587,7 @@
         }
       }
     },
-    "/api/mentors/{id}/plans": {
+    "/mentors/{id}/plans": {
       "get": {
         "tags": [
           "Mentors (Student View)"
@@ -6643,7 +6643,7 @@
         }
       }
     },
-    "/api/mentors/{id}/slots": {
+    "/mentors/{id}/slots": {
       "get": {
         "tags": [
           "Mentors (Student View)"
@@ -6699,7 +6699,7 @@
         }
       }
     },
-    "/api/mentors/book": {
+    "/mentors/book": {
       "post": {
         "tags": [
           "Mentors (Student View)"
@@ -6762,7 +6762,7 @@
         }
       }
     },
-    "/api/mentors/bookings": {
+    "/mentors/bookings": {
       "get": {
         "tags": [
           "Mentors (Student View)"
@@ -6807,7 +6807,7 @@
         }
       }
     },
-    "/api/mentors/bookings/{id}": {
+    "/mentors/bookings/{id}": {
       "get": {
         "tags": [
           "Mentors (Student View)"
@@ -6860,7 +6860,7 @@
         }
       }
     },
-    "/api/mentors/bookings/{id}/cancel": {
+    "/mentors/bookings/{id}/cancel": {
       "patch": {
         "tags": [
           "Mentors (Student View)"
@@ -6910,7 +6910,7 @@
         }
       }
     },
-    "/api/mentor/profile": {
+    "/mentor/profile": {
       "get": {
         "tags": [
           "Mentor Dashboard"
@@ -6995,7 +6995,7 @@
         }
       }
     },
-    "/api/mentor/plans": {
+    "/mentor/plans": {
       "get": {
         "tags": [
           "Mentor Dashboard"
@@ -7084,7 +7084,7 @@
         }
       }
     },
-    "/api/mentor/plans/{id}": {
+    "/mentor/plans/{id}": {
       "patch": {
         "tags": [
           "Mentor Dashboard"
@@ -7191,7 +7191,7 @@
         }
       }
     },
-    "/api/mentor/slots": {
+    "/mentor/slots": {
       "get": {
         "tags": [
           "Mentor Dashboard"
@@ -7280,7 +7280,7 @@
         }
       }
     },
-    "/api/mentor/slots/{id}": {
+    "/mentor/slots/{id}": {
       "patch": {
         "tags": [
           "Mentor Dashboard"
@@ -7387,7 +7387,7 @@
         }
       }
     },
-    "/api/mentor/bookings": {
+    "/mentor/bookings": {
       "get": {
         "tags": [
           "Mentor Dashboard"
@@ -7430,7 +7430,7 @@
         }
       }
     },
-    "/api/mentor/bookings/{id}": {
+    "/mentor/bookings/{id}": {
       "get": {
         "tags": [
           "Mentor Dashboard"
@@ -7480,7 +7480,7 @@
         }
       }
     },
-    "/api/mentor/bookings/{id}/confirm": {
+    "/mentor/bookings/{id}/confirm": {
       "patch": {
         "tags": [
           "Mentor Dashboard"
@@ -7530,7 +7530,7 @@
         }
       }
     },
-    "/api/mentor/bookings/{id}/complete": {
+    "/mentor/bookings/{id}/complete": {
       "patch": {
         "tags": [
           "Mentor Dashboard"
@@ -7580,7 +7580,7 @@
         }
       }
     },
-    "/api/mentor/bookings/{id}/cancel": {
+    "/mentor/bookings/{id}/cancel": {
       "patch": {
         "tags": [
           "Mentor Dashboard"
@@ -7630,7 +7630,7 @@
         }
       }
     },
-    "/api/uploads/presigned-url": {
+    "/uploads/presigned-url": {
       "post": {
         "tags": [
           "Uploads"
@@ -7706,7 +7706,7 @@
         }
       }
     },
-    "/api/stories": {
+    "/stories": {
       "post": {
         "tags": [
           "Stories"
@@ -7799,7 +7799,7 @@
         }
       }
     },
-    "/api/stories/{userId}/view": {
+    "/stories/{userId}/view": {
       "post": {
         "tags": [
           "Stories"
@@ -7856,7 +7856,7 @@
         }
       }
     },
-    "/api/stories/views": {
+    "/stories/views": {
       "get": {
         "tags": [
           "Stories"
@@ -7932,7 +7932,7 @@
         }
       }
     },
-    "/api/communication/conversations": {
+    "/communication/conversations": {
       "get": {
         "summary": "Get conversations",
         "description": "Get a list of all active conversations for the current user",
@@ -8047,7 +8047,7 @@
         }
       }
     },
-    "/api/communication/conversations/{conversationId}": {
+    "/communication/conversations/{conversationId}": {
       "get": {
         "summary": "Get conversation by ID",
         "description": "Get details for a specific conversation",
@@ -8116,7 +8116,7 @@
         }
       }
     },
-    "/api/communication/conversations/{conversationId}/messages": {
+    "/communication/conversations/{conversationId}/messages": {
       "get": {
         "summary": "Get messages",
         "description": "Get paginated messages for a conversation",
@@ -8528,7 +8528,7 @@
         }
       }
     },
-    "/api/communication/messages/{messageId}": {
+    "/communication/messages/{messageId}": {
       "patch": {
         "summary": "Edit a message",
         "description": "Edit a previously sent text message",
@@ -8860,7 +8860,7 @@
         }
       }
     },
-    "/api/communication/calls": {
+    "/communication/calls": {
       "post": {
         "summary": "Start a call",
         "description": "Initiate a voice or video call",
@@ -8966,7 +8966,7 @@
         }
       }
     },
-    "/api/communication/calls/{callId}/accept": {
+    "/communication/calls/{callId}/accept": {
       "patch": {
         "summary": "Accept a call",
         "description": "Accept an incoming call",
@@ -9025,7 +9025,7 @@
         }
       }
     },
-    "/api/communication/calls/{callId}/end": {
+    "/communication/calls/{callId}/end": {
       "patch": {
         "summary": "End a call",
         "description": "End an active call",
@@ -9094,7 +9094,7 @@
         }
       }
     },
-    "/api/communication/focus": {
+    "/communication/focus": {
       "post": {
         "summary": "Start a focus session",
         "description": "Initiate a synchronized focus session with a partner",
@@ -9184,7 +9184,7 @@
         }
       }
     },
-    "/api/communication/focus/{focusId}/accept": {
+    "/communication/focus/{focusId}/accept": {
       "patch": {
         "summary": "Accept a focus session",
         "description": "Accept an incoming focus session request",
@@ -9254,7 +9254,7 @@
         }
       }
     },
-    "/api/communication/focus/{focusId}/end": {
+    "/communication/focus/{focusId}/end": {
       "patch": {
         "summary": "End a focus session",
         "description": "End an active focus session early",

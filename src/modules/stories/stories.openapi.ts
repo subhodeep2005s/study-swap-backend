@@ -9,7 +9,7 @@ const StoryInput = registry.register("StoryInput", storySchema.shape.body);
 
 registry.registerPath({
   method: "post",
-  path: "/api/stories",
+  path: "/stories",
   tags,
   security,
   summary: "Upload story",
@@ -39,7 +39,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "delete",
-  path: "/api/stories",
+  path: "/stories",
   tags,
   security,
   summary: "Delete story",
@@ -62,7 +62,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "post",
-  path: "/api/stories/{userId}/view",
+  path: "/stories/{userId}/view",
   tags,
   security,
   summary: "Record story view",
@@ -93,7 +93,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/api/stories/views",
+  path: "/stories/views",
   tags,
   security,
   summary: "Get story views",

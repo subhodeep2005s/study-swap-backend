@@ -25,7 +25,7 @@ const matchSchema = registry.register("Match", z.object({
 
 registry.registerPath({
   method: "get",
-  path: "/api/matches",
+  path: "/matches",
   tags,
   security,
   summary: "Get pending matches",
@@ -40,7 +40,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/api/matches/{id}",
+  path: "/matches/{id}",
   tags,
   security,
   summary: "Get match by ID",
@@ -59,7 +59,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "post",
-  path: "/api/matches/refresh",
+  path: "/matches/refresh",
   tags,
   security,
   summary: "Refresh matches",
@@ -74,7 +74,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "patch",
-  path: "/api/matches/{id}/accept",
+  path: "/matches/{id}/accept",
   tags,
   security,
   summary: "Accept match",
@@ -90,7 +90,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "patch",
-  path: "/api/matches/{id}/reject",
+  path: "/matches/{id}/reject",
   tags,
   security,
   summary: "Reject match",
@@ -106,7 +106,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "patch",
-  path: "/api/matches/{id}/save",
+  path: "/matches/{id}/save",
   tags,
   security,
   summary: "Save match",
@@ -122,7 +122,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/api/matches/saved",
+  path: "/matches/saved",
   tags,
   security,
   summary: "Get saved matches",
@@ -137,7 +137,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/api/matches/accepted",
+  path: "/matches/accepted",
   tags,
   security,
   summary: "Get accepted matches",
@@ -152,7 +152,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/api/matches/mymatches",
+  path: "/matches/mymatches",
   tags,
   security,
   summary: "Get all matches",
@@ -167,7 +167,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/api/matches/chats",
+  path: "/matches/chats",
   tags,
   security,
   summary: "Get chat matches",
@@ -182,7 +182,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "delete",
-  path: "/api/matches/{id}",
+  path: "/matches/{id}",
   tags,
   security,
   summary: "Remove match",

@@ -212,7 +212,7 @@ function isDuplicate(eventId: string): boolean {
 
 ## 5. REST API — Conversations
 
-### 5.1 `GET /api/communication/conversations`
+### 5.1 `GET /communication/conversations`
 
 **Description**: Get all conversations for the current user (sorted by most recent activity).
 
@@ -244,7 +244,7 @@ function isDuplicate(eventId: string): boolean {
 }
 ```
 
-### 5.2 `GET /api/communication/conversations/:conversationId`
+### 5.2 `GET /communication/conversations/:conversationId`
 
 **Response**:
 ```jsonc
@@ -264,7 +264,7 @@ function isDuplicate(eventId: string): boolean {
 
 ## 6. REST API — Messages
 
-### 6.1 `GET /api/communication/conversations/:conversationId/messages?cursor=<base64>`
+### 6.1 `GET /communication/conversations/:conversationId/messages?cursor=<base64>`
 
 **Description**: Paginated messages for a conversation (newest first, 30 per page).
 
@@ -324,7 +324,7 @@ async function loadMessages(cursor?: string) {
 // FlatList: inverted={true}, onEndReached={() => nextCursor && loadMessages(nextCursor)}
 ```
 
-### 6.2 `POST /api/communication/conversations/:conversationId/messages`
+### 6.2 `POST /communication/conversations/:conversationId/messages`
 
 **Rate Limit**: 10 requests per second.
 
@@ -359,21 +359,21 @@ async function loadMessages(cursor?: string) {
 
 **Important**: After calling this API, the message will also arrive via the `new_message` socket event. Use **optimistic updates**: show the message immediately in the UI with a "sending" state, then replace it with the real message when the API response or socket event arrives. Deduplicate by `message.id`.
 
-### 6.3 `PATCH /api/communication/messages/:messageId`
+### 6.3 `PATCH /communication/messages/:messageId`
 
 **Request Body**: `{ "message": "Updated text" }`
 
 **Rules**: Only TEXT messages can be edited. Only the sender can edit. Cannot edit deleted messages.
 
-### 6.4 `DELETE /api/communication/messages/:messageId`
+### 6.4 `DELETE /communication/messages/:messageId`
 
 Soft-deletes the message. Sets `message = null`, `deleted_at = NOW()`. The message still appears in the list but should show "This message was deleted" in the UI.
 
-### 6.5 `PATCH /api/communication/conversations/:conversationId/read`
+### 6.5 `PATCH /communication/conversations/:conversationId/read`
 
 Marks all unread messages from the partner as read. No request body. Call this when the user opens a conversation or scrolls to unread messages.
 
-### 6.6 `GET /api/communication/conversations/:conversationId/attachments?cursor=<base64>`
+### 6.6 `GET /communication/conversations/:conversationId/attachments?cursor=<base64>`
 
 Returns only media messages (IMAGE, VIDEO, FILE, VOICE_NOTE) with attachments. Same pagination format as messages.
 
@@ -381,7 +381,7 @@ Returns only media messages (IMAGE, VIDEO, FILE, VOICE_NOTE) with attachments. S
 
 ## 7. REST API — Calls (Voice & Video)
 
-### 7.1 `POST /api/communication/calls` — Start a Call
+### 7.1 `POST /communication/calls` — Start a Call
 
 **Rate Limit**: 5 per 60 seconds.
 
@@ -419,7 +419,7 @@ Returns only media messages (IMAGE, VIDEO, FILE, VOICE_NOTE) with attachments. S
 2. The caller should navigate to the **Outgoing Call Screen**, play the ringing sound, and optionally connect to LiveKit to show a camera preview.
 3. Wait for the `call_accepted` socket event to transition the UI to the active call state. (The caller connects to LiveKit immediately using the token from this response).
 
-### 7.2 `PATCH /api/communication/calls/:callId/accept` — Accept a Call
+### 7.2 `PATCH /communication/calls/:callId/accept` — Accept a Call
 
 **Response**:
 ```jsonc
@@ -438,11 +438,11 @@ Returns only media messages (IMAGE, VIDEO, FILE, VOICE_NOTE) with attachments. S
 2. Both users connect to LiveKit with their respective tokens.
 3. Navigate to the **Active Call Screen**.
 
-### 7.3 `PATCH /api/communication/calls/:callId/reject` — Reject a Call
+### 7.3 `PATCH /communication/calls/:callId/reject` — Reject a Call
 
 Same response as `endCall`. The ended reason will be `REJECTED`.
 
-### 7.4 `PATCH /api/communication/calls/:callId/end` — End a Call
+### 7.4 `PATCH /communication/calls/:callId/end` — End a Call
 
 **Response**: Returns the updated call session object.
 
@@ -456,7 +456,7 @@ The ended `reason` is determined by the backend:
 
 Both users receive a `call_ended` socket event.
 
-### 7.5 `GET /api/communication/conversations/:conversationId/calls?cursor=<base64>` — Call History
+### 7.5 `GET /communication/conversations/:conversationId/calls?cursor=<base64>` — Call History
 
 **Response**:
 ```jsonc
@@ -489,7 +489,7 @@ Both users receive a `call_ended` socket event.
 
 Focus sessions are timed co-study sessions with a LiveKit room (for screen sharing or co-presence).
 
-### 8.1 `POST /api/communication/focus` — Start Focus
+### 8.1 `POST /communication/focus` — Start Focus
 
 **Rate Limit**: 5 per 60 seconds.
 
@@ -522,7 +522,7 @@ Focus sessions are timed co-study sessions with a LiveKit room (for screen shari
 }
 ```
 
-### 8.2 `PATCH /api/communication/focus/:focusId/accept`
+### 8.2 `PATCH /communication/focus/:focusId/accept`
 
 **Response**:
 ```jsonc
@@ -539,12 +539,12 @@ Focus sessions are timed co-study sessions with a LiveKit room (for screen shari
 
 **After accepting**: The initiator receives a `focus_accepted` socket event with their token and `endsAt` timestamp. The joiner connects to LiveKit (the initiator should have connected immediately upon creation). Both start the countdown timer.
 
-### 8.3 `PATCH /api/communication/focus/:focusId/reject`
-### 8.4 `PATCH /api/communication/focus/:focusId/end`
+### 8.3 `PATCH /communication/focus/:focusId/reject`
+### 8.4 `PATCH /communication/focus/:focusId/end`
 
 Same behavior. Returns the updated focus session.
 
-### 8.5 `GET /api/communication/conversations/:conversationId/focus?cursor=<base64>` — Focus History
+### 8.5 `GET /communication/conversations/:conversationId/focus?cursor=<base64>` — Focus History
 
 Same pagination format as calls.
 
@@ -747,7 +747,7 @@ function CallControls() {
 ```typescript
 async function startCall(conversationId: string, type: 'VOICE' | 'VIDEO') {
   // 1. API call
-  const call = await api.post('/api/communication/calls', { conversationId, type });
+  const call = await api.post('/communication/calls', { conversationId, type });
   
   // 2. Store call state
   setActiveCall({

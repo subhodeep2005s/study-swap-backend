@@ -3,7 +3,7 @@ import { presignedUrlSchema } from "./uploads.schema";
 
 registry.registerPath({
   method: "post",
-  path: "/api/uploads/presigned-url",
+  path: "/uploads/presigned-url",
   tags: ["Uploads"],
   summary: "Generate a presigned URL for file upload",
   security: [{ bearerAuth: [] }],

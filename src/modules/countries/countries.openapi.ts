@@ -3,7 +3,7 @@ import { z } from "zod";
 
 registry.registerPath({
   method: "get",
-  path: "/api/countries",
+  path: "/countries",
   tags: ["Countries"],
   summary: "Get all countries",
   description: "Returns a list of all countries.",
@@ -34,7 +34,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/api/countries/{countryCode}/states",
+  path: "/countries/{countryCode}/states",
   tags: ["Countries"],
   summary: "Get states by country",
   description: "Returns a list of states for a specific country.",

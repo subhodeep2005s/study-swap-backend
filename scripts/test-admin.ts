@@ -3,7 +3,7 @@ import { stdin as input, stdout as output } from "process";
 import { query } from "../src/config/db";
 import { v4 as uuidv4 } from "uuid";
 
-const BASE_URL = "http://localhost:8000/api/admin";
+const BASE_URL = "http://localhost:8000/admin";
 
 interface TestIds {
   countryId: string;

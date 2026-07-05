@@ -9,7 +9,7 @@ const UpdateNotificationTokenInput = registry.register("UpdateNotificationTokenI
 
 registry.registerPath({
   method: "post",
-  path: "/api/auth/send-otp",
+  path: "/auth/send-otp",
   tags: ["Auth"],
   summary: "Send login OTP",
   description: "Sends a 6-digit OTP to the user's email address.",
@@ -38,7 +38,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "post",
-  path: "/api/auth/resend-otp",
+  path: "/auth/resend-otp",
   tags: ["Auth"],
   summary: "Resend login OTP",
   description: "Resends a 6-digit OTP to the user's email address. Maximum 3 attempts allowed per hour.",
@@ -79,7 +79,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "post",
-  path: "/api/auth/verify-otp",
+  path: "/auth/verify-otp",
   tags: ["Auth"],
   summary: "Verify login OTP",
   description: "Verifies the OTP and returns a JWT token.",
@@ -116,7 +116,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/api/auth/me",
+  path: "/auth/me",
   tags: ["Auth"],
   summary: "Get current user",
   description: "Returns the currently authenticated user based on JWT.",
@@ -141,7 +141,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "post",
-  path: "/api/auth/logout",
+  path: "/auth/logout",
   tags: ["Auth"],
   summary: "Logout user",
   description: "Logout the currently authenticated user.",
@@ -164,7 +164,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "delete",
-  path: "/api/auth/me",
+  path: "/auth/me",
   tags: ["Auth"],
   summary: "Delete account",
   description: "Permanently deletes the currently authenticated user account and all associated data including profiles, matches, bookings, and messages.",
@@ -187,7 +187,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "patch",
-  path: "/api/auth/notification-token",
+  path: "/auth/notification-token",
   tags: ["Auth"],
   summary: "Update notification token",
   description: "Updates the push notification token for the user.",

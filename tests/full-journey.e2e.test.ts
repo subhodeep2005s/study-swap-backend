@@ -64,13 +64,13 @@ describe("StudySwap Backend - Full Day In The Life Journey", () => {
 
   describe("1. Authentication", () => {
     it("✅ Student creates account and logs in", async () => {
-      let res = await request(app).post("/api/auth/send-otp").send({ email: testStudentEmail });
+      let res = await request(app).post("/auth/send-otp").send({ email: testStudentEmail });
       expect(res.status).toBe(200);
 
       const otp = await redis.get(`otp:${testStudentEmail}`);
       expect(otp).toBeTruthy();
 
-      res = await request(app).post("/api/auth/verify-otp").send({ email: testStudentEmail, otp });
+      res = await request(app).post("/auth/verify-otp").send({ email: testStudentEmail, otp });
       expect(res.status).toBe(200);
       expect(res.body.data.token).toBeDefined();
 
@@ -79,11 +79,11 @@ describe("StudySwap Backend - Full Day In The Life Journey", () => {
     });
 
     it("✅ Mentor creates account and logs in", async () => {
-      let res = await request(app).post("/api/auth/send-otp").send({ email: testMentorEmail });
+      let res = await request(app).post("/auth/send-otp").send({ email: testMentorEmail });
       expect(res.status).toBe(200);
 
       const otp = await redis.get(`otp:${testMentorEmail}`);
-      res = await request(app).post("/api/auth/verify-otp").send({ email: testMentorEmail, otp });
+      res = await request(app).post("/auth/verify-otp").send({ email: testMentorEmail, otp });
       expect(res.status).toBe(200);
       
       mentorToken = res.body.data.token;
@@ -93,7 +93,7 @@ describe("StudySwap Backend - Full Day In The Life Journey", () => {
 
   describe("2. Onboarding & Countries", () => {
     it("✅ Fetch available countries", async () => {
-      const res = await request(app).get("/api/countries");
+      const res = await request(app).get("/countries");
       expect(res.status).toBe(200);
       expect(Array.isArray(res.body.data.countries)).toBe(true);
       countryId = res.body.data.countries.length > 0 ? res.body.data.countries[0].id : "00000000-0000-0000-0000-000000000000";
@@ -101,7 +101,7 @@ describe("StudySwap Backend - Full Day In The Life Journey", () => {
 
     it("✅ Student completes onboarding profile", async () => {
       const res = await request(app)
-        .patch("/api/onboarding/profile")
+        .patch("/onboarding/profile")
         .set("Authorization", `Bearer ${studentToken}`)
         .send({
           fullName: "Test Student",
@@ -116,7 +116,7 @@ describe("StudySwap Backend - Full Day In The Life Journey", () => {
 
     it("✅ Mentor completes onboarding profile", async () => {
       const res = await request(app)
-        .patch("/api/onboarding/profile")
+        .patch("/onboarding/profile")
         .set("Authorization", `Bearer ${mentorToken}`)
         .send({
           fullName: "Test Mentor",
@@ -145,9 +145,9 @@ describe("StudySwap Backend - Full Day In The Life Journey", () => {
       }
       
       // Re-fetch mentor token now that role is updated
-      const otpRes = await request(app).post("/api/auth/send-otp").send({ email: testMentorEmail });
+      const otpRes = await request(app).post("/auth/send-otp").send({ email: testMentorEmail });
       const otp = await redis.get(`otp:${testMentorEmail}`);
-      const loginRes = await request(app).post("/api/auth/verify-otp").send({ email: testMentorEmail, otp });
+      const loginRes = await request(app).post("/auth/verify-otp").send({ email: testMentorEmail, otp });
       mentorToken = loginRes.body.data.token; // Now contains 'mentor' role
     });
   });
@@ -155,7 +155,7 @@ describe("StudySwap Backend - Full Day In The Life Journey", () => {
   describe("4. Mentor Dashboard & Student View", () => {
     it("✅ Mentor creates a plan", async () => {
       const res = await request(app)
-        .post("/api/mentor/plans")
+        .post("/mentor/plans")
         .set("Authorization", `Bearer ${mentorToken}`)
         .send({
           title: "1-on-1 Guidance",
@@ -171,7 +171,7 @@ describe("StudySwap Backend - Full Day In The Life Journey", () => {
       const start = new Date(Date.now() + 86400000).toISOString(); // tomorrow
       const end = new Date(Date.now() + 86400000 + 1800000).toISOString(); // tomorrow + 30 mins
       const res = await request(app)
-        .post("/api/mentor/slots")
+        .post("/mentor/slots")
         .set("Authorization", `Bearer ${mentorToken}`)
         .send({
           start_time: start,
@@ -183,7 +183,7 @@ describe("StudySwap Backend - Full Day In The Life Journey", () => {
 
     it("✅ Student browses mentors", async () => {
       const res = await request(app)
-        .get("/api/mentors")
+        .get("/mentors")
         .set("Authorization", `Bearer ${studentToken}`);
       expect(res.status).toBe(200);
       expect(Array.isArray(res.body.data)).toBe(true);
@@ -199,7 +199,7 @@ describe("StudySwap Backend - Full Day In The Life Journey", () => {
     
     it("✅ Student books a mentor slot", async () => {
       const res = await request(app)
-        .post("/api/mentors/book")
+        .post("/mentors/book")
         .set("Authorization", `Bearer ${studentToken}`)
         .send({
           mentorId: mentorProfileId,
@@ -217,7 +217,7 @@ describe("StudySwap Backend - Full Day In The Life Journey", () => {
 
       try {
         const res = await request(app)
-          .post("/api/stories")
+          .post("/stories")
           .set("Authorization", `Bearer ${studentToken}`)
           .field("caption", "Studying for my exam!")
           .attach("media", testFilePath);
@@ -228,7 +228,7 @@ describe("StudySwap Backend - Full Day In The Life Journey", () => {
 
     it("✅ Mentor views own story views", async () => {
       const res = await request(app)
-        .get("/api/stories/views")
+        .get("/stories/views")
         .set("Authorization", `Bearer ${mentorToken}`);
       expect(res.status).toBe(200);
     });
@@ -260,7 +260,7 @@ describe("StudySwap Backend - Full Day In The Life Journey", () => {
   describe("7. Communication (Messaging, Calls, Focus)", () => {
     it("✅ Fetch conversations list", async () => {
       const res = await request(app)
-        .get("/api/communication/conversations")
+        .get("/communication/conversations")
         .set("Authorization", `Bearer ${studentToken}`);
       expect(res.status).toBe(200);
       expect(Array.isArray(res.body.data)).toBe(true);
@@ -292,7 +292,7 @@ describe("StudySwap Backend - Full Day In The Life Journey", () => {
 
     it("✅ Start a call", async () => {
       const res = await request(app)
-        .post("/api/communication/calls")
+        .post("/communication/calls")
         .set("Authorization", `Bearer ${studentToken}`)
         .send({
           conversationId,
@@ -312,7 +312,7 @@ describe("StudySwap Backend - Full Day In The Life Journey", () => {
 
     it("✅ Start a focus session", async () => {
       const res = await request(app)
-        .post("/api/communication/focus")
+        .post("/communication/focus")
         .set("Authorization", `Bearer ${studentToken}`)
         .send({
           conversationId,
@@ -324,8 +324,8 @@ describe("StudySwap Backend - Full Day In The Life Journey", () => {
 
   describe("8. Teardown", () => {
     it("✅ Account cleanup via DELETE /me", async () => {
-      await request(app).delete("/api/auth/me").set("Authorization", `Bearer ${studentToken}`);
-      await request(app).delete("/api/auth/me").set("Authorization", `Bearer ${mentorToken}`);
+      await request(app).delete("/auth/me").set("Authorization", `Bearer ${studentToken}`);
+      await request(app).delete("/auth/me").set("Authorization", `Bearer ${mentorToken}`);
       
       studentId = "";
       mentorUserId = "";

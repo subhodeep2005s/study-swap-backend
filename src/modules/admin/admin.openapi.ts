@@ -61,7 +61,7 @@ const PaginationResponse = z.object({
 // =========================================================================
 registry.registerPath({
   method: "post",
-  path: "/api/admin/auth/login",
+  path: "/admin/auth/login",
   tags,
   summary: "Admin login",
   description: "Login with admin credentials.",
@@ -95,7 +95,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/api/admin/auth/me",
+  path: "/admin/auth/me",
   tags,
   security,
   summary: "Admin get current user",
@@ -121,7 +121,7 @@ registry.registerPath({
 // =========================================================================
 registry.registerPath({
   method: "get",
-  path: "/api/admin/dashboard",
+  path: "/admin/dashboard",
   tags,
   security,
   summary: "Get admin dashboard data",
@@ -147,7 +147,7 @@ registry.registerPath({
 // =========================================================================
 registry.registerPath({
   method: "get",
-  path: "/api/admin/countries",
+  path: "/admin/countries",
   tags,
   security,
   summary: "Get all countries",
@@ -178,7 +178,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "post",
-  path: "/api/admin/countries",
+  path: "/admin/countries",
   tags,
   security,
   summary: "Create country",
@@ -196,7 +196,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "patch",
-  path: "/api/admin/countries/{id}",
+  path: "/admin/countries/{id}",
   tags,
   security,
   summary: "Update country",
@@ -215,7 +215,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "delete",
-  path: "/api/admin/countries/{id}",
+  path: "/admin/countries/{id}",
   tags,
   security,
   summary: "Delete country",
@@ -233,7 +233,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/api/admin/countries/{countryId}/exams",
+  path: "/admin/countries/{countryId}/exams",
   tags,
   security,
   summary: "Get exams by country",
@@ -254,7 +254,7 @@ registry.registerPath({
 // =========================================================================
 registry.registerPath({
   method: "get",
-  path: "/api/admin/exams",
+  path: "/admin/exams",
   tags,
   security,
   summary: "Get all exams",
@@ -276,7 +276,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "post",
-  path: "/api/admin/exams",
+  path: "/admin/exams",
   tags,
   security,
   summary: "Create exam",
@@ -294,7 +294,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "patch",
-  path: "/api/admin/exams/{id}",
+  path: "/admin/exams/{id}",
   tags,
   security,
   summary: "Update exam",
@@ -313,7 +313,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "delete",
-  path: "/api/admin/exams/{id}",
+  path: "/admin/exams/{id}",
   tags,
   security,
   summary: "Delete exam",
@@ -334,7 +334,7 @@ registry.registerPath({
 // =========================================================================
 registry.registerPath({
   method: "get",
-  path: "/api/admin/users",
+  path: "/admin/users",
   tags,
   security,
   summary: "Get all users",
@@ -356,7 +356,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/api/admin/users/students",
+  path: "/admin/users/students",
   tags,
   security,
   summary: "Get all student users",
@@ -378,7 +378,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/api/admin/users/mentors",
+  path: "/admin/users/mentors",
   tags,
   security,
   summary: "Get all mentor users",
@@ -400,7 +400,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/api/admin/users/{id}",
+  path: "/admin/users/{id}",
   tags,
   security,
   summary: "Get user by ID",
@@ -418,7 +418,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "patch",
-  path: "/api/admin/users/students/{id}",
+  path: "/admin/users/students/{id}",
   tags,
   security,
   summary: "Update student user",
@@ -437,7 +437,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "patch",
-  path: "/api/admin/users/mentors/{id}",
+  path: "/admin/users/mentors/{id}",
   tags,
   security,
   summary: "Update mentor user",
@@ -456,7 +456,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "delete",
-  path: "/api/admin/users/{id}",
+  path: "/admin/users/{id}",
   tags,
   security,
   summary: "Delete user",
@@ -477,7 +477,7 @@ registry.registerPath({
 // =========================================================================
 registry.registerPath({
   method: "get",
-  path: "/api/admin/matches",
+  path: "/admin/matches",
   tags,
   security,
   summary: "Get all matches",
@@ -498,7 +498,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/api/admin/matches/user/{userId}",
+  path: "/admin/matches/user/{userId}",
   tags,
   security,
   summary: "Get matches by user",
@@ -516,7 +516,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "delete",
-  path: "/api/admin/matches/{id}",
+  path: "/admin/matches/{id}",
   tags,
   security,
   summary: "Delete match",
@@ -537,7 +537,7 @@ registry.registerPath({
 // =========================================================================
 registry.registerPath({
   method: "get",
-  path: "/api/admin/audit-logs",
+  path: "/admin/audit-logs",
   tags,
   security,
   summary: "Get audit logs",
@@ -565,7 +565,7 @@ registry.registerPath({
 // =========================================================================
 registry.registerPath({
   method: "get",
-  path: "/api/admin/mentors",
+  path: "/admin/mentors",
   tags,
   security,
   summary: "Get all mentors",
@@ -580,7 +580,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/api/admin/mentors/{id}",
+  path: "/admin/mentors/{id}",
   tags,
   security,
   summary: "Get mentor by ID",
@@ -598,7 +598,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "patch",
-  path: "/api/admin/mentors/{id}",
+  path: "/admin/mentors/{id}",
   tags,
   security,
   summary: "Update mentor",
@@ -617,7 +617,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "delete",
-  path: "/api/admin/mentors/{id}",
+  path: "/admin/mentors/{id}",
   tags,
   security,
   summary: "Delete mentor",
@@ -635,7 +635,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "patch",
-  path: "/api/admin/mentors/{id}/verify",
+  path: "/admin/mentors/{id}/verify",
   tags,
   security,
   summary: "Verify mentor",
@@ -656,7 +656,7 @@ registry.registerPath({
 // =========================================================================
 registry.registerPath({
   method: "get",
-  path: "/api/admin/mentors/bookings",
+  path: "/admin/mentors/bookings",
   tags,
   security,
   summary: "Get all bookings",
@@ -679,7 +679,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/api/admin/mentors/{id}/bookings",
+  path: "/admin/mentors/{id}/bookings",
   tags,
   security,
   summary: "Get bookings by mentor ID",
@@ -697,7 +697,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/api/admin/mentors/bookings/{id}",
+  path: "/admin/mentors/bookings/{id}",
   tags,
   security,
   summary: "Get booking by ID",
@@ -715,7 +715,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "patch",
-  path: "/api/admin/mentors/bookings/{id}",
+  path: "/admin/mentors/bookings/{id}",
   tags,
   security,
   summary: "Update booking",
@@ -734,7 +734,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "delete",
-  path: "/api/admin/mentors/bookings/{id}",
+  path: "/admin/mentors/bookings/{id}",
   tags,
   security,
   summary: "Delete booking",
@@ -752,7 +752,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "patch",
-  path: "/api/admin/mentors/bookings/{id}/regenerate-meet",
+  path: "/admin/mentors/bookings/{id}/regenerate-meet",
   tags,
   security,
   summary: "Regenerate Google Meet Link",
@@ -773,7 +773,7 @@ registry.registerPath({
 // =========================================================================
 registry.registerPath({
   method: "get",
-  path: "/api/admin/mentors/{id}/slots",
+  path: "/admin/mentors/{id}/slots",
   tags,
   security,
   summary: "Get mentor slots",
@@ -791,7 +791,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "delete",
-  path: "/api/admin/mentors/slots/{id}",
+  path: "/admin/mentors/slots/{id}",
   tags,
   security,
   summary: "Delete mentor slot",
@@ -812,7 +812,7 @@ registry.registerPath({
 // =========================================================================
 registry.registerPath({
   method: "get",
-  path: "/api/admin/mentors/{id}/plans",
+  path: "/admin/mentors/{id}/plans",
   tags,
   security,
   summary: "Get mentor plans",
@@ -830,7 +830,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "patch",
-  path: "/api/admin/mentors/plans/{id}",
+  path: "/admin/mentors/plans/{id}",
   tags,
   security,
   summary: "Update mentor plan",
@@ -849,7 +849,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "delete",
-  path: "/api/admin/mentors/plans/{id}",
+  path: "/admin/mentors/plans/{id}",
   tags,
   security,
   summary: "Delete mentor plan",

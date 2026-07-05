@@ -23,7 +23,7 @@ const MentorApplicationInput = registry.register("MentorApplicationInput", mento
 
 registry.registerPath({
   method: "get",
-  path: "/api/onboarding/status",
+  path: "/onboarding/status",
   tags,
   security,
   summary: "Get onboarding status",
@@ -48,7 +48,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "post",
-  path: "/api/onboarding/country",
+  path: "/onboarding/country",
   tags,
   security,
   summary: "Save country",
@@ -78,7 +78,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "patch",
-  path: "/api/onboarding/profile",
+  path: "/onboarding/profile",
   tags,
   security,
   summary: "Update basic profile",
@@ -108,7 +108,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/api/onboarding/exams",
+  path: "/onboarding/exams",
   tags,
   security,
   summary: "Get user exams",
@@ -133,7 +133,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "patch",
-  path: "/api/onboarding/exams",
+  path: "/onboarding/exams",
   tags,
   security,
   summary: "Save exams",
@@ -163,7 +163,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "patch",
-  path: "/api/onboarding/study",
+  path: "/onboarding/study",
   tags,
   security,
   summary: "Save study details",
@@ -193,7 +193,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "patch",
-  path: "/api/onboarding/preferences",
+  path: "/onboarding/preferences",
   tags,
   security,
   summary: "Save study preferences",
@@ -223,7 +223,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "post",
-  path: "/api/onboarding/complete",
+  path: "/onboarding/complete",
   tags,
   security,
   summary: "Complete onboarding",
@@ -246,7 +246,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "post",
-  path: "/api/onboarding/enhance-bio",
+  path: "/onboarding/enhance-bio",
   tags,
   security,
   summary: "Enhance user bio",
@@ -278,7 +278,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "post",
-  path: "/api/onboarding/mentor-application",
+  path: "/onboarding/mentor-application",
   tags,
   security,
   summary: "Apply for mentor",
