@@ -1,5 +1,8 @@
 import { z } from "zod";
 
+// =========================================================================
+// Auth
+// =========================================================================
 export const adminLoginSchema = z.object({
   body: z.object({
     email: z.string().email("Invalid email"),
@@ -7,6 +10,20 @@ export const adminLoginSchema = z.object({
   }),
 });
 
+// =========================================================================
+// Pagination (shared query schema)
+// =========================================================================
+export const paginationQuerySchema = z.object({
+  query: z.object({
+    page: z.coerce.number().int().min(1).default(1).optional(),
+    limit: z.coerce.number().int().min(1).max(100).default(20).optional(),
+    search: z.string().optional(),
+  }),
+});
+
+// =========================================================================
+// Countries
+// =========================================================================
 export const createCountrySchema = z.object({
   body: z.object({
     name: z.string().min(1, "Name is required"),
@@ -23,6 +40,9 @@ export const updateCountrySchema = z.object({
   }),
 });
 
+// =========================================================================
+// Exams
+// =========================================================================
 export const createExamSchema = z.object({
   body: z.object({
     countryId: z.string().uuid("Invalid country ID"),
@@ -39,12 +59,14 @@ export const updateExamSchema = z.object({
   }),
 });
 
+// =========================================================================
+// Users
+// =========================================================================
 export const updateStudentSchema = z.object({
   body: z.object({
     role: z.enum(["student", "mentor"]).optional(),
     emailVerified: z.boolean().optional(),
     onboardingCompleted: z.boolean().optional(),
-    // Profile details
     fullName: z.string().optional(),
     profileImage: z.string().optional(),
     age: z.number().optional(),
@@ -61,7 +83,6 @@ export const updateStudentSchema = z.object({
 
 export const updateMentorUserSchema = updateStudentSchema.extend({
   body: updateStudentSchema.shape.body.extend({
-    // Mentor details
     title: z.string().optional(),
     qualification: z.string().optional(),
     experienceYears: z.number().optional(),
@@ -70,6 +91,65 @@ export const updateMentorUserSchema = updateStudentSchema.extend({
   }),
 });
 
+// =========================================================================
+// Bookings (with status filter)
+// =========================================================================
+export const bookingsQuerySchema = z.object({
+  query: z.object({
+    page: z.coerce.number().int().min(1).default(1).optional(),
+    limit: z.coerce.number().int().min(1).max(100).default(20).optional(),
+    search: z.string().optional(),
+    status: z.enum(["pending", "confirmed", "completed", "cancelled"]).optional(),
+  }),
+});
+
+// =========================================================================
+// Audit Logs
+// =========================================================================
+export const auditLogsQuerySchema = z.object({
+  query: z.object({
+    page: z.coerce.number().int().min(1).default(1).optional(),
+    limit: z.coerce.number().int().min(1).max(100).default(50).optional(),
+    userId: z.string().uuid().optional(),
+    action: z.string().optional(),
+    from: z.string().optional(),
+    to: z.string().optional(),
+  }),
+});
+
+// =========================================================================
+// Mentors (Merged)
+// =========================================================================
+export const updateMentorSchema = z.object({
+  body: z.object({
+    title: z.string().optional(),
+    qualification: z.string().optional(),
+    experience_years: z.number().optional(),
+    hourly_price: z.number().optional(),
+    is_verified: z.boolean().optional(),
+  }),
+});
+
+export const updateBookingSchema = z.object({
+  body: z.object({
+    status: z.enum(["pending", "confirmed", "completed", "cancelled"]).optional(),
+    payment_status: z.enum(["pending", "paid", "refunded"]).optional(),
+  }),
+});
+
+export const updatePlanSchema = z.object({
+  body: z.object({
+    title: z.string().optional(),
+    description: z.string().nullable().optional(),
+    duration_minutes: z.number().int().min(1).optional(),
+    price: z.number().min(0).optional(),
+    is_active: z.boolean().optional(),
+  }),
+});
+
+// =========================================================================
+// Response schemas (for documentation)
+// =========================================================================
 export const adminUserResponseSchema = z.object({
   id: z.string().uuid(),
   email: z.string().email(),
@@ -90,6 +170,143 @@ export const adminUserResponseSchema = z.object({
   looking_for: z.array(z.string()).nullable().optional(),
 });
 
+export const countryResponseSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string(),
+  flag: z.string().nullable(),
+  iso_code: z.string().nullable(),
+  created_at: z.string().or(z.date()),
+  updated_at: z.string().or(z.date()),
+});
+
+export const examResponseSchema = z.object({
+  id: z.string().uuid(),
+  country_id: z.string().uuid(),
+  name: z.string(),
+  is_active: z.boolean(),
+  created_at: z.string().or(z.date()),
+  updated_at: z.string().or(z.date()),
+});
+
+export const matchResponseSchema = z.object({
+  id: z.string().uuid(),
+  user_id: z.string().uuid(),
+  matched_user_id: z.string().uuid(),
+  status: z.string(),
+  matched_at: z.string().or(z.date()).nullable(),
+  created_at: z.string().or(z.date()),
+  updated_at: z.string().or(z.date()),
+  user_name: z.string().nullable(),
+  user_email: z.string().nullable(),
+  matched_user_name: z.string().nullable(),
+  matched_user_email: z.string().nullable(),
+});
+
+export const auditLogResponseSchema = z.object({
+  id: z.string().uuid(),
+  user_id: z.string().uuid().nullable(),
+  action: z.string(),
+  entity_type: z.string().nullable(),
+  entity_id: z.string().uuid().nullable(),
+  details: z.any().nullable(),
+  created_at: z.string().or(z.date()),
+  user_email: z.string().nullable(),
+});
+
+export const dashboardResponseSchema = z.object({
+  overview: z.object({
+    totalUsers: z.string().or(z.number()),
+    totalStudents: z.string().or(z.number()),
+    totalMentors: z.string().or(z.number()),
+    verifiedMentors: z.string().or(z.number()),
+    unverifiedMentors: z.string().or(z.number()),
+    totalBookings: z.string().or(z.number()),
+    activeBookings: z.string().or(z.number()),
+    completedBookings: z.string().or(z.number()),
+    cancelledBookings: z.string().or(z.number()),
+    totalRevenue: z.string().or(z.number()),
+    totalMatches: z.string().or(z.number()),
+    totalConversations: z.string().or(z.number()),
+    totalMessages: z.string().or(z.number()),
+  }),
+  charts: z.object({
+    userSignups: z.array(z.any()),
+    bookingsByStatus: z.any(),
+    revenueByMonth: z.array(z.any()),
+    topMentors: z.array(z.any()),
+    topExams: z.array(z.any()),
+  }),
+});
+
+export const mentorProfileResponseSchema = z.object({
+  id: z.string().uuid(),
+  user_id: z.string().uuid(),
+  title: z.string(),
+  qualification: z.string(),
+  experience_years: z.number(),
+  hourly_price: z.number(),
+  rating: z.number(),
+  total_reviews: z.number(),
+  about: z.string().nullable(),
+  is_verified: z.boolean(),
+  created_at: z.string().or(z.date()),
+  updated_at: z.string().or(z.date()),
+  full_name: z.string().nullable(),
+  profile_image: z.string().nullable(),
+  email: z.string().nullable(),
+  total_bookings: z.number().nullable(),
+});
+
+export const mentorSlotResponseSchema = z.object({
+  id: z.string().uuid(),
+  mentor_id: z.string().uuid(),
+  start_time: z.string().or(z.date()),
+  end_time: z.string().or(z.date()),
+  is_booked: z.boolean(),
+  created_at: z.string().or(z.date()),
+});
+
+export const mentorPlanResponseSchema = z.object({
+  id: z.string().uuid(),
+  mentor_id: z.string().uuid(),
+  title: z.string(),
+  description: z.string().nullable(),
+  duration_minutes: z.number(),
+  price: z.string().or(z.number()),
+  is_active: z.boolean(),
+  created_at: z.string().or(z.date()),
+  updated_at: z.string().or(z.date()),
+});
+
+export const bookingResponseSchema = z.object({
+  id: z.string().uuid(),
+  student_id: z.string().uuid(),
+  mentor_id: z.string().uuid(),
+  plan_id: z.string().uuid(),
+  slot_id: z.string().uuid(),
+  status: z.string(),
+  payment_status: z.string(),
+  amount: z.string().or(z.number()),
+  meeting_link: z.string().nullable(),
+  google_event_id: z.string().nullable(),
+  google_meet_url: z.string().nullable(),
+  google_calendar_url: z.string().nullable(),
+  meeting_provider: z.string().nullable(),
+  created_at: z.string().or(z.date()),
+  updated_at: z.string().or(z.date()),
+  mentor_name: z.string().nullable(),
+  mentor_email: z.string().nullable(),
+  student_name: z.string().nullable(),
+  student_email: z.string().nullable(),
+  plan_title: z.string().nullable(),
+  duration_minutes: z.number().nullable(),
+  start_time: z.string().or(z.date()).nullable(),
+  end_time: z.string().or(z.date()).nullable(),
+});
+
+// =========================================================================
+// Type exports
+// =========================================================================
 export type AdminLoginInput = z.infer<typeof adminLoginSchema>["body"];
 export type CreateCountryInput = z.infer<typeof createCountrySchema>["body"];
 export type UpdateCountryInput = z.infer<typeof updateCountrySchema>["body"];
@@ -97,3 +314,6 @@ export type CreateExamInput = z.infer<typeof createExamSchema>["body"];
 export type UpdateExamInput = z.infer<typeof updateExamSchema>["body"];
 export type UpdateStudentInput = z.infer<typeof updateStudentSchema>["body"];
 export type UpdateMentorUserInput = z.infer<typeof updateMentorUserSchema>["body"];
+export type UpdateMentorInput = z.infer<typeof updateMentorSchema>["body"];
+export type UpdateBookingInput = z.infer<typeof updateBookingSchema>["body"];
+export type UpdatePlanInput = z.infer<typeof updatePlanSchema>["body"];

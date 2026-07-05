@@ -3,30 +3,60 @@ import { validate } from "@/core/middleware/validate.middleware";
 import { authMiddleware } from "@/core/middleware/auth.middleware";
 import { rbacMiddleware } from "@/core/middleware/rbac.middleware";
 import * as adminController from "./admin.controller";
-import { adminMentorsRoutes } from "./mentors/mentors.routes";
-import { adminLoginSchema, createCountrySchema, updateCountrySchema, createExamSchema, updateExamSchema, updateStudentSchema, updateMentorUserSchema } from "./admin.schema";
+import { 
+  adminLoginSchema, 
+  createCountrySchema, 
+  updateCountrySchema, 
+  createExamSchema, 
+  updateExamSchema, 
+  updateStudentSchema, 
+  updateMentorUserSchema,
+  updateMentorSchema,
+  updateBookingSchema,
+  updatePlanSchema
+} from "./admin.schema";
 import "./admin.openapi";
 
 const router = Router();
 
+// =========================================================================
+// Auth (public)
+// =========================================================================
 router.post("/auth/login", validate(adminLoginSchema), adminController.login);
 
+// =========================================================================
+// Protected routes
+// =========================================================================
 router.use(authMiddleware);
 router.use(rbacMiddleware(["admin"]));
 
 router.get("/auth/me", adminController.getMe);
 
+// =========================================================================
+// Dashboard
+// =========================================================================
+router.get("/dashboard", adminController.getDashboard);
+
+// =========================================================================
+// Countries
+// =========================================================================
 router.get("/countries", adminController.getCountries);
 router.post("/countries", validate(createCountrySchema), adminController.createCountry);
 router.patch("/countries/:id", validate(updateCountrySchema), adminController.updateCountry);
 router.delete("/countries/:id", adminController.deleteCountry);
 router.get("/countries/:countryId/exams", adminController.getExamsByCountry);
 
+// =========================================================================
+// Exams
+// =========================================================================
 router.get("/exams", adminController.getExams);
 router.post("/exams", validate(createExamSchema), adminController.createExam);
 router.patch("/exams/:id", validate(updateExamSchema), adminController.updateExam);
 router.delete("/exams/:id", adminController.deleteExam);
 
+// =========================================================================
+// Users
+// =========================================================================
 router.get("/users", adminController.getUsers);
 router.get("/users/students", adminController.getStudents);
 router.get("/users/mentors", adminController.getMentorsUsers);
@@ -35,6 +65,53 @@ router.patch("/users/students/:id", validate(updateStudentSchema), adminControll
 router.patch("/users/mentors/:id", validate(updateMentorUserSchema), adminController.updateMentorUser);
 router.delete("/users/:id", adminController.deleteUser);
 
-router.use("/mentors", adminMentorsRoutes);
+// =========================================================================
+// Matches
+// =========================================================================
+router.get("/matches", adminController.getMatches);
+router.get("/matches/user/:userId", adminController.getMatchesByUser);
+router.delete("/matches/:id", adminController.deleteMatch);
+
+// =========================================================================
+// Audit Logs
+// =========================================================================
+router.get("/audit-logs", adminController.getAuditLogs);
+
+// =========================================================================
+// Mentors (Merged)
+// =========================================================================
+router.get("/mentors", adminController.getMentors);
+
+// =========================================================================
+// Bookings (must be before /mentors/:id to avoid conflict)
+// =========================================================================
+router.get("/mentors/bookings", adminController.getBookings);
+router.get("/mentors/bookings/:id", adminController.getBooking);
+router.patch("/mentors/bookings/:id", validate(updateBookingSchema), adminController.updateBooking);
+router.delete("/mentors/bookings/:id", adminController.deleteBooking);
+router.patch("/mentors/bookings/:id/regenerate-meet", adminController.regenerateMeetLink);
+
+// =========================================================================
+// Slots (global slot CRUD)
+// =========================================================================
+router.delete("/mentors/slots/:id", adminController.deleteSlot);
+
+// =========================================================================
+// Plans (global plan CRUD)
+// =========================================================================
+router.patch("/mentors/plans/:id", validate(updatePlanSchema), adminController.updatePlan);
+router.delete("/mentors/plans/:id", adminController.deletePlan);
+
+// =========================================================================
+// Mentor by ID & sub-resources
+// =========================================================================
+router.get("/mentors/:id", adminController.getMentor);
+router.patch("/mentors/:id", validate(updateMentorSchema), adminController.updateMentor);
+router.delete("/mentors/:id", adminController.deleteMentor);
+router.patch("/mentors/:id/verify", adminController.verifyMentor);
+
+router.get("/mentors/:id/bookings", adminController.getBookingsByMentor);
+router.get("/mentors/:id/slots", adminController.getMentorSlots);
+router.get("/mentors/:id/plans", adminController.getMentorPlans);
 
 export default router;

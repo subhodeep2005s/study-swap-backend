@@ -1,6 +1,27 @@
 import { registry } from "@/config/openapi";
 import { z } from "zod";
-import { adminLoginSchema, createCountrySchema, updateCountrySchema, createExamSchema, updateExamSchema, updateStudentSchema, updateMentorUserSchema, adminUserResponseSchema } from "./admin.schema";
+import { 
+  adminLoginSchema, 
+  createCountrySchema, 
+  updateCountrySchema, 
+  createExamSchema, 
+  updateExamSchema, 
+  updateStudentSchema, 
+  updateMentorUserSchema, 
+  adminUserResponseSchema, 
+  countryResponseSchema, 
+  examResponseSchema, 
+  matchResponseSchema, 
+  auditLogResponseSchema, 
+  dashboardResponseSchema,
+  updateMentorSchema,
+  updateBookingSchema,
+  updatePlanSchema,
+  mentorProfileResponseSchema,
+  mentorSlotResponseSchema,
+  mentorPlanResponseSchema,
+  bookingResponseSchema
+} from "./admin.schema";
 
 const tags = ["Admin"];
 const security = [{ bearerAuth: [] }];
@@ -13,7 +34,31 @@ const UpdateExam = registry.register("UpdateExam", updateExamSchema.shape.body);
 const UpdateStudent = registry.register("UpdateStudent", updateStudentSchema.shape.body);
 const UpdateMentorUser = registry.register("UpdateMentorUser", updateMentorUserSchema.shape.body);
 const AdminUserResponse = registry.register("AdminUserResponse", adminUserResponseSchema);
+const CountryResponse = registry.register("CountryResponse", countryResponseSchema);
+const ExamResponse = registry.register("ExamResponse", examResponseSchema);
+const MatchResponse = registry.register("MatchResponse", matchResponseSchema);
+const AuditLogResponse = registry.register("AuditLogResponse", auditLogResponseSchema);
+const DashboardResponse = registry.register("DashboardResponse", dashboardResponseSchema);
 
+const UpdateMentor = registry.register("UpdateMentor", updateMentorSchema.shape.body);
+const UpdateBooking = registry.register("UpdateBooking", updateBookingSchema.shape.body);
+const UpdatePlan = registry.register("UpdatePlanAdmin", updatePlanSchema.shape.body);
+
+const MentorProfileResponse = registry.register("MentorProfileResponse", mentorProfileResponseSchema);
+const MentorSlotResponse = registry.register("MentorSlotResponse", mentorSlotResponseSchema);
+const MentorPlanResponse = registry.register("MentorPlanResponse", mentorPlanResponseSchema);
+const BookingResponse = registry.register("BookingResponse", bookingResponseSchema);
+
+const PaginationResponse = z.object({
+  page: z.number(),
+  limit: z.number(),
+  total: z.number(),
+  totalPages: z.number()
+});
+
+// =========================================================================
+// Auth
+// =========================================================================
 registry.registerPath({
   method: "post",
   path: "/api/admin/auth/login",
@@ -71,6 +116,35 @@ registry.registerPath({
   },
 });
 
+// =========================================================================
+// Dashboard
+// =========================================================================
+registry.registerPath({
+  method: "get",
+  path: "/api/admin/dashboard",
+  tags,
+  security,
+  summary: "Get admin dashboard data",
+  description: "Fetches aggregated platform statistics, user signups, and booking trends.",
+  responses: {
+    200: {
+      description: "Dashboard data fetched",
+      content: {
+        "application/json": {
+          schema: z.object({
+            success: z.boolean(),
+            message: z.string(),
+            data: DashboardResponse
+          })
+        }
+      }
+    }
+  }
+});
+
+// =========================================================================
+// Countries
+// =========================================================================
 registry.registerPath({
   method: "get",
   path: "/api/admin/countries",
@@ -78,10 +152,26 @@ registry.registerPath({
   security,
   summary: "Get all countries",
   description: "Admin only.",
+  request: {
+    query: z.object({
+      page: z.coerce.number().optional(),
+      limit: z.coerce.number().optional(),
+      search: z.string().optional(),
+    }),
+  },
   responses: {
     200: {
       description: "Countries fetched",
-      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({ countries: z.array(z.any()) }) }) } },
+      content: { 
+        "application/json": { 
+          schema: z.object({ 
+            success: z.boolean(), 
+            message: z.string(), 
+            data: z.array(CountryResponse),
+            pagination: PaginationResponse
+          }) 
+        } 
+      },
     },
   },
 });
@@ -99,7 +189,7 @@ registry.registerPath({
   responses: {
     201: {
       description: "Country created",
-      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.any() }) } },
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({ country: CountryResponse }) }) } },
     },
   },
 });
@@ -112,13 +202,13 @@ registry.registerPath({
   summary: "Update country",
   description: "Admin only.",
   request: {
-    params: z.object({ id: z.string() }),
+    params: z.object({ id: z.string().uuid() }),
     body: { content: { "application/json": { schema: UpdateCountry } } },
   },
   responses: {
     200: {
       description: "Country updated",
-      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.any() }) } },
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({ country: CountryResponse }) }) } },
     },
   },
 });
@@ -131,12 +221,12 @@ registry.registerPath({
   summary: "Delete country",
   description: "Admin only.",
   request: {
-    params: z.object({ id: z.string() }),
+    params: z.object({ id: z.string().uuid() }),
   },
   responses: {
     200: {
       description: "Country deleted",
-      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.any() }) } },
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({}) }) } },
     },
   },
 });
@@ -154,11 +244,14 @@ registry.registerPath({
   responses: {
     200: {
       description: "Exams fetched",
-      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({ exams: z.array(z.any()) }) }) } },
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({ exams: z.array(ExamResponse) }) }) } },
     },
   },
 });
 
+// =========================================================================
+// Exams
+// =========================================================================
 registry.registerPath({
   method: "get",
   path: "/api/admin/exams",
@@ -166,10 +259,17 @@ registry.registerPath({
   security,
   summary: "Get all exams",
   description: "Admin only.",
+  request: {
+    query: z.object({
+      page: z.coerce.number().optional(),
+      limit: z.coerce.number().optional(),
+      search: z.string().optional(),
+    }),
+  },
   responses: {
     200: {
       description: "Exams fetched",
-      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({ exams: z.array(z.any()) }) }) } },
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.array(ExamResponse), pagination: PaginationResponse }) } },
     },
   },
 });
@@ -187,7 +287,7 @@ registry.registerPath({
   responses: {
     201: {
       description: "Exam created",
-      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.any() }) } },
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({ exam: ExamResponse }) }) } },
     },
   },
 });
@@ -200,13 +300,13 @@ registry.registerPath({
   summary: "Update exam",
   description: "Admin only.",
   request: {
-    params: z.object({ id: z.string() }),
+    params: z.object({ id: z.string().uuid() }),
     body: { content: { "application/json": { schema: UpdateExam } } },
   },
   responses: {
     200: {
       description: "Exam updated",
-      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.any() }) } },
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({ exam: ExamResponse }) }) } },
     },
   },
 });
@@ -219,41 +319,83 @@ registry.registerPath({
   summary: "Delete exam",
   description: "Admin only.",
   request: {
-    params: z.object({ id: z.string() }),
+    params: z.object({ id: z.string().uuid() }),
   },
   responses: {
     200: {
       description: "Exam deleted",
-      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.any() }) } },
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({}) }) } },
+    },
+  },
+});
+
+// =========================================================================
+// Users
+// =========================================================================
+registry.registerPath({
+  method: "get",
+  path: "/api/admin/users",
+  tags,
+  security,
+  summary: "Get all users",
+  description: "Admin only. Supports pagination and search.",
+  request: {
+    query: z.object({
+      page: z.coerce.number().optional(),
+      limit: z.coerce.number().optional(),
+      search: z.string().optional(),
+    }),
+  },
+  responses: {
+    200: {
+      description: "Users fetched",
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.array(AdminUserResponse), pagination: PaginationResponse }) } },
     },
   },
 });
 
 registry.registerPath({
   method: "get",
-  path: "/api/admin/users",
-  tags: ["Admin"],
-  summary: "Get all users",
-  security: [{ bearerAuth: [] }],
-  responses: { 200: { description: "Success", content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({ users: z.array(AdminUserResponse) }) }) } } } },
-});
-
-registry.registerPath({
-  method: "get",
   path: "/api/admin/users/students",
-  tags: ["Admin"],
+  tags,
+  security,
   summary: "Get all student users",
-  security: [{ bearerAuth: [] }],
-  responses: { 200: { description: "Success", content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({ users: z.array(AdminUserResponse) }) }) } } } },
+  description: "Admin only. Supports pagination and search.",
+  request: {
+    query: z.object({
+      page: z.coerce.number().optional(),
+      limit: z.coerce.number().optional(),
+      search: z.string().optional(),
+    }),
+  },
+  responses: {
+    200: {
+      description: "Students fetched",
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.array(AdminUserResponse), pagination: PaginationResponse }) } },
+    },
+  },
 });
 
 registry.registerPath({
   method: "get",
   path: "/api/admin/users/mentors",
-  tags: ["Admin"],
+  tags,
+  security,
   summary: "Get all mentor users",
-  security: [{ bearerAuth: [] }],
-  responses: { 200: { description: "Success", content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({ users: z.array(AdminUserResponse) }) }) } } } },
+  description: "Admin only. Supports pagination and search.",
+  request: {
+    query: z.object({
+      page: z.coerce.number().optional(),
+      limit: z.coerce.number().optional(),
+      search: z.string().optional(),
+    }),
+  },
+  responses: {
+    200: {
+      description: "Mentors fetched",
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.array(AdminUserResponse), pagination: PaginationResponse }) } },
+    },
+  },
 });
 
 registry.registerPath({
@@ -262,7 +404,7 @@ registry.registerPath({
   tags,
   security,
   summary: "Get user by ID",
-  description: "Admin only.",
+  description: "Admin only. Returns a deeply enriched user payload including stats, bookings, and mentor plans.",
   request: {
     params: z.object({ id: z.string().uuid() }),
   },
@@ -280,7 +422,7 @@ registry.registerPath({
   tags,
   security,
   summary: "Update student user",
-  description: "Admin only. Can update role, emailVerified, onboardingCompleted, and profile fields.",
+  description: "Admin only.",
   request: {
     params: z.object({ id: z.string().uuid() }),
     body: { content: { "application/json": { schema: UpdateStudent } } },
@@ -299,7 +441,7 @@ registry.registerPath({
   tags,
   security,
   summary: "Update mentor user",
-  description: "Admin only. Can update role, profile fields, and mentor-specific fields.",
+  description: "Admin only.",
   request: {
     params: z.object({ id: z.string().uuid() }),
     body: { content: { "application/json": { schema: UpdateMentorUser } } },
@@ -325,7 +467,400 @@ registry.registerPath({
   responses: {
     200: {
       description: "User deleted",
-      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.any() }) } },
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({}) }) } },
+    },
+  },
+});
+
+// =========================================================================
+// Matches
+// =========================================================================
+registry.registerPath({
+  method: "get",
+  path: "/api/admin/matches",
+  tags,
+  security,
+  summary: "Get all matches",
+  description: "Admin only. Supports pagination.",
+  request: {
+    query: z.object({
+      page: z.coerce.number().optional(),
+      limit: z.coerce.number().optional(),
+    }),
+  },
+  responses: {
+    200: {
+      description: "Matches fetched",
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.array(MatchResponse), pagination: PaginationResponse }) } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/api/admin/matches/user/{userId}",
+  tags,
+  security,
+  summary: "Get matches by user",
+  description: "Admin only.",
+  request: {
+    params: z.object({ userId: z.string().uuid() }),
+  },
+  responses: {
+    200: {
+      description: "User matches fetched",
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({ matches: z.array(MatchResponse) }) }) } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "delete",
+  path: "/api/admin/matches/{id}",
+  tags,
+  security,
+  summary: "Delete match",
+  description: "Admin only.",
+  request: {
+    params: z.object({ id: z.string().uuid() }),
+  },
+  responses: {
+    200: {
+      description: "Match deleted",
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({}) }) } },
+    },
+  },
+});
+
+// =========================================================================
+// Audit Logs
+// =========================================================================
+registry.registerPath({
+  method: "get",
+  path: "/api/admin/audit-logs",
+  tags,
+  security,
+  summary: "Get audit logs",
+  description: "Admin only. Fetches action audit logs with extensive filtering.",
+  request: {
+    query: z.object({
+      page: z.coerce.number().optional(),
+      limit: z.coerce.number().optional(),
+      userId: z.string().uuid().optional(),
+      action: z.string().optional(),
+      from: z.string().optional(),
+      to: z.string().optional(),
+    }),
+  },
+  responses: {
+    200: {
+      description: "Audit logs fetched",
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.array(AuditLogResponse), pagination: PaginationResponse }) } },
+    },
+  },
+});
+
+// =========================================================================
+// Mentors (Merged under Admin tag)
+// =========================================================================
+registry.registerPath({
+  method: "get",
+  path: "/api/admin/mentors",
+  tags,
+  security,
+  summary: "Get all mentors",
+  description: "Admin only.",
+  responses: {
+    200: {
+      description: "Mentors fetched",
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.array(MentorProfileResponse) }) } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/api/admin/mentors/{id}",
+  tags,
+  security,
+  summary: "Get mentor by ID",
+  description: "Admin only.",
+  request: {
+    params: z.object({ id: z.string().uuid() }),
+  },
+  responses: {
+    200: {
+      description: "Mentor fetched",
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: MentorProfileResponse }) } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "patch",
+  path: "/api/admin/mentors/{id}",
+  tags,
+  security,
+  summary: "Update mentor",
+  description: "Admin only.",
+  request: {
+    params: z.object({ id: z.string().uuid() }),
+    body: { content: { "application/json": { schema: UpdateMentor } } },
+  },
+  responses: {
+    200: {
+      description: "Mentor updated",
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: MentorProfileResponse }) } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "delete",
+  path: "/api/admin/mentors/{id}",
+  tags,
+  security,
+  summary: "Delete mentor",
+  description: "Admin only.",
+  request: {
+    params: z.object({ id: z.string().uuid() }),
+  },
+  responses: {
+    200: {
+      description: "Mentor deleted",
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({}) }) } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "patch",
+  path: "/api/admin/mentors/{id}/verify",
+  tags,
+  security,
+  summary: "Verify mentor",
+  description: "Admin only. Verifies the mentor profile.",
+  request: {
+    params: z.object({ id: z.string().uuid() }),
+  },
+  responses: {
+    200: {
+      description: "Mentor verified",
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: MentorProfileResponse }) } },
+    },
+  },
+});
+
+// =========================================================================
+// Bookings (Merged under Admin tag)
+// =========================================================================
+registry.registerPath({
+  method: "get",
+  path: "/api/admin/mentors/bookings",
+  tags,
+  security,
+  summary: "Get all bookings",
+  description: "Admin only. Supports pagination, search, and status filtering.",
+  request: {
+    query: z.object({
+      page: z.coerce.number().optional(),
+      limit: z.coerce.number().optional(),
+      search: z.string().optional(),
+      status: z.enum(["pending", "confirmed", "completed", "cancelled"]).optional(),
+    }),
+  },
+  responses: {
+    200: {
+      description: "Bookings fetched",
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.array(BookingResponse), pagination: PaginationResponse }) } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/api/admin/mentors/{id}/bookings",
+  tags,
+  security,
+  summary: "Get bookings by mentor ID",
+  description: "Admin only.",
+  request: {
+    params: z.object({ id: z.string().uuid() }),
+  },
+  responses: {
+    200: {
+      description: "Mentor bookings fetched",
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({ bookings: z.array(BookingResponse) }) }) } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/api/admin/mentors/bookings/{id}",
+  tags,
+  security,
+  summary: "Get booking by ID",
+  description: "Admin only.",
+  request: {
+    params: z.object({ id: z.string().uuid() }),
+  },
+  responses: {
+    200: {
+      description: "Booking fetched",
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: BookingResponse }) } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "patch",
+  path: "/api/admin/mentors/bookings/{id}",
+  tags,
+  security,
+  summary: "Update booking",
+  description: "Admin only.",
+  request: {
+    params: z.object({ id: z.string().uuid() }),
+    body: { content: { "application/json": { schema: UpdateBooking } } },
+  },
+  responses: {
+    200: {
+      description: "Booking updated",
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: BookingResponse }) } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "delete",
+  path: "/api/admin/mentors/bookings/{id}",
+  tags,
+  security,
+  summary: "Delete booking",
+  description: "Admin only.",
+  request: {
+    params: z.object({ id: z.string().uuid() }),
+  },
+  responses: {
+    200: {
+      description: "Booking deleted",
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({}) }) } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "patch",
+  path: "/api/admin/mentors/bookings/{id}/regenerate-meet",
+  tags,
+  security,
+  summary: "Regenerate Google Meet Link",
+  description: "Admin only. Triggers Google Calendar API to regenerate the meeting link for this booking.",
+  request: {
+    params: z.object({ id: z.string().uuid() }),
+  },
+  responses: {
+    200: {
+      description: "Google Meet link regenerated",
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({ meetUrl: z.string(), calendarUrl: z.string(), eventId: z.string() }) }) } },
+    },
+  },
+});
+
+// =========================================================================
+// Slots (Merged under Admin tag)
+// =========================================================================
+registry.registerPath({
+  method: "get",
+  path: "/api/admin/mentors/{id}/slots",
+  tags,
+  security,
+  summary: "Get mentor slots",
+  description: "Admin only.",
+  request: {
+    params: z.object({ id: z.string().uuid() }),
+  },
+  responses: {
+    200: {
+      description: "Mentor slots fetched",
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({ slots: z.array(MentorSlotResponse) }) }) } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "delete",
+  path: "/api/admin/mentors/slots/{id}",
+  tags,
+  security,
+  summary: "Delete mentor slot",
+  description: "Admin only. Fails if the slot is currently booked.",
+  request: {
+    params: z.object({ id: z.string().uuid() }),
+  },
+  responses: {
+    200: {
+      description: "Slot deleted",
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({}) }) } },
+    },
+  },
+});
+
+// =========================================================================
+// Plans (Merged under Admin tag)
+// =========================================================================
+registry.registerPath({
+  method: "get",
+  path: "/api/admin/mentors/{id}/plans",
+  tags,
+  security,
+  summary: "Get mentor plans",
+  description: "Admin only.",
+  request: {
+    params: z.object({ id: z.string().uuid() }),
+  },
+  responses: {
+    200: {
+      description: "Mentor plans fetched",
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({ plans: z.array(MentorPlanResponse) }) }) } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "patch",
+  path: "/api/admin/mentors/plans/{id}",
+  tags,
+  security,
+  summary: "Update mentor plan",
+  description: "Admin only.",
+  request: {
+    params: z.object({ id: z.string().uuid() }),
+    body: { content: { "application/json": { schema: UpdatePlan } } },
+  },
+  responses: {
+    200: {
+      description: "Plan updated",
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: MentorPlanResponse }) } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "delete",
+  path: "/api/admin/mentors/plans/{id}",
+  tags,
+  security,
+  summary: "Delete mentor plan",
+  description: "Admin only. Fails if the plan has active bookings.",
+  request: {
+    params: z.object({ id: z.string().uuid() }),
+  },
+  responses: {
+    200: {
+      description: "Plan deleted",
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({}) }) } },
     },
   },
 });
