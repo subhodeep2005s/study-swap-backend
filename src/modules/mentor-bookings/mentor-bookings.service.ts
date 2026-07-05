@@ -1,5 +1,7 @@
 import { AppError } from "@/core/errors/AppError";
 import { MentorBookingsRepository } from "./mentor-bookings.repository";
+import { OnboardingRepository } from "@/modules/onboarding/onboarding.repository";
+import { redis } from "@/config/redis";
 
 export async function getMentorProfile(userId: string) {
   const mentorId = await MentorBookingsRepository.ensureMentor(userId);
@@ -8,6 +10,19 @@ export async function getMentorProfile(userId: string) {
 
 export async function updateMentorProfile(userId: string, data: any) {
   const mentorId = await MentorBookingsRepository.ensureMentor(userId);
+
+  if (data.country_id !== undefined || data.state !== undefined) {
+    const profileFields: [string, unknown][] = [];
+    if (data.country_id !== undefined) profileFields.push(["country_id", data.country_id]);
+    if (data.state !== undefined) profileFields.push(["state", data.state]);
+    if (profileFields.length > 0) {
+      await OnboardingRepository.upsertProfile(userId, profileFields);
+    }
+  }
+
+  if (data.exam_ids !== undefined) {
+    await OnboardingRepository.saveExamsTransaction(userId, data.exam_ids);
+  }
   
   const fields: string[] = [];
   const values: any[] = [];
@@ -19,7 +34,12 @@ export async function updateMentorProfile(userId: string, data: any) {
   if (data.hourly_price !== undefined) { fields.push(`hourly_price = $${idx++}`); values.push(data.hourly_price); }
   if (data.about !== undefined) { fields.push(`about = $${idx++}`); values.push(data.about); }
   
-  return await MentorBookingsRepository.updateMentorProfile(mentorId, fields, values);
+  const result = await MentorBookingsRepository.updateMentorProfile(mentorId, fields, values);
+
+  // Invalidate cache
+  await redis.del("cache:mentors:list");
+
+  return result;
 }
 
 export async function getPlans(userId: string) {

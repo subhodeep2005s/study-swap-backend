@@ -9,7 +9,7 @@ export class MentorsRepository {
       SELECT 
         m.id, m.title, m.qualification, m.experience_years, 
         m.hourly_price, m.rating, m.total_reviews, m.is_verified,
-        p.full_name, p.profile_image, p.bio
+        p.full_name, p.profile_image, p.bio, p.country_id, p.state
       FROM mentors m
       JOIN profiles p ON p.user_id = m.user_id
       WHERE m.is_verified = true
@@ -22,7 +22,7 @@ export class MentorsRepository {
       SELECT DISTINCT
         m.id, m.title, m.qualification, m.experience_years, 
         m.hourly_price, m.rating, m.total_reviews, m.is_verified,
-        p.full_name, p.profile_image, p.bio
+        p.full_name, p.profile_image, p.bio, p.country_id, p.state
       FROM mentors m
       JOIN profiles p ON p.user_id = m.user_id
       JOIN user_exams mentor_ue ON mentor_ue.user_id = m.user_id
@@ -35,14 +35,26 @@ export class MentorsRepository {
   static async getMentor(id: string) {
     const result = await query(`
       SELECT 
-        m.id, m.title, m.qualification, m.experience_years, 
+        m.id, m.user_id, m.title, m.qualification, m.experience_years, 
         m.hourly_price, m.rating, m.total_reviews, m.is_verified, m.about,
-        p.full_name, p.profile_image, p.bio
+        p.full_name, p.profile_image, p.bio, p.country_id, p.state
       FROM mentors m
       JOIN profiles p ON p.user_id = m.user_id
       WHERE m.id = $1
     `, [id]);
-    return result.rows[0];
+    const mentor = result.rows[0];
+    if (!mentor) return null;
+
+    // Fetch exams
+    const examsResult = await query(`
+      SELECT e.id, e.name 
+      FROM user_exams ue
+      JOIN exams e ON e.id = ue.exam_id
+      WHERE ue.user_id = $1
+    `, [mentor.user_id]);
+    mentor.exams = examsResult.rows;
+
+    return mentor;
   }
 
   static async getMentorPlans(mentorId: string) {

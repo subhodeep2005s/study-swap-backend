@@ -6,6 +6,7 @@ import type { AdminLoginInput, CreateCountryInput, UpdateCountryInput, CreateExa
 import { AdminRepository, type PaginationParams } from "./admin.repository";
 import { GoogleService } from "@/modules/google/google.service";
 import { logger } from "@/config/logger";
+import { OnboardingRepository } from "@/modules/onboarding/onboarding.repository";
 
 type UpdateField = [column: string, value: unknown];
 
@@ -170,6 +171,10 @@ export async function updateStudent(id: string, input: any) {
   const result = await AdminRepository.updateUserTransaction(id, userFields, userValues, profileFields);
   if (result.error) throw new AppError(result.error, result.code);
 
+  if (input.examIds !== undefined) {
+    await OnboardingRepository.saveExamsTransaction(id, input.examIds);
+  }
+
   return await getUserById(id);
 }
 
@@ -204,6 +209,10 @@ export async function updateMentorUser(id: string, input: any) {
 
   const result = await AdminRepository.updateUserTransaction(id, userFields, userValues, profileFields, mentorFields);
   if (result.error) throw new AppError(result.error, result.code);
+
+  if (input.examIds !== undefined) {
+    await OnboardingRepository.saveExamsTransaction(id, input.examIds);
+  }
 
   return await getUserById(id);
 }
@@ -257,6 +266,23 @@ export async function getMentor(id: string) {
 }
 
 export async function updateMentor(id: string, data: any) {
+  const mentor = await AdminRepository.getAdminMentor(id);
+  if (!mentor) throw new AppError("Mentor not found", 404);
+  const userId = mentor.user_id;
+
+  if (data.country_id !== undefined || data.state !== undefined) {
+    const profileFields: UpdateField[] = [];
+    addField(profileFields, "country_id", data.country_id);
+    addField(profileFields, "state", data.state);
+    if (profileFields.length > 0) {
+      await OnboardingRepository.upsertProfile(userId, profileFields);
+    }
+  }
+
+  if (data.exam_ids !== undefined) {
+    await OnboardingRepository.saveExamsTransaction(userId, data.exam_ids);
+  }
+
   const fields: string[] = [];
   const values: any[] = [];
   let idx = 1;
@@ -267,11 +293,14 @@ export async function updateMentor(id: string, data: any) {
   if (data.hourly_price !== undefined) { fields.push(`hourly_price = $${idx++}`); values.push(data.hourly_price); }
   if (data.is_verified !== undefined) { fields.push(`is_verified = $${idx++}`); values.push(data.is_verified); }
 
-  if (fields.length === 0) throw new AppError("No fields to update", 400);
+  if (fields.length > 0) {
+    const result = await AdminRepository.updateAdminMentor(id, fields, values);
+    if (!result) throw new AppError("Mentor not found", 404);
+  }
 
-  const result = await AdminRepository.updateAdminMentor(id, fields, values);
-  if (!result) throw new AppError("Mentor not found", 404);
-  return result;
+  await redis.del("cache:mentors:list");
+
+  return await getMentor(id);
 }
 
 export async function deleteMentor(id: string) {

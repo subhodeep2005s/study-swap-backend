@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import request from "supertest";
 import { createApp } from "../src/app";
-import { getClient } from "../src/config/db";
+import { getClient, query } from "../src/config/db";
 import { redis } from "../src/config/redis";
 
 const app = createApp();
@@ -86,6 +86,12 @@ describe("Mentor Module - E2E Journey", () => {
     });
 
     it("should allow mentor to apply and auto-verify", async () => {
+      const countryRes = await query("SELECT id FROM countries LIMIT 1");
+      const countryId = countryRes.rows[0]?.id;
+
+      const examRes = await query("SELECT id FROM exams LIMIT 1");
+      const examIds = examRes.rows.map(r => r.id);
+
       const res = await request(app)
         .post("/onboarding/mentor-application")
         .set("Authorization", `Bearer ${mentorToken}`)
@@ -94,7 +100,10 @@ describe("Mentor Module - E2E Journey", () => {
           qualification: "PhD in Testing",
           experienceYears: 10,
           hourlyPrice: 100,
-          about: "Testing is my life."
+          about: "Testing is my life.",
+          countryId,
+          state: "California",
+          examIds
         });
 
       expect(res.status).toBe(200);

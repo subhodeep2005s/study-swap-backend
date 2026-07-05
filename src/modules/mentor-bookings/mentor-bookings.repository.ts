@@ -12,21 +12,42 @@ export class MentorBookingsRepository {
   }
 
   static async getMentorProfile(mentorId: string) {
-    const result = await query("SELECT * FROM mentors WHERE id = $1", [mentorId]);
-    return result.rows[0];
+    const result = await query(`
+      SELECT 
+        m.*, 
+        p.full_name, p.profile_image, p.country_id, p.state,
+        u.email
+      FROM mentors m
+      JOIN profiles p ON p.user_id = m.user_id
+      JOIN users u ON u.id = m.user_id
+      WHERE m.id = $1
+    `, [mentorId]);
+    const mentor = result.rows[0];
+    if (!mentor) return null;
+
+    // Fetch exams
+    const examsResult = await query(`
+      SELECT e.id, e.name 
+      FROM user_exams ue
+      JOIN exams e ON e.id = ue.exam_id
+      WHERE ue.user_id = $1
+    `, [mentor.user_id]);
+    mentor.exams = examsResult.rows;
+
+    return mentor;
   }
 
   static async updateMentorProfile(mentorId: string, fields: string[], values: any[]) {
-    if (fields.length === 0) return await this.getMentorProfile(mentorId);
+    if (fields.length > 0) {
+      fields.push(`updated_at = NOW()`);
+      values.push(mentorId);
+      
+      await query(`
+        UPDATE mentors SET ${fields.join(", ")} WHERE id = $${values.length} RETURNING *
+      `, values);
+    }
     
-    fields.push(`updated_at = NOW()`);
-    values.push(mentorId);
-    
-    const result = await query(`
-      UPDATE mentors SET ${fields.join(", ")} WHERE id = $${values.length} RETURNING *
-    `, values);
-    
-    return result.rows[0];
+    return await this.getMentorProfile(mentorId);
   }
 
   static async getPlans(mentorId: string) {

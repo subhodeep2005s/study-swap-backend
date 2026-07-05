@@ -82,6 +82,12 @@ describe("Booking Flow - E2E (Google Meet Integration)", () => {
     });
 
     it("should apply as mentor and auto-verify", async () => {
+      const countryRes = await query("SELECT id FROM countries LIMIT 1");
+      const countryId = countryRes.rows[0]?.id;
+
+      const examRes = await query("SELECT id FROM exams LIMIT 1");
+      const examIds = examRes.rows.map(r => r.id);
+
       const res = await request(app)
         .post("/onboarding/mentor-application")
         .set("Authorization", `Bearer ${mentorToken}`)
@@ -90,7 +96,10 @@ describe("Booking Flow - E2E (Google Meet Integration)", () => {
           qualification: "MSc in Testing",
           experienceYears: 5,
           hourlyPrice: 75,
-          about: "I help students ace their exams."
+          about: "I help students ace their exams.",
+          countryId,
+          state: "New York",
+          examIds
         });
       expect(res.status).toBe(200);
 

@@ -92,6 +92,9 @@ export class OnboardingRepository {
       experienceYears: number;
       hourlyPrice: number;
       about?: string;
+      countryId: string;
+      state?: string;
+      examIds: string[];
     }
   ) {
     const client = await getClient();
@@ -118,6 +121,28 @@ export class OnboardingRepository {
         `UPDATE users SET role = 'mentor' WHERE id = $1`,
         [userId]
       );
+
+      // 3. Upsert profiles table for country and state
+      await client.query(
+        `INSERT INTO profiles (user_id, country_id, state)
+         VALUES ($1, $2, $3)
+         ON CONFLICT (user_id) 
+         DO UPDATE SET 
+           country_id = EXCLUDED.country_id,
+           state = EXCLUDED.state,
+           updated_at = NOW()`,
+        [userId, data.countryId, data.state || null]
+      );
+
+      // 4. Save exams
+      await client.query("DELETE FROM user_exams WHERE user_id = $1", [userId]);
+      if (data.examIds && data.examIds.length > 0) {
+        const placeholders = data.examIds.map((_, i) => `($1, $${i + 2})`).join(",");
+        await client.query(
+          `INSERT INTO user_exams (user_id, exam_id) VALUES ${placeholders}`,
+          [userId, ...data.examIds]
+        );
+      }
 
       await client.query("COMMIT");
     } catch (error) {

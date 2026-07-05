@@ -78,6 +78,7 @@ export const updateStudentSchema = z.object({
     needHelpWith: z.string().optional(),
     studyTime: z.enum(["morning", "afternoon", "evening", "late_night"]).optional(),
     lookingFor: z.array(z.string()).optional(),
+    examIds: z.array(z.string().uuid()).optional(),
   }),
 });
 
@@ -127,6 +128,9 @@ export const updateMentorSchema = z.object({
     experience_years: z.number().optional(),
     hourly_price: z.number().optional(),
     is_verified: z.boolean().optional(),
+    country_id: z.string().uuid().nullable().optional(),
+    state: z.string().optional(),
+    exam_ids: z.array(z.string().uuid()).optional(),
   }),
 });
 
