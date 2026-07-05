@@ -1,5 +1,6 @@
 import { env } from "@/config/env";
 import { AppError } from "@/core/errors/AppError";
+import { redis } from "@/config/redis";
 import { generateToken } from "@/core/utils/jwt";
 import type { AdminLoginInput, CreateCountryInput, UpdateCountryInput, CreateExamInput, UpdateExamInput } from "./admin.schema";
 import { AdminRepository, type PaginationParams } from "./admin.repository";
@@ -276,11 +277,13 @@ export async function updateMentor(id: string, data: any) {
 export async function deleteMentor(id: string) {
   const deleted = await AdminRepository.deleteAdminMentor(id);
   if (!deleted) throw new AppError("Mentor not found", 404);
+  await redis.del("cache:mentors:list");
 }
 
 export async function verifyMentor(id: string) {
   const result = await AdminRepository.verifyAdminMentor(id);
   if (!result) throw new AppError("Mentor not found", 404);
+  await redis.del("cache:mentors:list");
   return result;
 }
 

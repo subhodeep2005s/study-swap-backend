@@ -32,6 +32,11 @@ describe("Mentor Module - E2E Journey", () => {
     await redis.quit();
   });
 
+  beforeAll(async () => {
+    // Clear Redis cache so we don't hit cached lists from other tests
+    await redis.del("cache:mentors:list");
+  });
+
   describe("1. Mentor Account Creation & Auth", () => {
     it("should send OTP to mentor email", async () => {
       const res = await request(app)

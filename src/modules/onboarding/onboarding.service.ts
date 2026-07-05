@@ -1,5 +1,6 @@
 import { AppError } from "@/core/errors/AppError";
 import type { CountryInput, ProfileInput, ExamsInput, StudyInput, PreferencesInput } from "./onboarding.schema";
+import { redis } from "@/config/redis";
 import { enhanceBioPrompt } from "./onboarding.ai";
 import { welcomeEmailTemplate } from "@/core/utils/email-templates";
 import { GoogleGenAI } from "@google/genai";
@@ -123,6 +124,9 @@ export async function enhanceBio(bio: string): Promise<string> {
 export async function applyForMentor(userId: string, input: import("./onboarding.schema").MentorApplicationInput) {
   // Call the transaction method to upsert mentor data and update user role to 'mentor'
   await OnboardingRepository.applyForMentorTransaction(userId, input);
+  
+  // Invalidate mentors cache list
+  await redis.del("cache:mentors:list");
   
   // Note: we don't send an email here yet, typically that happens upon admin verification.
 }
