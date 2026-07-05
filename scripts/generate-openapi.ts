@@ -38,3 +38,4 @@ const html = `<!doctype html>
 
 fs.writeFileSync(path.resolve("scalar_page.html"), html);
 console.log("Successfully updated openapi.json and scalar_page.html!");
+process.exit(0);
