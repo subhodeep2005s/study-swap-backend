@@ -101,7 +101,7 @@ describe("StudySwap Backend - Communication Hard Tests", () => {
       client.release();
     }
     const res = await request(app)
-      .patch(`/api/matches/${matchId}/accept`)
+      .patch(`/matches/${matchId}/accept`)
       .set("Authorization", `Bearer ${s1Token}`);
     expect(res.status).toBe(200);
   });
@@ -117,7 +117,7 @@ describe("StudySwap Backend - Communication Hard Tests", () => {
 
   it("✅ Student 1 sends a text message", async () => {
     const res = await request(app)
-      .post(`/api/communication/conversations/${conversationId}/messages`)
+      .post(`/communication/conversations/${conversationId}/messages`)
       .set("Authorization", `Bearer ${s1Token}`)
       .send({
         conversationId,
@@ -130,20 +130,20 @@ describe("StudySwap Backend - Communication Hard Tests", () => {
 
   it("✅ Student 2 fetches and reads message", async () => {
     let res = await request(app)
-      .get(`/api/communication/conversations/${conversationId}/messages`)
+      .get(`/communication/conversations/${conversationId}/messages`)
       .set("Authorization", `Bearer ${s2Token}`);
     expect(res.status).toBe(200);
     expect(res.body.data.length).toBeGreaterThan(0);
     
     res = await request(app)
-      .patch(`/api/communication/conversations/${conversationId}/read`)
+      .patch(`/communication/conversations/${conversationId}/read`)
       .set("Authorization", `Bearer ${s2Token}`);
     expect(res.status).toBe(200);
   });
 
   it("✅ Student 2 replies with an attachment", async () => {
     const res = await request(app)
-      .post(`/api/communication/conversations/${conversationId}/messages`)
+      .post(`/communication/conversations/${conversationId}/messages`)
       .set("Authorization", `Bearer ${s2Token}`)
       .send({
         conversationId,
@@ -162,7 +162,7 @@ describe("StudySwap Backend - Communication Hard Tests", () => {
 
   it("✅ Student 1 starts a call", async () => {
     const res = await request(app)
-      .post(`/api/communication/calls`)
+      .post(`/communication/calls`)
       .set("Authorization", `Bearer ${s1Token}`)
       .send({
         conversationId,
@@ -174,21 +174,21 @@ describe("StudySwap Backend - Communication Hard Tests", () => {
 
   it("✅ Student 2 accepts the call", async () => {
     const res = await request(app)
-      .patch(`/api/communication/calls/${callId}/accept`)
+      .patch(`/communication/calls/${callId}/accept`)
       .set("Authorization", `Bearer ${s2Token}`);
     expect(res.status).toBeLessThan(300);
   });
 
   it("✅ Student 1 ends the call", async () => {
     const res = await request(app)
-      .patch(`/api/communication/calls/${callId}/end`)
+      .patch(`/communication/calls/${callId}/end`)
       .set("Authorization", `Bearer ${s1Token}`);
     expect(res.status).toBeLessThan(300);
   });
 
   it("✅ Student 2 starts a focus session", async () => {
     const res = await request(app)
-      .post(`/api/communication/focus`)
+      .post(`/communication/focus`)
       .set("Authorization", `Bearer ${s2Token}`)
       .send({
         conversationId,
@@ -200,14 +200,14 @@ describe("StudySwap Backend - Communication Hard Tests", () => {
 
   it("✅ Student 1 accepts focus session", async () => {
     const res = await request(app)
-      .patch(`/api/communication/focus/${focusId}/accept`)
+      .patch(`/communication/focus/${focusId}/accept`)
       .set("Authorization", `Bearer ${s1Token}`);
     expect(res.status).toBeLessThan(300);
   });
 
   it("✅ Student 2 ends focus session", async () => {
     const res = await request(app)
-      .patch(`/api/communication/focus/${focusId}/end`)
+      .patch(`/communication/focus/${focusId}/end`)
       .set("Authorization", `Bearer ${s2Token}`);
     expect(res.status).toBeLessThan(300);
   });

@@ -191,7 +191,7 @@ describe("StudySwap Backend - Full Day In The Life Journey", () => {
 
     it("✅ Student views mentor dashboard", async () => {
       const res = await request(app)
-        .get(`/api/mentors/${mentorProfileId}`)
+        .get(`/mentors/${mentorProfileId}`)
         .set("Authorization", `Bearer ${studentToken}`);
       expect(res.status).toBe(200);
       expect(res.body.data.id).toBe(mentorProfileId);
@@ -251,7 +251,7 @@ describe("StudySwap Backend - Full Day In The Life Journey", () => {
 
     it("✅ Student swipes right (accepts match)", async () => {
       const res = await request(app)
-        .patch(`/api/matches/${matchId}/accept`)
+        .patch(`/matches/${matchId}/accept`)
         .set("Authorization", `Bearer ${studentToken}`);
       expect(res.status).toBe(200);
     });
@@ -272,7 +272,7 @@ describe("StudySwap Backend - Full Day In The Life Journey", () => {
 
     it("✅ Send a message", async () => {
       const res = await request(app)
-        .post(`/api/communication/conversations/${conversationId}/messages`)
+        .post(`/communication/conversations/${conversationId}/messages`)
         .set("Authorization", `Bearer ${studentToken}`)
         .send({
           conversationId,
@@ -284,7 +284,7 @@ describe("StudySwap Backend - Full Day In The Life Journey", () => {
 
     it("✅ Fetch messages", async () => {
       const res = await request(app)
-        .get(`/api/communication/conversations/${conversationId}/messages`)
+        .get(`/communication/conversations/${conversationId}/messages`)
         .set("Authorization", `Bearer ${mentorToken}`);
       expect(res.status).toBe(200);
       expect(Array.isArray(res.body.data)).toBe(true);
@@ -305,7 +305,7 @@ describe("StudySwap Backend - Full Day In The Life Journey", () => {
     it("✅ Accept a call", async () => {
       if (!callId) return;
       const res = await request(app)
-        .patch(`/api/communication/calls/${callId}/accept`)
+        .patch(`/communication/calls/${callId}/accept`)
         .set("Authorization", `Bearer ${mentorToken}`);
       expect(res.status).toBeLessThan(300);
     });

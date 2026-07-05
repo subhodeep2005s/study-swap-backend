@@ -233,7 +233,7 @@ describe("Booking Flow - E2E (Google Meet Integration)", () => {
 
     it("should get a single booking with Google Meet fields", async () => {
       const res = await request(app)
-        .get(`/api/mentors/bookings/${bookingId}`)
+        .get(`/mentors/bookings/${bookingId}`)
         .set("Authorization", `Bearer ${studentToken}`);
 
       expect(res.status).toBe(200);
@@ -300,7 +300,7 @@ describe("Booking Flow - E2E (Google Meet Integration)", () => {
   describe("7. Cancel Booking", () => {
     it("should cancel the booking", async () => {
       const res = await request(app)
-        .patch(`/api/mentors/bookings/${bookingId}/cancel`)
+        .patch(`/mentors/bookings/${bookingId}/cancel`)
         .set("Authorization", `Bearer ${studentToken}`);
 
       expect(res.status).toBe(200);
@@ -309,7 +309,7 @@ describe("Booking Flow - E2E (Google Meet Integration)", () => {
 
     it("should show cancelled status", async () => {
       const res = await request(app)
-        .get(`/api/mentors/bookings/${bookingId}`)
+        .get(`/mentors/bookings/${bookingId}`)
         .set("Authorization", `Bearer ${studentToken}`);
 
       expect(res.status).toBe(200);
@@ -318,7 +318,7 @@ describe("Booking Flow - E2E (Google Meet Integration)", () => {
 
     it("should not cancel an already cancelled booking", async () => {
       const res = await request(app)
-        .patch(`/api/mentors/bookings/${bookingId}/cancel`)
+        .patch(`/mentors/bookings/${bookingId}/cancel`)
         .set("Authorization", `Bearer ${studentToken}`);
 
       expect(res.status).toBe(400);
