@@ -287,7 +287,7 @@ describe("StudySwap Backend - Full Day In The Life Journey", () => {
         .get(`/communication/conversations/${conversationId}/messages`)
         .set("Authorization", `Bearer ${mentorToken}`);
       expect(res.status).toBe(200);
-      expect(Array.isArray(res.body.data)).toBe(true);
+      expect(Array.isArray(res.body.data.items)).toBe(true);
     });
 
     it("✅ Start a call", async () => {

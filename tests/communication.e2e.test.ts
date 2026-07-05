@@ -133,7 +133,7 @@ describe("StudySwap Backend - Communication Hard Tests", () => {
       .get(`/communication/conversations/${conversationId}/messages`)
       .set("Authorization", `Bearer ${s2Token}`);
     expect(res.status).toBe(200);
-    expect(res.body.data.length).toBeGreaterThan(0);
+    expect(res.body.data.items.length).toBeGreaterThan(0);
     
     res = await request(app)
       .patch(`/communication/conversations/${conversationId}/read`)
