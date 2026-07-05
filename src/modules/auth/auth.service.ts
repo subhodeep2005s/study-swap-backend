@@ -79,7 +79,7 @@ export async function verifyOtp(email: string, otp: string, requestedRole?: "stu
 
   const userResult = await AuthRepository.getUserByEmail(email);
 
-  let user: { id: string; email: string; role: "admin" | "student" | "mentor"; onboarding_completed: boolean };
+  let user: { id: string; email: string; role: "admin" | "student" | "mentor"; onboarding_completed: boolean; full_name?: string; profile_image?: string };
 
   if (!userResult) {
     // Create new user if they don't exist
@@ -112,6 +112,8 @@ export async function verifyOtp(email: string, otp: string, requestedRole?: "stu
       email: user.email,
       role: user.role,
       onboardingCompleted: user.onboarding_completed,
+      fullName: user.full_name,
+      profileImage: user.profile_image,
     },
   };
 }
