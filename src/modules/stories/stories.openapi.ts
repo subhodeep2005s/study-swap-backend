@@ -121,3 +121,29 @@ registry.registerPath({
     },
   },
 });
+
+registry.registerPath({
+  method: "get",
+  path: "/stories/me",
+  tags,
+  security,
+  summary: "Get my story",
+  description: "Check if the current user has an active story and return its URL.",
+  responses: {
+    200: {
+      description: "Success",
+      content: {
+        "application/json": {
+          schema: z.object({
+            success: z.boolean(),
+            message: z.string(),
+            data: z.object({
+              hasStory: z.boolean(),
+              url: z.string().optional(),
+            }),
+          }),
+        },
+      },
+    },
+  },
+});

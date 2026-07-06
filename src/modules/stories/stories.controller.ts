@@ -22,3 +22,14 @@ export const getStoryViews = asyncHandler(async (req: Request, res: Response) =>
   const views = await storiesService.getStoryViews(req.user!.id);
   res.status(200).json({ success: true, message: "Story views fetched successfully.", data: views });
 });
+
+export const getMyStory = asyncHandler(async (req: Request, res: Response) => {
+  const stories = await storiesService.getStories([req.user!.id]);
+  const url = stories[req.user!.id];
+  
+  if (url) {
+    res.status(200).json({ success: true, message: "Story found.", data: { hasStory: true, url } });
+  } else {
+    res.status(200).json({ success: true, message: "No story found.", data: { hasStory: false } });
+  }
+});

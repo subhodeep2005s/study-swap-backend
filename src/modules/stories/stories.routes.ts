@@ -11,6 +11,7 @@ router.use(authMiddleware);
 router.post("/", validate(storySchema), storiesController.uploadStory);
 router.delete("/", storiesController.deleteStory);
 router.get("/views", storiesController.getStoryViews);
+router.get("/me", storiesController.getMyStory);
 router.post("/:userId/view", validate(viewStorySchema), storiesController.viewStory);
 
 export default router;
