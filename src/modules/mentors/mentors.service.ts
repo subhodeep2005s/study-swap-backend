@@ -133,12 +133,12 @@ export async function bookSession(studentId: string, mentorId: string, planId: s
 
   // --- Google Meet + Emails (async, non-blocking) ---
   createMeetingAndNotify(
-    result.bookingId,
+    result.bookingId!,
     studentId,
     mentorId,
-    result.slotStartTime,
-    result.slotEndTime,
-    result.mentorUserId
+    result.slotStartTime!,
+    result.slotEndTime!,
+    result.mentorUserId!
   ).catch(err => logger.error({ err, bookingId: result.bookingId }, "Failed in post-booking Google Meet flow"));
 
   return { bookingId: result.bookingId };
