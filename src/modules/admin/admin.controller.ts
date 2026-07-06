@@ -12,7 +12,7 @@ export const login = asyncHandler(async (req: Request<unknown, unknown, AdminLog
 });
 
 export const getMe = asyncHandler(async (req: Request, res: Response) => {
-  res.status(200).json({ success: true, message: "Admin details fetched", data: { user: req.user } });
+  res.status(200).json({ success: true, message: "Admin details fetched", data: req.user });
 });
 
 // =========================================================================
@@ -28,18 +28,18 @@ export const getDashboard = asyncHandler(async (_req: Request, res: Response) =>
 // =========================================================================
 export const getCountries = asyncHandler(async (req: Request, res: Response) => {
   const { page, limit, search } = req.query as any;
-  const data = await adminService.getCountries({ page: Number(page) || 1, limit: Number(limit) || 20, search });
-  res.status(200).json({ success: true, message: "Countries fetched", ...data });
+  const result = await adminService.getCountries({ page: Number(page) || 1, limit: Number(limit) || 20, search });
+  res.status(200).json({ success: true, message: "Countries fetched successfully", data: result.data, pagination: result.pagination });
 });
 
 export const createCountry = asyncHandler(async (req: Request<unknown, unknown, CreateCountryInput>, res: Response) => {
   const data = await adminService.createCountry(req.body);
-  res.status(201).json({ success: true, message: "Country created", data: { country: data } });
+  res.status(201).json({ success: true, message: "Country created", data });
 });
 
 export const updateCountry = asyncHandler(async (req: Request<{ id: string }, unknown, UpdateCountryInput>, res: Response) => {
   const data = await adminService.updateCountry(req.params.id, req.body);
-  res.status(200).json({ success: true, message: "Country updated", data: { country: data } });
+  res.status(200).json({ success: true, message: "Country updated", data });
 });
 
 export const deleteCountry = asyncHandler(async (req: Request<{ id: string }>, res: Response) => {
@@ -52,23 +52,23 @@ export const deleteCountry = asyncHandler(async (req: Request<{ id: string }>, r
 // =========================================================================
 export const getExams = asyncHandler(async (req: Request, res: Response) => {
   const { page, limit, search } = req.query as any;
-  const data = await adminService.getExams({ page: Number(page) || 1, limit: Number(limit) || 20, search });
-  res.status(200).json({ success: true, message: "Exams fetched", ...data });
+  const result = await adminService.getExams({ page: Number(page) || 1, limit: Number(limit) || 20, search });
+  res.status(200).json({ success: true, message: "Exams fetched successfully", data: result.data, pagination: result.pagination });
 });
 
 export const getExamsByCountry = asyncHandler(async (req: Request<{ countryId: string }>, res: Response) => {
   const data = await adminService.getExamsByCountry(req.params.countryId);
-  res.status(200).json({ success: true, message: "Exams fetched", data: { exams: data } });
+  res.status(200).json({ success: true, message: "Exams fetched", data });
 });
 
 export const createExam = asyncHandler(async (req: Request<unknown, unknown, CreateExamInput>, res: Response) => {
   const data = await adminService.createExam(req.body);
-  res.status(201).json({ success: true, message: "Exam created", data: { exam: data } });
+  res.status(201).json({ success: true, message: "Exam created", data });
 });
 
 export const updateExam = asyncHandler(async (req: Request<{ id: string }, unknown, UpdateExamInput>, res: Response) => {
   const data = await adminService.updateExam(req.params.id, req.body);
-  res.status(200).json({ success: true, message: "Exam updated", data: { exam: data } });
+  res.status(200).json({ success: true, message: "Exam updated", data });
 });
 
 export const deleteExam = asyncHandler(async (req: Request<{ id: string }>, res: Response) => {
@@ -81,35 +81,35 @@ export const deleteExam = asyncHandler(async (req: Request<{ id: string }>, res:
 // =========================================================================
 export const getUsers = asyncHandler(async (req: Request, res: Response) => {
   const { page, limit, search } = req.query as any;
-  const data = await adminService.getUsers({ page: Number(page) || 1, limit: Number(limit) || 20, search });
-  res.status(200).json({ success: true, message: "Users fetched", ...data });
+  const result = await adminService.getUsers({ page: Number(page) || 1, limit: Number(limit) || 20, search });
+  res.status(200).json({ success: true, message: "Users fetched successfully", data: result.data, pagination: result.pagination });
 });
 
 export const getStudents = asyncHandler(async (req: Request, res: Response) => {
   const { page, limit, search } = req.query as any;
-  const data = await adminService.getStudents({ page: Number(page) || 1, limit: Number(limit) || 20, search });
-  res.status(200).json({ success: true, message: "Students fetched", ...data });
+  const result = await adminService.getStudents({ page: Number(page) || 1, limit: Number(limit) || 20, search });
+  res.status(200).json({ success: true, message: "Students fetched successfully", data: result.data, pagination: result.pagination });
 });
 
 export const getMentorsUsers = asyncHandler(async (req: Request, res: Response) => {
   const { page, limit, search } = req.query as any;
-  const data = await adminService.getMentorsUsers({ page: Number(page) || 1, limit: Number(limit) || 20, search });
-  res.status(200).json({ success: true, message: "Mentors fetched", ...data });
+  const result = await adminService.getMentorsUsers({ page: Number(page) || 1, limit: Number(limit) || 20, search });
+  res.status(200).json({ success: true, message: "Mentors fetched successfully", data: result.data, pagination: result.pagination });
 });
 
 export const getUserById = asyncHandler(async (req: Request<{ id: string }>, res: Response) => {
   const data = await adminService.getUserById(req.params.id);
-  res.status(200).json({ success: true, message: "User fetched", data: { user: data } });
+  res.status(200).json({ success: true, message: "User fetched", data });
 });
 
 export const updateStudent = asyncHandler(async (req: Request<{ id: string }, unknown, any>, res: Response) => {
   const data = await adminService.updateStudent(req.params.id, req.body);
-  res.status(200).json({ success: true, message: "Student updated", data: { user: data } });
+  res.status(200).json({ success: true, message: "Student updated", data });
 });
 
 export const updateMentorUser = asyncHandler(async (req: Request<{ id: string }, unknown, any>, res: Response) => {
   const data = await adminService.updateMentorUser(req.params.id, req.body);
-  res.status(200).json({ success: true, message: "Mentor updated", data: { user: data } });
+  res.status(200).json({ success: true, message: "Mentor updated", data });
 });
 
 export const deleteUser = asyncHandler(async (req: Request<{ id: string }>, res: Response) => {
@@ -122,13 +122,13 @@ export const deleteUser = asyncHandler(async (req: Request<{ id: string }>, res:
 // =========================================================================
 export const getMatches = asyncHandler(async (req: Request, res: Response) => {
   const { page, limit } = req.query as any;
-  const data = await adminService.getMatches({ page: Number(page) || 1, limit: Number(limit) || 20 });
-  res.status(200).json({ success: true, message: "Matches fetched", ...data });
+  const result = await adminService.getMatches({ page: Number(page) || 1, limit: Number(limit) || 20 });
+  res.status(200).json({ success: true, message: "Matches fetched successfully", data: result.data, pagination: result.pagination });
 });
 
 export const getMatchesByUser = asyncHandler(async (req: Request<{ userId: string }>, res: Response) => {
   const data = await adminService.getMatchesByUser(req.params.userId);
-  res.status(200).json({ success: true, message: "User matches fetched", data: { matches: data } });
+  res.status(200).json({ success: true, message: "User matches fetched", data });
 });
 
 export const deleteMatch = asyncHandler(async (req: Request<{ id: string }>, res: Response) => {
@@ -141,7 +141,7 @@ export const deleteMatch = asyncHandler(async (req: Request<{ id: string }>, res
 // =========================================================================
 export const getAuditLogs = asyncHandler(async (req: Request, res: Response) => {
   const { page, limit, userId, action, from, to } = req.query as any;
-  const data = await adminService.getAuditLogs({
+  const result = await adminService.getAuditLogs({
     page: Number(page) || 1,
     limit: Number(limit) || 50,
     userId,
@@ -149,7 +149,7 @@ export const getAuditLogs = asyncHandler(async (req: Request, res: Response) => 
     from,
     to,
   });
-  res.status(200).json({ success: true, message: "Audit logs fetched", ...data });
+  res.status(200).json({ success: true, message: "Audit logs fetched successfully", data: result.data, pagination: result.pagination });
 });
 
 // =========================================================================
@@ -185,13 +185,13 @@ export const verifyMentor = asyncHandler(async (req: Request<{ id: string }>, re
 // =========================================================================
 export const getBookings = asyncHandler(async (req: Request, res: Response) => {
   const { page, limit, search, status } = req.query as any;
-  const data = await adminService.getBookings({
+  const result = await adminService.getBookings({
     page: Number(page) || 1,
     limit: Number(limit) || 20,
     search,
     status,
   });
-  res.status(200).json({ success: true, message: "Bookings fetched", ...data });
+  res.status(200).json({ success: true, message: "Bookings fetched successfully", data: result.data, pagination: result.pagination });
 });
 
 export const getBooking = asyncHandler(async (req: Request<{ id: string }>, res: Response) => {
@@ -201,7 +201,7 @@ export const getBooking = asyncHandler(async (req: Request<{ id: string }>, res:
 
 export const getBookingsByMentor = asyncHandler(async (req: Request<{ id: string }>, res: Response) => {
   const bookings = await adminService.getBookingsByMentor(req.params.id);
-  res.status(200).json({ success: true, message: "Mentor bookings fetched", data: { bookings } });
+  res.status(200).json({ success: true, message: "Mentor bookings fetched", data: bookings });
 });
 
 export const updateBooking = asyncHandler(async (req: Request<{ id: string }>, res: Response) => {
@@ -220,16 +220,16 @@ export const regenerateMeetLink = asyncHandler(async (req: Request<{ id: string 
 });
 
 // =========================================================================
-// Slots (Merged)
+// Availability (Merged)
 // =========================================================================
-export const getMentorSlots = asyncHandler(async (req: Request<{ id: string }>, res: Response) => {
-  const slots = await adminService.getMentorSlots(req.params.id);
-  res.status(200).json({ success: true, message: "Mentor slots fetched", data: { slots } });
+export const getMentorAvailability = asyncHandler(async (req: Request<{ id: string }>, res: Response) => {
+  const availability = await adminService.getMentorAvailability(req.params.id);
+  res.status(200).json({ success: true, message: "Mentor availability fetched", data: availability });
 });
 
-export const deleteSlot = asyncHandler(async (req: Request<{ id: string }>, res: Response) => {
-  await adminService.deleteSlot(req.params.id);
-  res.status(200).json({ success: true, message: "Slot deleted", data: {} });
+export const updateMentorAvailability = asyncHandler(async (req: Request<{ id: string }>, res: Response) => {
+  const availability = await adminService.updateMentorAvailability(req.params.id, req.body.availability);
+  res.status(200).json({ success: true, message: "Mentor availability updated", data: availability });
 });
 
 // =========================================================================
@@ -237,7 +237,7 @@ export const deleteSlot = asyncHandler(async (req: Request<{ id: string }>, res:
 // =========================================================================
 export const getMentorPlans = asyncHandler(async (req: Request<{ id: string }>, res: Response) => {
   const plans = await adminService.getMentorPlans(req.params.id);
-  res.status(200).json({ success: true, message: "Mentor plans fetched", data: { plans } });
+  res.status(200).json({ success: true, message: "Mentor plans fetched", data: plans });
 });
 
 export const updatePlan = asyncHandler(async (req: Request<{ id: string }>, res: Response) => {

@@ -402,3 +402,216 @@ registry.registerPath({
     },
   },
 });
+
+// Additional missing routes
+registry.registerPath({
+  method: "patch",
+  path: "/communication/conversations/{conversationId}/read",
+  summary: "Mark conversation as read",
+  description: "Mark all messages in the conversation as read",
+  tags: ["Communication"],
+  security: [{ bearerAuth: [] }],
+  request: {
+    params: z.object({
+      conversationId: z.string().uuid(),
+    }),
+  },
+  responses: {
+    200: {
+      description: "Messages marked as read",
+      content: {
+        "application/json": {
+          schema: z.object({
+            success: z.boolean(),
+            message: z.string(),
+          }),
+        },
+      },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/communication/conversations/{conversationId}/attachments",
+  summary: "Get conversation attachments",
+  description: "Get all attachments for a specific conversation",
+  tags: ["Communication"],
+  security: [{ bearerAuth: [] }],
+  request: {
+    params: z.object({
+      conversationId: z.string().uuid(),
+    }),
+    query: z.object({
+      cursor: z.string().optional(),
+    }),
+  },
+  responses: {
+    200: {
+      description: "List of attachments",
+      content: {
+        "application/json": {
+          schema: z.object({
+            success: z.boolean(),
+            message: z.string(),
+            data: z.object({
+              items: z.array(messageResponseSchema),
+              nextCursor: z.string().nullable(),
+            }),
+          }),
+        },
+      },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/communication/conversations/{conversationId}/calls",
+  summary: "Get call history",
+  description: "Get call history for a conversation",
+  tags: ["Communication"],
+  security: [{ bearerAuth: [] }],
+  request: {
+    params: z.object({
+      conversationId: z.string().uuid(),
+    }),
+    query: z.object({
+      cursor: z.string().optional(),
+    }),
+  },
+  responses: {
+    200: {
+      description: "List of calls",
+      content: {
+        "application/json": {
+          schema: z.object({
+            success: z.boolean(),
+            message: z.string(),
+            data: z.object({
+              items: z.array(z.object({
+                id: z.string().uuid(),
+                conversation_id: z.string().uuid(),
+                caller_id: z.string().uuid(),
+                room_name: z.string(),
+                type: callTypeEnum,
+                status: callStatusEnum,
+                started_at: z.string().datetime(),
+                created_at: z.string().datetime(),
+                ended_at: z.string().datetime().nullable(),
+                ended_reason: callEndedReasonEnum.nullable(),
+              })),
+              nextCursor: z.string().nullable(),
+            }),
+          }),
+        },
+      },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "patch",
+  path: "/communication/calls/{callId}/reject",
+  summary: "Reject a call",
+  description: "Reject an incoming call",
+  tags: ["Communication"],
+  security: [{ bearerAuth: [] }],
+  request: {
+    params: z.object({
+      callId: z.string().uuid(),
+    }),
+  },
+  responses: {
+    200: {
+      description: "Call rejected",
+      content: {
+        "application/json": {
+          schema: z.object({
+            success: z.boolean(),
+            message: z.string(),
+            data: z.object({
+              id: z.string().uuid(),
+              status: callStatusEnum,
+              ended_reason: callEndedReasonEnum.nullable(),
+            }),
+          }),
+        },
+      },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/communication/conversations/{conversationId}/focus",
+  summary: "Get focus history",
+  description: "Get focus sessions history for a conversation",
+  tags: ["Communication"],
+  security: [{ bearerAuth: [] }],
+  request: {
+    params: z.object({
+      conversationId: z.string().uuid(),
+    }),
+    query: z.object({
+      cursor: z.string().optional(),
+    }),
+  },
+  responses: {
+    200: {
+      description: "List of focus sessions",
+      content: {
+        "application/json": {
+          schema: z.object({
+            success: z.boolean(),
+            message: z.string(),
+            data: z.object({
+              items: z.array(z.object({
+                id: z.string().uuid(),
+                conversation_id: z.string().uuid(),
+                initiator_id: z.string().uuid(),
+                room_name: z.string(),
+                duration_seconds: z.number().int(),
+                status: focusStatusEnum,
+                started_at: z.string().datetime().nullable(),
+                ends_at: z.string().datetime().nullable(),
+              })),
+              nextCursor: z.string().nullable(),
+            }),
+          }),
+        },
+      },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "patch",
+  path: "/communication/focus/{focusId}/reject",
+  summary: "Reject a focus session",
+  description: "Reject an incoming focus session request",
+  tags: ["Communication"],
+  security: [{ bearerAuth: [] }],
+  request: {
+    params: z.object({
+      focusId: z.string().uuid(),
+    }),
+  },
+  responses: {
+    200: {
+      description: "Focus session rejected",
+      content: {
+        "application/json": {
+          schema: z.object({
+            success: z.boolean(),
+            message: z.string(),
+            data: z.object({
+              id: z.string().uuid(),
+              status: focusStatusEnum,
+            }),
+          }),
+        },
+      },
+    },
+  },
+});

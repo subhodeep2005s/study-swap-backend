@@ -95,8 +95,8 @@ describe("StudySwap Backend - Full Day In The Life Journey", () => {
     it("✅ Fetch available countries", async () => {
       const res = await request(app).get("/countries");
       expect(res.status).toBe(200);
-      expect(Array.isArray(res.body.data.countries)).toBe(true);
-      countryId = res.body.data.countries.length > 0 ? res.body.data.countries[0].id : "00000000-0000-0000-0000-000000000000";
+      expect(Array.isArray(res.body.data)).toBe(true);
+      countryId = res.body.data.length > 0 ? res.body.data[0].id : "00000000-0000-0000-0000-000000000000";
     });
 
     it("✅ Student completes onboarding profile", async () => {
@@ -168,17 +168,28 @@ describe("StudySwap Backend - Full Day In The Life Journey", () => {
     });
 
     it("✅ Mentor creates availability slots", async () => {
-      const start = new Date(Date.now() + 86400000).toISOString(); // tomorrow
-      const end = new Date(Date.now() + 86400000 + 1800000).toISOString(); // tomorrow + 30 mins
+      const dayOfWeek = new Date(Date.now() + 86400000).getUTCDay(); // tomorrow
       const res = await request(app)
-        .post("/mentor/slots")
+        .put("/mentor/availability")
         .set("Authorization", `Bearer ${mentorToken}`)
         .send({
-          start_time: start,
-          end_time: end
+          availability: [{
+            day_of_week: dayOfWeek,
+            start_time: "00:00",
+            end_time: "23:59"
+          }]
         });
       expect(res.status).toBeLessThan(300);
-      slotId = res.body.data.id;
+    });
+
+    it("✅ Student fetches mentor slots", async () => {
+      const date = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+      const res = await request(app)
+        .get(`/mentors/${mentorProfileId}/slots?planId=${planId}&date=${date}`)
+        .set("Authorization", `Bearer ${studentToken}`);
+      expect(res.status).toBe(200);
+      expect(res.body.data.length).toBeGreaterThan(0);
+      slotId = res.body.data[0].id;
     });
 
     it("✅ Student browses mentors", async () => {

@@ -7,7 +7,7 @@ export const getCountries = asyncHandler(async (_req: Request, res: Response) =>
   res.status(200).json({
     success: true,
     message: "Countries fetched successfully",
-    data: { countries: data },
+    data,
   });
 });
 
@@ -16,6 +16,6 @@ export const getStates = asyncHandler(async (req: Request<{ countryCode: string 
   res.status(200).json({
     success: true,
     message: "States fetched successfully",
-    data: { states: data },
+    data,
   });
 });

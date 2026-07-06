@@ -410,15 +410,16 @@ export async function regenerateMeetLink(bookingId: string) {
 }
 
 // =========================================================================
-// Slots (Merged)
+// Availability (Merged)
 // =========================================================================
-export async function getMentorSlots(mentorId: string) {
-  return await AdminRepository.getMentorSlots(mentorId);
+export async function getMentorAvailability(mentorId: string) {
+  return await AdminRepository.getMentorAvailability(mentorId);
 }
 
-export async function deleteSlot(slotId: string) {
-  const deleted = await AdminRepository.deleteSlot(slotId);
-  if (!deleted) throw new AppError("Slot not found or is currently booked", 400);
+export async function updateMentorAvailability(mentorId: string, availability: { day_of_week: number, start_time: string, end_time: string }[]) {
+  const mentor = await AdminRepository.getAdminMentor(mentorId);
+  if (!mentor) throw new AppError("Mentor not found", 404);
+  return await AdminRepository.updateMentorAvailabilityTransaction(mentorId, availability);
 }
 
 // =========================================================================

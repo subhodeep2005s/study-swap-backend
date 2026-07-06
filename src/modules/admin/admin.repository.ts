@@ -667,25 +667,42 @@ export class AdminRepository {
   }
 
   // =========================================================================
-  // Mentor Slots (admin)
+  // Mentor Availability (admin)
   // =========================================================================
-  static async getMentorSlots(mentorId: string) {
-    const result = await query(`
-      SELECT id, start_time, end_time, is_booked, created_at
-      FROM mentor_slots
-      WHERE mentor_id = $1
-      ORDER BY start_time ASC
-    `, [mentorId]);
+  static async getMentorAvailability(mentorId: string) {
+    const result = await query(
+      `SELECT day_of_week, start_time, end_time FROM mentor_availability WHERE mentor_id = $1 ORDER BY day_of_week, start_time`,
+      [mentorId]
+    );
     return result.rows;
   }
 
-  static async deleteSlot(slotId: string) {
-    // Only delete if not booked
-    const result = await query(
-      "DELETE FROM mentor_slots WHERE id = $1 AND is_booked = false RETURNING id",
-      [slotId]
-    );
-    return result.rows.length > 0;
+  static async updateMentorAvailabilityTransaction(mentorId: string, availability: { day_of_week: number, start_time: string, end_time: string }[]) {
+    const client = await getClient();
+    try {
+      await client.query("BEGIN");
+      
+      await client.query("DELETE FROM mentor_availability WHERE mentor_id = $1", [mentorId]);
+      
+      for (const rule of availability) {
+        if (rule.start_time >= rule.end_time) {
+          await client.query("ROLLBACK");
+          throw new Error(`Start time must be before end time: ${rule.start_time} - ${rule.end_time}`);
+        }
+        await client.query(
+          "INSERT INTO mentor_availability (mentor_id, day_of_week, start_time, end_time) VALUES ($1, $2, $3, $4)",
+          [mentorId, rule.day_of_week, rule.start_time, rule.end_time]
+        );
+      }
+      
+      await client.query("COMMIT");
+      return await this.getMentorAvailability(mentorId);
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
+    } finally {
+      client.release();
+    }
   }
 
   // =========================================================================

@@ -80,97 +80,40 @@ export class MentorBookingsRepository {
     return result.rows.length > 0;
   }
 
-  static async getSlots(mentorId: string) {
-    const result = await query("SELECT * FROM mentor_slots WHERE mentor_id = $1 ORDER BY start_time ASC", [mentorId]);
+  static async getAvailability(mentorId: string) {
+    const result = await query(
+      `SELECT day_of_week, start_time, end_time FROM mentor_availability WHERE mentor_id = $1 ORDER BY day_of_week, start_time`,
+      [mentorId]
+    );
     return result.rows;
   }
 
-  static async createSlot(mentorId: string, data: { start_time: string, end_time: string }) {
+  static async updateAvailabilityTransaction(mentorId: string, availability: { day_of_week: number, start_time: string, end_time: string }[]) {
     const client = await getClient();
     try {
       await client.query("BEGIN");
       
-      const overlapRes = await client.query(
-        "SELECT id FROM mentor_slots WHERE mentor_id = $1 AND start_time < $3 AND end_time > $2 FOR UPDATE",
-        [mentorId, data.start_time, data.end_time]
-      );
+      await client.query("DELETE FROM mentor_availability WHERE mentor_id = $1", [mentorId]);
       
-      if (overlapRes.rows.length > 0) {
-        await client.query("ROLLBACK");
-        return { error: "Slot overlaps with an existing slot", code: 400 };
-      }
-
-      const result = await client.query(
-        `INSERT INTO mentor_slots (mentor_id, start_time, end_time, is_booked)
-         VALUES ($1, $2, $3, false) RETURNING *`,
-        [mentorId, data.start_time, data.end_time]
-      );
-      
-      await client.query("COMMIT");
-      return { success: true, slot: result.rows[0] };
-    } catch (err) {
-      await client.query("ROLLBACK");
-      throw err;
-    } finally {
-      client.release();
-    }
-  }
-
-  static async updateSlotTransaction(slotId: string, mentorId: string, fields: string[], values: any[]) {
-    const client = await getClient();
-    try {
-      await client.query("BEGIN");
-      
-      const slotRes = await client.query("SELECT is_booked, start_time, end_time FROM mentor_slots WHERE id = $1 AND mentor_id = $2 FOR UPDATE", [slotId, mentorId]);
-      if (slotRes.rows.length === 0) {
-        await client.query("ROLLBACK");
-        return { error: "Slot not found", code: 404 };
-      }
-      if (slotRes.rows[0]!.is_booked) {
-        await client.query("ROLLBACK");
-        return { error: "Cannot modify a booked slot", code: 400 };
-      }
-  
-      fields.push(`updated_at = NOW()`);
-      values.push(slotId, mentorId);
-      
-      const result = await client.query(
-        `UPDATE mentor_slots SET ${fields.join(", ")} WHERE id = $${values.length - 1} AND mentor_id = $${values.length} RETURNING *`,
-        values
-      );
-      
-      if (new Date(result.rows[0]!.start_time) >= new Date(result.rows[0]!.end_time)) {
-        await client.query("ROLLBACK");
-        return { error: "End time must be after start time", code: 400 };
-      }
-
-      const overlapRes = await client.query(
-        "SELECT id FROM mentor_slots WHERE mentor_id = $1 AND start_time < $3 AND end_time > $2 AND id != $4 FOR UPDATE",
-        [mentorId, result.rows[0]!.start_time, result.rows[0]!.end_time, slotId]
-      );
-      
-      if (overlapRes.rows.length > 0) {
-        await client.query("ROLLBACK");
-        return { error: "Updated slot overlaps with an existing slot", code: 400 };
+      for (const rule of availability) {
+        if (rule.start_time >= rule.end_time) {
+          await client.query("ROLLBACK");
+          throw new Error(`Start time must be before end time: ${rule.start_time} - ${rule.end_time}`);
+        }
+        await client.query(
+          "INSERT INTO mentor_availability (mentor_id, day_of_week, start_time, end_time) VALUES ($1, $2, $3, $4)",
+          [mentorId, rule.day_of_week, rule.start_time, rule.end_time]
+        );
       }
       
       await client.query("COMMIT");
-      return { success: true, slot: result.rows[0] };
+      return await this.getAvailability(mentorId);
     } catch (error) {
-      await client.query("ROLLBACK").catch(() => {});
+      await client.query("ROLLBACK");
       throw error;
     } finally {
       client.release();
     }
-  }
-
-  static async getSlot(slotId: string, mentorId: string) {
-    const result = await query("SELECT is_booked FROM mentor_slots WHERE id = $1 AND mentor_id = $2", [slotId, mentorId]);
-    return result.rows[0];
-  }
-
-  static async deleteSlot(slotId: string) {
-    await query("DELETE FROM mentor_slots WHERE id = $1", [slotId]);
   }
 
   static async getBookings(mentorId: string) {

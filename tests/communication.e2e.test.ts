@@ -50,7 +50,7 @@ describe("StudySwap Backend - Communication Hard Tests", () => {
 
   it("✅ Register two students", async () => {
     const cRes = await request(app).get("/countries");
-    const countryId = cRes.body.data.countries.length > 0 ? cRes.body.data.countries[0].id : "00000000-0000-0000-0000-000000000000";
+    const countryId = cRes.body.data.length > 0 ? cRes.body.data[0].id : "00000000-0000-0000-0000-000000000000";
 
     // Student 1
     let res = await request(app).post("/auth/send-otp").send({ email: s1Email });

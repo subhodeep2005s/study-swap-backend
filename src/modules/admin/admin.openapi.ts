@@ -17,6 +17,7 @@ import {
   updateMentorSchema,
   updateBookingSchema,
   updatePlanSchema,
+  updateAvailabilitySchema,
   mentorProfileResponseSchema,
   mentorSlotResponseSchema,
   mentorPlanResponseSchema,
@@ -43,6 +44,7 @@ const DashboardResponse = registry.register("DashboardResponse", dashboardRespon
 const UpdateMentor = registry.register("UpdateMentor", updateMentorSchema.shape.body);
 const UpdateBooking = registry.register("UpdateBooking", updateBookingSchema.shape.body);
 const UpdatePlan = registry.register("UpdatePlanAdmin", updatePlanSchema.shape.body);
+const UpdateAvailability = registry.register("UpdateAvailabilityAdmin", updateAvailabilitySchema.shape.body);
 
 const MentorProfileResponse = registry.register("MentorProfileResponse", mentorProfileResponseSchema);
 const MentorSlotResponse = registry.register("MentorSlotResponse", mentorSlotResponseSchema);
@@ -189,7 +191,7 @@ registry.registerPath({
   responses: {
     201: {
       description: "Country created",
-      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({ country: CountryResponse }) }) } },
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: CountryResponse }) } },
     },
   },
 });
@@ -208,7 +210,7 @@ registry.registerPath({
   responses: {
     200: {
       description: "Country updated",
-      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({ country: CountryResponse }) }) } },
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: CountryResponse }) } },
     },
   },
 });
@@ -226,7 +228,7 @@ registry.registerPath({
   responses: {
     200: {
       description: "Country deleted",
-      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({}) }) } },
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({}).openapi({ description: "No data returned for this operation", example: {} }) }) } },
     },
   },
 });
@@ -244,7 +246,7 @@ registry.registerPath({
   responses: {
     200: {
       description: "Exams fetched",
-      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({ exams: z.array(ExamResponse) }) }) } },
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.array(ExamResponse) }) } },
     },
   },
 });
@@ -287,7 +289,7 @@ registry.registerPath({
   responses: {
     201: {
       description: "Exam created",
-      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({ exam: ExamResponse }) }) } },
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: ExamResponse }) } },
     },
   },
 });
@@ -306,7 +308,7 @@ registry.registerPath({
   responses: {
     200: {
       description: "Exam updated",
-      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({ exam: ExamResponse }) }) } },
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: ExamResponse }) } },
     },
   },
 });
@@ -324,7 +326,7 @@ registry.registerPath({
   responses: {
     200: {
       description: "Exam deleted",
-      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({}) }) } },
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({}).openapi({ description: "No data returned for this operation", example: {} }) }) } },
     },
   },
 });
@@ -411,7 +413,7 @@ registry.registerPath({
   responses: {
     200: {
       description: "User fetched",
-      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({ user: AdminUserResponse }) }) } },
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: AdminUserResponse }) } },
     },
   },
 });
@@ -430,7 +432,7 @@ registry.registerPath({
   responses: {
     200: {
       description: "Student updated",
-      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({ user: AdminUserResponse }) }) } },
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: AdminUserResponse }) } },
     },
   },
 });
@@ -449,7 +451,7 @@ registry.registerPath({
   responses: {
     200: {
       description: "Mentor updated",
-      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({ user: AdminUserResponse }) }) } },
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: AdminUserResponse }) } },
     },
   },
 });
@@ -467,7 +469,7 @@ registry.registerPath({
   responses: {
     200: {
       description: "User deleted",
-      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({}) }) } },
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({}).openapi({ description: "No data returned for this operation", example: {} }) }) } },
     },
   },
 });
@@ -509,7 +511,7 @@ registry.registerPath({
   responses: {
     200: {
       description: "User matches fetched",
-      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({ matches: z.array(MatchResponse) }) }) } },
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.array(MatchResponse) }) } },
     },
   },
 });
@@ -527,7 +529,7 @@ registry.registerPath({
   responses: {
     200: {
       description: "Match deleted",
-      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({}) }) } },
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({}).openapi({ description: "No data returned for this operation", example: {} }) }) } },
     },
   },
 });
@@ -628,7 +630,7 @@ registry.registerPath({
   responses: {
     200: {
       description: "Mentor deleted",
-      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({}) }) } },
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({}).openapi({ description: "No data returned for this operation", example: {} }) }) } },
     },
   },
 });
@@ -690,7 +692,7 @@ registry.registerPath({
   responses: {
     200: {
       description: "Mentor bookings fetched",
-      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({ bookings: z.array(BookingResponse) }) }) } },
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.array(BookingResponse) }) } },
     },
   },
 });
@@ -745,7 +747,7 @@ registry.registerPath({
   responses: {
     200: {
       description: "Booking deleted",
-      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({}) }) } },
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({}).openapi({ description: "No data returned for this operation", example: {} }) }) } },
     },
   },
 });
@@ -769,40 +771,49 @@ registry.registerPath({
 });
 
 // =========================================================================
-// Slots (Merged under Admin tag)
+// Availability (Merged under Admin tag)
 // =========================================================================
 registry.registerPath({
   method: "get",
-  path: "/admin/mentors/{id}/slots",
+  path: "/admin/mentors/{id}/availability",
   tags,
   security,
-  summary: "Get mentor slots",
+  summary: "Get mentor availability",
   description: "Admin only.",
   request: {
     params: z.object({ id: z.string().uuid() }),
   },
   responses: {
     200: {
-      description: "Mentor slots fetched",
-      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({ slots: z.array(MentorSlotResponse) }) }) } },
+      description: "Mentor availability fetched",
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.array(z.object({
+        day_of_week: z.number(),
+        start_time: z.string(),
+        end_time: z.string()
+      })) }) } },
     },
   },
 });
 
 registry.registerPath({
-  method: "delete",
-  path: "/admin/mentors/slots/{id}",
+  method: "put",
+  path: "/admin/mentors/{id}/availability",
   tags,
   security,
-  summary: "Delete mentor slot",
-  description: "Admin only. Fails if the slot is currently booked.",
+  summary: "Update mentor availability",
+  description: "Admin only.",
   request: {
     params: z.object({ id: z.string().uuid() }),
+    body: { content: { "application/json": { schema: UpdateAvailability } } },
   },
   responses: {
     200: {
-      description: "Slot deleted",
-      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({}) }) } },
+      description: "Mentor availability updated",
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.array(z.object({
+        day_of_week: z.number(),
+        start_time: z.string(),
+        end_time: z.string()
+      })) }) } },
     },
   },
 });
@@ -823,7 +834,7 @@ registry.registerPath({
   responses: {
     200: {
       description: "Mentor plans fetched",
-      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({ plans: z.array(MentorPlanResponse) }) }) } },
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.array(MentorPlanResponse) }) } },
     },
   },
 });
@@ -860,7 +871,7 @@ registry.registerPath({
   responses: {
     200: {
       description: "Plan deleted",
-      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({}) }) } },
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({}).openapi({ description: "No data returned for this operation", example: {} }) }) } },
     },
   },
 });

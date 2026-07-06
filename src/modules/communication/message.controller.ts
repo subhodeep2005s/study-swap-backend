@@ -8,7 +8,7 @@ export class MessageController {
     const cursor = req.query.cursor as string | undefined;
 
     const messages = await MessageService.getMessages(userId, conversationId, cursor);
-    res.json({ success: true, data: messages });
+    res.json({ success: true, message: "Messages fetched successfully", data: messages });
   }
 
   static async getAttachments(req: Request, res: Response) {
@@ -17,7 +17,7 @@ export class MessageController {
     const cursor = req.query.cursor as string | undefined;
 
     const attachments = await MessageService.getAttachments(userId, conversationId, cursor);
-    res.json({ success: true, data: attachments });
+    res.json({ success: true, message: "Attachments fetched successfully", data: attachments });
   }
 
   static async sendMessage(req: Request, res: Response) {
@@ -28,7 +28,7 @@ export class MessageController {
     const saved = await MessageService.sendMessage(
       userId, conversationId, messageType, message, replyToMessageId, attachment
     );
-    res.status(201).json({ success: true, data: saved });
+    res.status(201).json({ success: true, message: "Message sent successfully", data: saved });
   }
 
   static async editMessage(req: Request, res: Response) {
@@ -37,7 +37,7 @@ export class MessageController {
     const { message } = req.body as any;
 
     const updated = await MessageService.editMessage(userId, messageId, message);
-    res.json({ success: true, data: updated });
+    res.json({ success: true, message: "Message edited successfully", data: updated });
   }
 
   static async deleteMessage(req: Request, res: Response) {
@@ -45,7 +45,7 @@ export class MessageController {
     const messageId = req.params.messageId as string;
 
     const deleted = await MessageService.deleteMessage(userId, messageId);
-    res.json({ success: true, data: deleted });
+    res.json({ success: true, message: "Message deleted successfully", data: deleted });
   }
 
   static async markRead(req: Request, res: Response) {

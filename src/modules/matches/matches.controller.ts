@@ -9,7 +9,7 @@ export const getPendingMatches = asyncHandler(async (req: Request, res: Response
 
 export const getMatchById = asyncHandler(async (req: Request<{ id: string }>, res: Response) => {
   const match = await matchesService.getMatch(req.user!.id, req.params.id);
-  res.status(200).json({ success: true, message: "Match fetched successfully", data: { match } });
+  res.status(200).json({ success: true, message: "Match fetched successfully", data: match });
 });
 
 export const refreshMatches = asyncHandler(async (req: Request, res: Response) => {

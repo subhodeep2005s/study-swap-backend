@@ -9,7 +9,7 @@ export const getExamsByCountry = asyncHandler(
     res.status(200).json({
       success: true,
       message: "Exams fetched successfully",
-      data: { exams: data },
+      data,
     });
   }
 );

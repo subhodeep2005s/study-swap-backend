@@ -19,14 +19,12 @@ registry.registerPath({
           schema: z.object({
             success: z.boolean().openapi({ example: true }),
             message: z.string().openapi({ example: "Exams fetched successfully" }),
-            data: z.object({
-              exams: z.array(
-                z.object({
-                  id: z.string().uuid(),
-                  name: z.string(),
-                })
-              ),
-            }),
+            data: z.array(
+              z.object({
+                id: z.string().uuid(),
+                name: z.string(),
+              })
+            ),
           }),
         },
       },

@@ -15,16 +15,14 @@ registry.registerPath({
           schema: z.object({
             success: z.boolean().openapi({ example: true }),
             message: z.string().openapi({ example: "Countries fetched successfully" }),
-            data: z.object({
-              countries: z.array(
-                z.object({
-                  id: z.string().uuid(),
-                  name: z.string(),
-                  flag: z.string().nullable(),
-                  iso_code: z.string().nullable().optional(),
-                })
-              ),
-            }),
+            data: z.array(
+              z.object({
+                id: z.string().uuid(),
+                name: z.string(),
+                flag: z.string().nullable(),
+                iso_code: z.string().nullable().optional(),
+              })
+            ),
           }),
         },
       },
@@ -51,9 +49,7 @@ registry.registerPath({
           schema: z.object({
             success: z.boolean().openapi({ example: true }),
             message: z.string().openapi({ example: "States fetched successfully" }),
-            data: z.object({
-              states: z.array(z.any()),
-            }),
+            data: z.array(z.object({ id: z.number(), name: z.string(), iso2: z.string() })),
           }),
         },
       },

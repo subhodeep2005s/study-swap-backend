@@ -5,6 +5,7 @@ import { logger } from "../../config/logger";
 interface ErrorResponse {
   success: boolean;
   message: string;
+  data: Record<string, never> | unknown;
   statusCode?: number;
   errors?: unknown;
   stack?: string;
@@ -14,6 +15,7 @@ export function errorHandler(err: Error, req: Request, res: Response, _next: Nex
   const errorResponse: ErrorResponse = {
     success: false,
     message: err.message || "Internal Server Error",
+    data: {},
   };
 
   if (err instanceof AppError) {
@@ -46,5 +48,6 @@ export function notFoundHandler(req: Request, res: Response): void {
   res.status(404).json({
     success: false,
     message: `Route ${req.originalUrl} not found`,
+    data: {},
   });
 }

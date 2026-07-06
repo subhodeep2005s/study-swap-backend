@@ -26,7 +26,7 @@ export const authUserResponseSchema = z.object({
   role: z.string(),
   emailVerified: z.boolean(),
   onboardingCompleted: z.boolean(),
-  createdAt: z.string().or(z.date()),
+  createdAt: z.string(),
   fullName: z.string().nullable().optional(),
   profileImage: z.string().nullable().optional(),
   age: z.number().nullable().optional(),

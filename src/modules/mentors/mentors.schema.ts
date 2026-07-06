@@ -7,3 +7,10 @@ export const bookSessionSchema = z.object({
     slotId: z.string().uuid("Invalid slot ID"),
   }),
 });
+
+export const getSlotsSchema = z.object({
+  query: z.object({
+    planId: z.string().uuid("Invalid plan ID"),
+    date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format, use YYYY-MM-DD"),
+  }),
+});

@@ -13,6 +13,8 @@ export class MentorsRepository {
       FROM mentors m
       JOIN profiles p ON p.user_id = m.user_id
       WHERE m.is_verified = true
+      AND EXISTS (SELECT 1 FROM mentor_plans mp WHERE mp.mentor_id = m.id AND mp.is_active = true)
+      AND EXISTS (SELECT 1 FROM mentor_availability ma WHERE ma.mentor_id = m.id)
     `);
     return result.rows;
   }
@@ -28,6 +30,8 @@ export class MentorsRepository {
       JOIN user_exams mentor_ue ON mentor_ue.user_id = m.user_id
       JOIN user_exams student_ue ON student_ue.exam_id = mentor_ue.exam_id
       WHERE m.is_verified = true AND student_ue.user_id = $1
+      AND EXISTS (SELECT 1 FROM mentor_plans mp WHERE mp.mentor_id = m.id AND mp.is_active = true)
+      AND EXISTS (SELECT 1 FROM mentor_availability ma WHERE ma.mentor_id = m.id)
     `, [userId]);
     return result.rows;
   }
@@ -65,25 +69,42 @@ export class MentorsRepository {
     return result.rows;
   }
 
-  static async getMentorSlots(mentorId: string) {
+  static async getMentorPlan(planId: string) {
+    const result = await query(`SELECT duration_minutes, is_active FROM mentor_plans WHERE id = $1`, [planId]);
+    return result.rows[0];
+  }
+
+  static async getAvailabilityForDay(mentorId: string, dayOfWeek: number) {
     const result = await query(
-      `SELECT id, start_time, end_time FROM mentor_slots WHERE mentor_id = $1 AND is_booked = false AND start_time > NOW() ORDER BY start_time ASC`,
-      [mentorId]
+      `SELECT start_time, end_time FROM mentor_availability WHERE mentor_id = $1 AND day_of_week = $2 ORDER BY start_time ASC`,
+      [mentorId, dayOfWeek]
     );
     return result.rows;
   }
 
-  static async bookSessionTransaction(studentId: string, mentorId: string, planId: string, slotId: string) {
+  static async getBookingsForDate(mentorId: string, dateStart: string, dateEnd: string) {
+    const result = await query(
+      `SELECT s.start_time, s.end_time FROM mentor_bookings b
+       JOIN mentor_slots s ON s.id = b.slot_id
+       WHERE b.mentor_id = $1 AND b.status IN ('confirmed', 'pending') 
+       AND s.start_time >= $2 AND s.start_time < $3`,
+      [mentorId, dateStart, dateEnd]
+    );
+    return result.rows;
+  }
+
+  static async bookSessionTransaction(studentId: string, mentorId: string, planId: string, slotId: string, slotStartTime: string, slotEndTime: string) {
     const client = await getClient();
     try {
       await client.query("BEGIN");
   
-      // Check mentor exists
-      const mentorRes = await client.query("SELECT id FROM mentors WHERE id = $1", [mentorId]);
+      // Lock mentor row to prevent concurrent booking overlaps for the same mentor
+      const mentorRes = await client.query("SELECT user_id FROM mentors WHERE id = $1 FOR UPDATE", [mentorId]);
       if (mentorRes.rows.length === 0) {
         await client.query("ROLLBACK");
         return { error: "Mentor not found", code: 404 };
       }
+      const mentorUserId = mentorRes.rows[0].user_id;
   
       // Check plan exists
       const planRes = await client.query("SELECT price FROM mentor_plans WHERE id = $1 AND mentor_id = $2 AND is_active = true", [planId, mentorId]);
@@ -93,44 +114,35 @@ export class MentorsRepository {
       }
       const price = planRes.rows[0].price;
   
-      // Lock slot
-      const slotRes = await client.query(
-        "SELECT is_booked FROM mentor_slots WHERE id = $1 AND mentor_id = $2 FOR UPDATE",
-        [slotId, mentorId]
+      // Check for overlap across bookings
+      const overlapRes = await client.query(
+        `SELECT b.id FROM mentor_bookings b
+         JOIN mentor_slots s ON s.id = b.slot_id
+         WHERE b.mentor_id = $1 AND b.status IN ('confirmed', 'pending') 
+         AND s.start_time < $3 AND s.end_time > $2`,
+        [mentorId, slotStartTime, slotEndTime]
       );
-  
-      if (slotRes.rows.length === 0) {
+      if (overlapRes.rows.length > 0) {
         await client.query("ROLLBACK");
-        return { error: "Slot not found", code: 404 };
-      }
-      if (slotRes.rows[0].is_booked) {
-        await client.query("ROLLBACK");
-        return { error: "Slot is already booked", code: 400 };
+        return { error: "Slot overlaps with an existing booking", code: 400 };
       }
   
-      // Mark slot as booked
-      await client.query("UPDATE mentor_slots SET is_booked = true, updated_at = NOW() WHERE id = $1", [slotId]);
-
-      // Get slot times for Google Meet
-      const slotTimeRes = await client.query(
-        "SELECT start_time, end_time FROM mentor_slots WHERE id = $1",
-        [slotId]
+      // Insert just-in-time slot
+      await client.query(
+        `INSERT INTO mentor_slots (id, mentor_id, start_time, end_time, is_booked)
+         VALUES ($1, $2, $3, $4, true)`,
+        [slotId, mentorId, slotStartTime, slotEndTime]
       );
-      const slotStartTime = slotTimeRes.rows[0].start_time;
-      const slotEndTime = slotTimeRes.rows[0].end_time;
   
       // Create booking
-      const insertRes = await client.query(
+      const insertBookingRes = await client.query(
         `INSERT INTO mentor_bookings (student_id, mentor_id, plan_id, slot_id, status, payment_status, amount)
          VALUES ($1, $2, $3, $4, 'confirmed', 'paid', $5) RETURNING id`,
         [studentId, mentorId, planId, slotId, price]
       );
   
-      const bookingId = insertRes.rows[0].id;
+      const bookingId = insertBookingRes.rows[0].id;
   
-      // Get mentor's user_id for push notification
-      const mentorUserRes = await client.query("SELECT user_id FROM mentors WHERE id = $1", [mentorId]);
-      const mentorUserId = mentorUserRes.rows[0]?.user_id;
       if (mentorUserId) {
         NotificationService.sendToUser(
           mentorUserId,

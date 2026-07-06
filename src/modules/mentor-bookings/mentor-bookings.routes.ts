@@ -22,11 +22,9 @@ router.post("/plans", validate(schema.createPlanSchema), controller.createPlan);
 router.patch("/plans/:id", validate(schema.updatePlanSchema), controller.updatePlan);
 router.delete("/plans/:id", controller.deletePlan);
 
-// Slots
-router.get("/slots", controller.getSlots);
-router.post("/slots", validate(schema.createSlotSchema), controller.createSlot);
-router.patch("/slots/:id", validate(schema.updateSlotSchema), controller.updateSlot);
-router.delete("/slots/:id", controller.deleteSlot);
+// Availability
+router.get("/availability", controller.getAvailability);
+router.put("/availability", validate(schema.updateAvailabilitySchema), controller.updateAvailability);
 
 // Bookings
 router.get("/bookings", controller.getBookings);

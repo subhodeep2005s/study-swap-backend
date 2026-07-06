@@ -5,6 +5,7 @@ import { StoriesRepository } from "./stories.repository";
 export async function uploadStory(userId: string, imageUrl: string) {
   // Store the story in Redis with a TTL of 24 hours (86400 seconds)
   const key = `story:${userId}`;
+  await redis.del(`story_views:${userId}`);
   await redis.set(key, imageUrl, "EX", 86400);
 }
 

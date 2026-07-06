@@ -23,9 +23,10 @@ export const getMentorPlans = asyncHandler(async (req: Request<{ id: string }>, 
   res.status(200).json({ success: true, message: "Mentor plans fetched successfully", data: plans });
 });
 
-export const getMentorSlots = asyncHandler(async (req: Request<{ id: string }>, res: Response) => {
-  const slots = await mentorsService.getMentorSlots(req.params.id);
-  res.status(200).json({ success: true, message: "Mentor slots fetched successfully", data: slots });
+export const getMentorSlots = asyncHandler(async (req: Request<{ id: string }, any, any, { planId: string, date: string }>, res: Response) => {
+  const { planId, date } = req.query;
+  const slots = await mentorsService.getMentorSlots(req.params.id, planId, date);
+  res.status(200).json({ success: true, message: "Mentor slots fetched", data: slots });
 });
 
 export const bookSession = asyncHandler(async (req: Request, res: Response) => {

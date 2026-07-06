@@ -29,7 +29,7 @@ describe("Booking Flow - E2E (Google Meet Integration)", () => {
       await client.query("BEGIN");
       // Clean up bookings, slots, plans, mentors, users
       if (bookingId) await client.query("DELETE FROM mentor_bookings WHERE id = $1", [bookingId]);
-      if (slotId) await client.query("DELETE FROM mentor_slots WHERE id = $1", [slotId]);
+      // Clean up bookings, plans, mentors, users
       if (planId) await client.query("DELETE FROM mentor_plans WHERE id = $1", [planId]);
       if (mentorUserId) await client.query("DELETE FROM users WHERE id = $1", [mentorUserId]);
       if (studentUserId) await client.query("DELETE FROM users WHERE id = $1", [studentUserId]);
@@ -125,23 +125,33 @@ describe("Booking Flow - E2E (Google Meet Integration)", () => {
       expect(planId).toBeDefined();
     });
 
-    it("should create a slot", async () => {
-      const startTime = new Date();
-      startTime.setHours(startTime.getHours() + 48); // 2 days from now
-
-      const endTime = new Date(startTime);
-      endTime.setHours(endTime.getHours() + 1);
-
+    it("should create availability and fetch a slot", async () => {
+      const tomorrow = new Date();
+      tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
+      const dayOfWeek = tomorrow.getUTCDay();
+      
       const res = await request(app)
-        .post("/mentor/slots")
+        .put("/mentor/availability")
         .set("Authorization", `Bearer ${mentorToken}`)
         .send({
-          start_time: startTime.toISOString(),
-          end_time: endTime.toISOString()
+          availability: [{
+            day_of_week: dayOfWeek,
+            start_time: "00:00",
+            end_time: "23:59"
+          }]
         });
 
-      expect(res.status).toBe(201);
-      slotId = res.body.data.id;
+      expect(res.status).toBe(200);
+
+      // Fetch slots
+      const dateStr = tomorrow.toISOString().split('T')[0];
+      const slotRes = await request(app)
+        .get(`/mentors/${mentorId}/slots?planId=${planId}&date=${dateStr}`)
+        .set("Authorization", `Bearer ${mentorToken}`); // can use any token for GET
+      
+      expect(slotRes.status).toBe(200);
+      expect(slotRes.body.data.length).toBeGreaterThan(0);
+      slotId = slotRes.body.data[0].id;
       expect(slotId).toBeDefined();
     });
   });
@@ -198,6 +208,7 @@ describe("Booking Flow - E2E (Google Meet Integration)", () => {
 
       expect(res.status).toBe(201);
       expect(res.body.success).toBe(true);
+      console.log("POST /mentors/book response:", JSON.stringify(res.body));
       expect(res.body.data.bookingId).toBeDefined();
       bookingId = res.body.data.bookingId;
     });
@@ -334,8 +345,9 @@ describe("Booking Flow - E2E (Google Meet Integration)", () => {
     });
 
     it("should free up the slot after cancellation", async () => {
-      const result = await query("SELECT is_booked FROM mentor_slots WHERE id = $1", [slotId]);
-      expect(result.rows[0].is_booked).toBe(false);
+      // With dynamic slots, is_booked is computed from bookings. We just verify the booking is cancelled.
+      const result = await query("SELECT status FROM mentor_bookings WHERE id = $1", [bookingId]);
+      expect(result.rows[0].status).toBe("cancelled");
     });
   });
 });

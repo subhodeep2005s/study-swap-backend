@@ -123,29 +123,6 @@ Mentors create specific lesson plans/packages that students can book.
 **Delete Plan**
 - **Route:** `DELETE /mentor/plans/:id`
 
-### 3.3 Slot Management
-Mentors define their availability by creating time slots.
-
-**List Slots**
-- **Route:** `GET /mentor/slots`
-
-**Create Slot**
-- **Route:** `POST /mentor/slots`
-- **Body:**
-  ```json
-  {
-    "start_time": "2026-07-05T10:00:00Z",
-    "end_time": "2026-07-05T11:00:00Z"
-  }
-  ```
-
-**Update Slot**
-- **Route:** `PATCH /mentor/slots/:id`
-- **Body:** `{ "start_time": "...", "end_time": "..." }`
-
-**Delete Slot**
-- **Route:** `DELETE /mentor/slots/:id`
-
 ### 3.4 Booking Management
 Manage incoming requests from students.
 
@@ -166,3 +143,161 @@ Manage incoming requests from students.
 **Cancel Booking**
 - **Route:** `PATCH /mentor/bookings/:id/cancel`
 - **Description:** Cancels the booking.
+
+## Detailed Route Reference & Schema Models
+
+All endpoints require a Bearer token (`Authorization: Bearer <token>`).
+
+### 1. Availability Management
+- **Endpoint:** `GET /mentor/availability`
+- **Description:** Get the mentor's configured recurring weekly schedule.
+- **Response:**
+  ```json
+  {
+    "success": true,
+    "message": "Availability fetched",
+    "data": [
+      {
+        "id": "uuid",
+        "day_of_week": 1,
+        "start_time": "09:00:00",
+        "end_time": "17:00:00"
+      }
+    ]
+  }
+  ```
+
+- **Endpoint:** `PUT /mentor/availability`
+- **Description:** Update the recurring schedule. Replaces existing schedule.
+- **Input Schema:**
+  ```json
+  {
+    "availability": [
+      {
+        "day_of_week": 1,
+        "start_time": "09:00:00",
+        "end_time": "17:00:00"
+      }
+    ]
+  }
+  ```
+- **Response:**
+  ```json
+  {
+    "success": true,
+    "message": "Availability updated successfully",
+    "data": [
+      {
+        "id": "uuid",
+        "day_of_week": 1,
+        "start_time": "09:00:00",
+        "end_time": "17:00:00"
+      }
+    ]
+  }
+  ```
+
+### 3. Plan Management
+- **Endpoint:** `GET /mentor/plans`
+- **Description:** Get all pricing plans offered by the mentor.
+- **Response:**
+  ```json
+  {
+    "success": true,
+    "message": "Plans fetched",
+    "data": [
+      {
+        "id": "uuid",
+        "title": "1-on-1 Mentoring",
+        "description": "General career advice",
+        "duration_minutes": 60,
+        "price": 50,
+        "is_active": true
+      }
+    ]
+  }
+  ```
+
+- **Endpoint:** `POST /mentor/plans`
+- **Input Schema:**
+  ```json
+  {
+    "title": "Mock Interview",
+    "description": "System design mock interview",
+    "duration_minutes": 60,
+    "price": 100
+  }
+  ```
+
+- **Endpoint:** `PATCH /mentor/plans/:id`
+- **Input Schema:**
+  ```json
+  {
+    "is_active": false
+  }
+  ```
+
+- **Endpoint:** `DELETE /mentor/plans/:id`
+- **Response:**
+  ```json
+  {
+    "success": true,
+    "message": "Plan deleted",
+    "data": {}
+  }
+  ```
+
+### 4. Bookings Management
+- **Endpoint:** `GET /mentor/bookings`
+- **Description:** Get paginated list of bookings for the mentor.
+- **Response:**
+  ```json
+  {
+    "success": true,
+    "message": "Bookings fetched",
+    "data": [ ... ],
+    "pagination": { "page": 1, "limit": 10, "total": 12, "totalPages": 2 }
+  }
+  ```
+
+- **Endpoint:** `PATCH /mentor/bookings/:id/confirm`
+- **Description:** Confirm an upcoming booking.
+- **Response:** ```json
+  {
+    "success": true,
+    "message": "Booking confirmed",
+    "data": {
+      "id": "uuid",
+      "status": "confirmed",
+      "student_name": "..."
+    }
+  }
+  ```
+
+- **Endpoint:** `PATCH /mentor/bookings/:id/cancel`
+- **Description:** Cancel a booking.
+- **Response:** ```json
+  {
+    "success": true,
+    "message": "Booking cancelled",
+    "data": {
+      "id": "uuid",
+      "status": "cancelled",
+      "student_name": "..."
+    }
+  }
+  ```
+
+- **Endpoint:** `PATCH /mentor/bookings/:id/complete`
+- **Description:** Mark a booking as completed after it occurs.
+- **Response:** ```json
+  {
+    "success": true,
+    "message": "Booking completed",
+    "data": {
+      "id": "uuid",
+      "status": "completed",
+      "student_name": "..."
+    }
+  }
+  ```

@@ -33,7 +33,7 @@ export class ConversationController {
       };
     }));
 
-    res.json({ success: true, data: enhanced });
+    res.json({ success: true, message: "Conversations fetched successfully", data: enhanced });
   }
 
   static async getConversation(req: Request, res: Response) {
@@ -42,6 +42,6 @@ export class ConversationController {
     await MessageService.validateMatchAndGetPartner(conversationId, userId);
     
     const conv = await CommunicationRepository.getConversation(conversationId);
-    res.json({ success: true, data: conv });
+    res.json({ success: true, message: "Conversation fetched successfully", data: conv });
   }
 }

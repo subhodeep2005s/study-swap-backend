@@ -68,7 +68,7 @@ registry.registerPath({
           schema: z.object({
             success: z.boolean(),
             message: z.string(),
-            data: z.object({}),
+            data: z.object({}).openapi({ description: "No data returned for this operation", example: {} }),
           }),
         },
       },
@@ -98,7 +98,7 @@ registry.registerPath({
           schema: z.object({
             success: z.boolean(),
             message: z.string(),
-            data: z.object({}),
+            data: z.object({}).openapi({ description: "No data returned for this operation", example: {} }),
           }),
         },
       },
@@ -153,7 +153,7 @@ registry.registerPath({
           schema: z.object({
             success: z.boolean(),
             message: z.string(),
-            data: z.object({}),
+            data: z.object({}).openapi({ description: "No data returned for this operation", example: {} }),
           }),
         },
       },
@@ -183,7 +183,7 @@ registry.registerPath({
           schema: z.object({
             success: z.boolean(),
             message: z.string(),
-            data: z.object({}),
+            data: z.object({}).openapi({ description: "No data returned for this operation", example: {} }),
           }),
         },
       },
@@ -213,7 +213,7 @@ registry.registerPath({
           schema: z.object({
             success: z.boolean(),
             message: z.string(),
-            data: z.object({}),
+            data: z.object({}).openapi({ description: "No data returned for this operation", example: {} }),
           }),
         },
       },
@@ -236,7 +236,7 @@ registry.registerPath({
           schema: z.object({
             success: z.boolean(),
             message: z.string(),
-            data: z.object({}),
+            data: z.object({}).openapi({ description: "No data returned for this operation", example: {} }),
           }),
         },
       },
@@ -298,7 +298,7 @@ registry.registerPath({
           schema: z.object({
             success: z.boolean(),
             message: z.string(),
-            data: z.object({}),
+            data: z.object({}).openapi({ description: "No data returned for this operation", example: {} }),
           }),
         },
       },

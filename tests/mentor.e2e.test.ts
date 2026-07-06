@@ -150,31 +150,25 @@ describe("Mentor Module - E2E Journey", () => {
       expect(res.body.data[0].title).toBe("1-on-1 Test Coaching");
     });
 
-    it("should create a mentor slot", async () => {
-      const startTime = new Date();
-      startTime.setHours(startTime.getHours() + 24); // Tomorrow
-      
-      const endTime = new Date(startTime);
-      endTime.setHours(endTime.getHours() + 1);
-
+    it("should update mentor availability", async () => {
       const res = await request(app)
-        .post("/mentor/slots")
+        .put("/mentor/availability")
         .set("Authorization", `Bearer ${mentorToken}`)
         .send({
-          start_time: startTime.toISOString(),
-          end_time: endTime.toISOString()
+          availability: [{
+            day_of_week: 1,
+            start_time: "09:00",
+            end_time: "10:00"
+          }]
         });
 
-      expect(res.status).toBe(201);
+      expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
-      expect(res.body.data.id).toBeDefined();
-      
-      slotId = res.body.data.id;
     });
 
-    it("should list mentor slots", async () => {
+    it("should list mentor availability", async () => {
       const res = await request(app)
-        .get("/mentor/slots")
+        .get("/mentor/availability")
         .set("Authorization", `Bearer ${mentorToken}`);
 
       expect(res.status).toBe(200);

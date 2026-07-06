@@ -13,7 +13,8 @@ import {
   updateMentorUserSchema,
   updateMentorSchema,
   updateBookingSchema,
-  updatePlanSchema
+  updatePlanSchema,
+  updateAvailabilitySchema
 } from "./admin.schema";
 import "./admin.openapi";
 
@@ -92,9 +93,10 @@ router.delete("/mentors/bookings/:id", adminController.deleteBooking);
 router.patch("/mentors/bookings/:id/regenerate-meet", adminController.regenerateMeetLink);
 
 // =========================================================================
-// Slots (global slot CRUD)
+// Availability (Merged)
 // =========================================================================
-router.delete("/mentors/slots/:id", adminController.deleteSlot);
+router.get("/mentors/:id/availability", adminController.getMentorAvailability);
+router.put("/mentors/:id/availability", validate(updateAvailabilitySchema), adminController.updateMentorAvailability);
 
 // =========================================================================
 // Plans (global plan CRUD)
@@ -111,7 +113,6 @@ router.delete("/mentors/:id", adminController.deleteMentor);
 router.patch("/mentors/:id/verify", adminController.verifyMentor);
 
 router.get("/mentors/:id/bookings", adminController.getBookingsByMentor);
-router.get("/mentors/:id/slots", adminController.getMentorSlots);
 router.get("/mentors/:id/plans", adminController.getMentorPlans);
 
 export default router;

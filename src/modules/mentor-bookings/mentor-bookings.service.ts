@@ -78,50 +78,14 @@ export async function deletePlan(userId: string, planId: string) {
   if (!deleted) throw new AppError("Plan not found", 404);
 }
 
-export async function getSlots(userId: string) {
+export async function getAvailability(userId: string) {
   const mentorId = await MentorBookingsRepository.ensureMentor(userId);
-  return await MentorBookingsRepository.getSlots(mentorId);
+  return await MentorBookingsRepository.getAvailability(mentorId);
 }
 
-export async function createSlot(userId: string, data: { start_time: string, end_time: string }) {
-  if (new Date(data.start_time) >= new Date(data.end_time)) {
-    throw new AppError("End time must be after start time", 400);
-  }
-
+export async function updateAvailability(userId: string, availability: { day_of_week: number, start_time: string, end_time: string }[]) {
   const mentorId = await MentorBookingsRepository.ensureMentor(userId);
-  const result = await MentorBookingsRepository.createSlot(mentorId, data);
-  if (result.error) {
-    throw new AppError(result.error, result.code);
-  }
-  return result.slot;
-}
-
-export async function updateSlot(userId: string, slotId: string, data: any) {
-  const mentorId = await MentorBookingsRepository.ensureMentor(userId);
-  
-  const fields: string[] = [];
-  const values: any[] = [];
-  let idx = 1;
-  
-  if (data.start_time !== undefined) { fields.push(`start_time = $${idx++}`); values.push(data.start_time); }
-  if (data.end_time !== undefined) { fields.push(`end_time = $${idx++}`); values.push(data.end_time); }
-  
-  if (fields.length === 0) throw new AppError("No fields provided for update", 400);
-  
-  const result = await MentorBookingsRepository.updateSlotTransaction(slotId, mentorId, fields, values);
-  if (result.error) {
-    throw new AppError(result.error, result.code);
-  }
-  return result.slot;
-}
-
-export async function deleteSlot(userId: string, slotId: string) {
-  const mentorId = await MentorBookingsRepository.ensureMentor(userId);
-  const slot = await MentorBookingsRepository.getSlot(slotId, mentorId);
-  if (!slot) throw new AppError("Slot not found", 404);
-  if (slot.is_booked) throw new AppError("Cannot delete a booked slot", 400);
-
-  await MentorBookingsRepository.deleteSlot(slotId);
+  return await MentorBookingsRepository.updateAvailabilityTransaction(mentorId, availability);
 }
 
 export async function getBookings(userId: string) {

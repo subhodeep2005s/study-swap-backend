@@ -20,5 +20,5 @@ export const viewStory = asyncHandler(async (req: Request<ViewStoryParams>, res:
 
 export const getStoryViews = asyncHandler(async (req: Request, res: Response) => {
   const views = await storiesService.getStoryViews(req.user!.id);
-  res.status(200).json({ success: true, message: "Story views fetched successfully.", data: { views } });
+  res.status(200).json({ success: true, message: "Story views fetched successfully.", data: views });
 });

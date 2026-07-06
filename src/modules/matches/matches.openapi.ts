@@ -83,7 +83,7 @@ registry.registerPath({
   responses: {
     200: {
       description: "Match accepted successfully",
-      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.any() }) } },
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({}).openapi({ description: "No data returned for this operation", example: {} }) }) } },
     },
   },
 });
@@ -99,7 +99,7 @@ registry.registerPath({
   responses: {
     200: {
       description: "Match rejected successfully",
-      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.any() }) } },
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({}).openapi({ description: "No data returned for this operation", example: {} }) }) } },
     },
   },
 });
@@ -115,7 +115,7 @@ registry.registerPath({
   responses: {
     200: {
       description: "Match saved successfully",
-      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.any() }) } },
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({}).openapi({ description: "No data returned for this operation", example: {} }) }) } },
     },
   },
 });
@@ -191,7 +191,7 @@ registry.registerPath({
   responses: {
     200: {
       description: "Match removed successfully",
-      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.any() }) } },
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({}).openapi({ description: "No data returned for this operation", example: {} }) }) } },
     },
   },
 });

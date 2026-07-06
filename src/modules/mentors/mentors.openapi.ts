@@ -17,6 +17,8 @@ const mentorSchema = z.object({
   full_name: z.string().nullable(),
   profile_image: z.string().nullable(),
   bio: z.string().nullable(),
+  country_id: z.string().uuid().nullable(),
+  state: z.string().nullable(),
 });
 
 const planSchema = z.object({
@@ -96,7 +98,7 @@ registry.registerPath({
   responses: {
     200: {
       description: "Mentor fetched successfully",
-      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: Mentor.extend({ about: z.string().nullable() }) }) } },
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: Mentor.extend({ about: z.string().nullable(), exams: z.array(z.object({ id: z.string().uuid(), name: z.string() })) }) }) } },
     },
   },
 });
@@ -123,12 +125,18 @@ registry.registerPath({
   tags,
   security,
   summary: "Get mentor slots",
-  description: "Get available mentor slots.",
-  request: { params: z.object({ id: z.string().uuid() }) },
+  description: "Get available mentor slots for a specific date and plan. Slots are dynamically generated.",
+  request: { 
+    params: z.object({ id: z.string().uuid() }),
+    query: z.object({ 
+      planId: z.string().uuid().openapi({ description: "Pricing plan ID to determine session duration" }), 
+      date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).openapi({ description: "Date to fetch slots for (YYYY-MM-DD)" }) 
+    })
+  },
   responses: {
     200: {
       description: "Mentor slots fetched successfully",
-      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.array(MentorSlot) }) } },
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({ slots: z.array(MentorSlot) }) }) } },
     },
   },
 });
@@ -193,7 +201,7 @@ registry.registerPath({
   responses: {
     200: {
       description: "Booking cancelled successfully",
-      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.any() }) } },
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({}).openapi({ description: "No data returned", example: {} }) }) } },
     },
   },
 });

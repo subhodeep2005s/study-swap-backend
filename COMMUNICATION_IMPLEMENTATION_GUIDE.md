@@ -51,7 +51,7 @@
 - LiveKit for actual media transport (audio/video streams).
 - The backend handles all call signaling — the frontend never directly signals peers.
 
-**Base URL**: All REST endpoints are prefixed with `/api/communication/`.
+**Base URL**: All REST endpoints are prefixed with `/communication/`.
 
 **Auth Header**: All requests require `Authorization: Bearer <jwt_token>`.
 
@@ -314,7 +314,7 @@ const [loading, setLoading] = useState(false);
 async function loadMessages(cursor?: string) {
   if (loading) return;
   setLoading(true);
-  const path = `/api/communication/conversations/${conversationId}/messages${cursor ? `?cursor=${cursor}` : ''}`;
+  const path = `/communication/conversations/${conversationId}/messages${cursor ? `?cursor=${cursor}` : ''}`;
   const data = await apiRequest('GET', path);
   setMessages(prev => cursor ? [...prev, ...data.items] : data.items);
   setNextCursor(data.nextCursor);
@@ -335,7 +335,7 @@ async function loadMessages(cursor?: string) {
   "message": "Hello there!",         // Required for TEXT, optional for others
   "replyToMessageId": "uuid",        // Optional: for reply threading
   "attachment": {                     // Required for IMAGE, VIDEO, FILE, VOICE_NOTE
-    "url": "https://s3.../file.jpg", // Pre-uploaded URL from /api/uploads
+    "url": "https://s3.../file.jpg", // Pre-uploaded URL from /uploads
     "filename": "photo.jpg",
     "mimeType": "image/jpeg",
     "extension": "jpg",
@@ -825,7 +825,7 @@ socket.on('incoming_call', async (payload) => {
 async function acceptCall(callId: string) {
   stopSound('incoming_ring');
 
-  const creds = await api.patch(`/api/communication/calls/${callId}/accept`);
+  const creds = await api.patch(`/communication/calls/${callId}/accept`);
 
   setActiveCall({
     callId,
@@ -843,7 +843,7 @@ async function acceptCall(callId: string) {
 
 async function rejectCall(callId: string) {
   stopSound('incoming_ring');
-  await api.patch(`/api/communication/calls/${callId}/reject`);
+  await api.patch(`/communication/calls/${callId}/reject`);
   setIncomingCall(null);
   navigation.goBack();
 }
@@ -1327,21 +1327,21 @@ interface ActiveFocusState {
 
 | Method | Path | Description |
 |--------|------|-------------|
-| GET | `/api/communication/conversations` | List all conversations |
-| GET | `/api/communication/conversations/:id` | Get single conversation |
-| GET | `/api/communication/conversations/:id/messages?cursor=` | Get paginated messages |
-| POST | `/api/communication/conversations/:id/messages` | Send a message |
-| PATCH | `/api/communication/conversations/:id/read` | Mark messages as read |
-| GET | `/api/communication/conversations/:id/attachments?cursor=` | Get media messages |
-| PATCH | `/api/communication/messages/:id` | Edit a message |
-| DELETE | `/api/communication/messages/:id` | Delete a message |
-| POST | `/api/communication/calls` | Start a call |
-| PATCH | `/api/communication/calls/:id/accept` | Accept a call |
-| PATCH | `/api/communication/calls/:id/reject` | Reject a call |
-| PATCH | `/api/communication/calls/:id/end` | End a call |
-| GET | `/api/communication/conversations/:id/calls?cursor=` | Call history |
-| POST | `/api/communication/focus` | Start focus session |
-| PATCH | `/api/communication/focus/:id/accept` | Accept focus |
-| PATCH | `/api/communication/focus/:id/reject` | Reject focus |
-| PATCH | `/api/communication/focus/:id/end` | End focus |
-| GET | `/api/communication/conversations/:id/focus?cursor=` | Focus history |
+| GET | `/communication/conversations` | List all conversations |
+| GET | `/communication/conversations/:id` | Get single conversation |
+| GET | `/communication/conversations/:id/messages?cursor=` | Get paginated messages |
+| POST | `/communication/conversations/:id/messages` | Send a message |
+| PATCH | `/communication/conversations/:id/read` | Mark messages as read |
+| GET | `/communication/conversations/:id/attachments?cursor=` | Get media messages |
+| PATCH | `/communication/messages/:id` | Edit a message |
+| DELETE | `/communication/messages/:id` | Delete a message |
+| POST | `/communication/calls` | Start a call |
+| PATCH | `/communication/calls/:id/accept` | Accept a call |
+| PATCH | `/communication/calls/:id/reject` | Reject a call |
+| PATCH | `/communication/calls/:id/end` | End a call |
+| GET | `/communication/conversations/:id/calls?cursor=` | Call history |
+| POST | `/communication/focus` | Start focus session |
+| PATCH | `/communication/focus/:id/accept` | Accept focus |
+| PATCH | `/communication/focus/:id/reject` | Reject focus |
+| PATCH | `/communication/focus/:id/end` | End focus |
+| GET | `/communication/conversations/:id/focus?cursor=` | Focus history |

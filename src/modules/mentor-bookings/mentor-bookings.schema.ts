@@ -27,13 +27,12 @@ export const updatePlanSchema = z.object({
   body: createPlanSchema.shape.body.partial(),
 });
 
-export const createSlotSchema = z.object({
+export const updateAvailabilitySchema = z.object({
   body: z.object({
-    start_time: z.string().datetime("Invalid start time"),
-    end_time: z.string().datetime("Invalid end time"),
-  }),
-});
-
-export const updateSlotSchema = z.object({
-  body: createSlotSchema.shape.body.partial(),
+    availability: z.array(z.object({
+      day_of_week: z.number().int().min(0).max(6),
+      start_time: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format. Use HH:MM"),
+      end_time: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format. Use HH:MM"),
+    }))
+  })
 });

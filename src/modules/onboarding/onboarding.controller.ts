@@ -20,7 +20,7 @@ export const updateProfile = asyncHandler(async (req: Request<unknown, unknown, 
 
 export const getExams = asyncHandler(async (req: Request, res: Response) => {
   const data = await onboardingService.getExams(req.user!.id);
-  res.status(200).json({ success: true, message: "Exams fetched successfully", data: { exams: data } });
+  res.status(200).json({ success: true, message: "Exams fetched successfully", data });
 });
 
 export const saveExams = asyncHandler(async (req: Request<unknown, unknown, ExamsInput>, res: Response) => {

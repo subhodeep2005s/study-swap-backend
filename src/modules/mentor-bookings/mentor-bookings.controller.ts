@@ -32,24 +32,14 @@ export const deletePlan = asyncHandler(async (req: Request<{ id: string }>, res:
   res.status(200).json({ success: true, message: "Plan deleted", data: {} });
 });
 
-export const getSlots = asyncHandler(async (req: Request, res: Response) => {
-  const slots = await service.getSlots(req.user!.id);
-  res.status(200).json({ success: true, message: "Slots fetched", data: slots });
+export const getAvailability = asyncHandler(async (req: Request, res: Response) => {
+  const availability = await service.getAvailability(req.user!.id);
+  res.status(200).json({ success: true, message: "Availability fetched", data: availability });
 });
 
-export const createSlot = asyncHandler(async (req: Request, res: Response) => {
-  const slot = await service.createSlot(req.user!.id, req.body);
-  res.status(201).json({ success: true, message: "Slot created", data: slot });
-});
-
-export const updateSlot = asyncHandler(async (req: Request<{ id: string }>, res: Response) => {
-  const slot = await service.updateSlot(req.user!.id, req.params.id, req.body);
-  res.status(200).json({ success: true, message: "Slot updated", data: slot });
-});
-
-export const deleteSlot = asyncHandler(async (req: Request<{ id: string }>, res: Response) => {
-  await service.deleteSlot(req.user!.id, req.params.id);
-  res.status(200).json({ success: true, message: "Slot deleted", data: {} });
+export const updateAvailability = asyncHandler(async (req: Request, res: Response) => {
+  const availability = await service.updateAvailability(req.user!.id, req.body.availability);
+  res.status(200).json({ success: true, message: "Availability updated", data: availability });
 });
 
 export const getBookings = asyncHandler(async (req: Request, res: Response) => {

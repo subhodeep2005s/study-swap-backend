@@ -143,12 +143,22 @@ export const updateBookingSchema = z.object({
 
 export const updatePlanSchema = z.object({
   body: z.object({
-    title: z.string().optional(),
-    description: z.string().nullable().optional(),
-    duration_minutes: z.number().int().min(1).optional(),
+    title: z.string().min(3).optional(),
+    description: z.string().optional(),
+    duration_minutes: z.number().int().min(15).optional(),
     price: z.number().min(0).optional(),
     is_active: z.boolean().optional(),
   }),
+});
+
+export const updateAvailabilitySchema = z.object({
+  body: z.object({
+    availability: z.array(z.object({
+      day_of_week: z.number().int().min(0).max(6),
+      start_time: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/),
+      end_time: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/)
+    })).max(50)
+  })
 });
 
 // =========================================================================

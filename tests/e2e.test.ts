@@ -76,9 +76,9 @@ describe("StudySwap Backend End-to-End Tests", () => {
     it("should fetch countries and complete onboarding for student", async () => {
       let res = await request(app).get("/countries");
       expect(res.status).toBe(200);
-      expect(Array.isArray(res.body.data.countries)).toBe(true);
+      expect(Array.isArray(res.body.data)).toBe(true);
       
-      const countryId = res.body.data.countries.length > 0 ? res.body.data.countries[0].id : null;
+      const countryId = res.body.data.length > 0 ? res.body.data[0].id : null;
 
       res = await request(app)
         .patch("/onboarding/profile")

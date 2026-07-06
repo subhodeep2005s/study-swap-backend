@@ -1,4 +1,5 @@
 import { AppError } from "@/core/errors/AppError";
+import { randomUUID } from "crypto";
 import { Event, eventEmitter } from "@/config/event";
 import { redis } from "@/config/redis";
 import { logger } from "@/config/logger";
@@ -39,15 +40,91 @@ export async function getMentorPlans(mentorId: string) {
   return await MentorsRepository.getMentorPlans(mentorId);
 }
 
-export async function getMentorSlots(mentorId: string) {
-  return await MentorsRepository.getMentorSlots(mentorId);
+export async function getMentorSlots(mentorId: string, planId: string, date: string) {
+  const requestDate = new Date(date);
+  const now = new Date();
+  now.setUTCHours(0, 0, 0, 0);
+  if (requestDate < now) return [];
+
+  const plan = await MentorsRepository.getMentorPlan(planId);
+  if (!plan || !plan.is_active) throw new AppError("Invalid or inactive plan", 400);
+
+  const durationMs = plan.duration_minutes * 60000;
+  const dayOfWeek = requestDate.getUTCDay();
+
+  const availability = await MentorsRepository.getAvailabilityForDay(mentorId, dayOfWeek);
+  if (availability.length === 0) return [];
+
+  const dateStart = date + "T00:00:00Z";
+  const nextDate = new Date(requestDate);
+  nextDate.setUTCDate(nextDate.getUTCDate() + 1);
+  const dateEnd = nextDate.toISOString();
+
+  const bookings = await MentorsRepository.getBookingsForDate(mentorId, dateStart, dateEnd);
+
+  const generatedSlots = [];
+
+  for (const block of availability) {
+    const blockStart = new Date(`${date}T${block.start_time}Z`);
+    const blockEnd = new Date(`${date}T${block.end_time}Z`);
+
+    let currentStart = blockStart;
+    
+    while (currentStart.getTime() + durationMs <= blockEnd.getTime()) {
+      const currentEnd = new Date(currentStart.getTime() + durationMs);
+
+      if (currentStart > new Date()) {
+        const overlaps = bookings.some((b: any) => {
+          const bStart = new Date(b.start_time).getTime();
+          const bEnd = new Date(b.end_time).getTime();
+          const sStart = currentStart.getTime();
+          const sEnd = currentEnd.getTime();
+          return (sStart < bEnd && sEnd > bStart);
+        });
+
+        if (!overlaps) {
+          const id = randomUUID();
+          const slot = {
+            id,
+            mentor_id: mentorId,
+            start_time: currentStart.toISOString(),
+            end_time: currentEnd.toISOString(),
+            is_booked: false
+          };
+          generatedSlots.push(slot);
+
+          await redis.set(`slot:${id}`, JSON.stringify({
+            mentor_id: mentorId,
+            start_time: slot.start_time,
+            end_time: slot.end_time
+          }), "EX", 900);
+        }
+      }
+      currentStart = currentEnd;
+    }
+  }
+
+  return generatedSlots;
 }
 
 export async function bookSession(studentId: string, mentorId: string, planId: string, slotId: string) {
-  const result = await MentorsRepository.bookSessionTransaction(studentId, mentorId, planId, slotId);
+  const cachedSlot = await redis.get(`slot:${slotId}`);
+  if (!cachedSlot) {
+    throw new AppError("Slot is no longer available or has expired. Please refresh the slots.", 400);
+  }
+
+  const slotData = JSON.parse(cachedSlot);
+  if (slotData.mentor_id !== mentorId) {
+    throw new AppError("Invalid slot for this mentor", 400);
+  }
+
+  const result = await MentorsRepository.bookSessionTransaction(studentId, mentorId, planId, slotId, slotData.start_time, slotData.end_time);
   if (result.error) {
     throw new AppError(result.error, result.code);
   }
+
+  // Clear slot from Redis to prevent double booking attempts
+  await redis.del(`slot:${slotId}`);
 
   eventEmitter.emit(Event.MENTOR_SESSION_BOOKED, {
     studentId,
