@@ -83,15 +83,7 @@
             "type": "boolean"
           },
           "createdAt": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "string",
-                "format": "date-time"
-              }
-            ]
+            "type": "string"
           },
           "fullName": {
             "type": [
@@ -336,13 +328,30 @@
           "about": {
             "type": "string",
             "maxLength": 1000
+          },
+          "countryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "state": {
+            "type": "string",
+            "minLength": 1
+          },
+          "examIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
           }
         },
         "required": [
           "title",
           "qualification",
           "experienceYears",
-          "hourlyPrice"
+          "hourlyPrice",
+          "countryId",
+          "examIds"
         ]
       },
       "AdminLogin": {
@@ -508,6 +517,13 @@
             "items": {
               "type": "string"
             }
+          },
+          "examIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
           }
         }
       },
@@ -577,6 +593,13 @@
             "type": "array",
             "items": {
               "type": "string"
+            }
+          },
+          "examIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
             }
           },
           "title": {
@@ -1166,6 +1189,23 @@
           },
           "is_verified": {
             "type": "boolean"
+          },
+          "country_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "state": {
+            "type": "string"
+          },
+          "exam_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
           }
         }
       },
@@ -1195,17 +1235,15 @@
         "type": "object",
         "properties": {
           "title": {
-            "type": "string"
+            "type": "string",
+            "minLength": 3
           },
           "description": {
-            "type": [
-              "string",
-              "null"
-            ]
+            "type": "string"
           },
           "duration_minutes": {
             "type": "integer",
-            "minimum": 1
+            "minimum": 15
           },
           "price": {
             "type": "number",
@@ -1215,6 +1253,41 @@
             "type": "boolean"
           }
         }
+      },
+      "UpdateAvailabilityAdmin": {
+        "type": "object",
+        "properties": {
+          "availability": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "day_of_week": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 6
+                },
+                "start_time": {
+                  "type": "string",
+                  "pattern": "^([01]\\d|2[0-3]):([0-5]\\d):([0-5]\\d)$"
+                },
+                "end_time": {
+                  "type": "string",
+                  "pattern": "^([01]\\d|2[0-3]):([0-5]\\d):([0-5]\\d)$"
+                }
+              },
+              "required": [
+                "day_of_week",
+                "start_time",
+                "end_time"
+              ]
+            },
+            "maxItems": 50
+          }
+        },
+        "required": [
+          "availability"
+        ]
       },
       "MentorProfileResponse": {
         "type": "object",
@@ -1811,6 +1884,19 @@
               "string",
               "null"
             ]
+          },
+          "country_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "state": {
+            "type": [
+              "string",
+              "null"
+            ]
           }
         },
         "required": [
@@ -1824,7 +1910,9 @@
           "is_verified",
           "full_name",
           "profile_image",
-          "bio"
+          "bio",
+          "country_id",
+          "state"
         ]
       },
       "MentorPlan": {
@@ -1993,6 +2081,23 @@
           },
           "about": {
             "type": "string"
+          },
+          "country_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "state": {
+            "type": "string"
+          },
+          "exam_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
           }
         }
       },
@@ -2049,35 +2154,309 @@
           }
         }
       },
-      "CreateSlotInput": {
+      "UpdateAvailabilityInput": {
         "type": "object",
         "properties": {
-          "start_time": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "end_time": {
-            "type": "string",
-            "format": "date-time"
+          "availability": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "day_of_week": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 6
+                },
+                "start_time": {
+                  "type": "string",
+                  "pattern": "^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$"
+                },
+                "end_time": {
+                  "type": "string",
+                  "pattern": "^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$"
+                }
+              },
+              "required": [
+                "day_of_week",
+                "start_time",
+                "end_time"
+              ]
+            }
           }
         },
         "required": [
+          "availability"
+        ]
+      },
+      "MentorDashboardProfileResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "user_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "qualification": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "experience_years": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "hourly_price": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Stored as decimal string"
+          },
+          "rating": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Stored as decimal string"
+          },
+          "total_reviews": {
+            "type": "number"
+          },
+          "about": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "is_verified": {
+            "type": "boolean"
+          },
+          "full_name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "profile_image": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "country_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "state": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "exams": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "name": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "name"
+              ]
+            }
+          }
+        },
+        "required": [
+          "id",
+          "user_id",
+          "title",
+          "qualification",
+          "experience_years",
+          "hourly_price",
+          "rating",
+          "total_reviews",
+          "about",
+          "is_verified",
+          "full_name",
+          "profile_image",
+          "country_id",
+          "state",
+          "email",
+          "exams"
+        ]
+      },
+      "MentorDashboardPlanResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "mentor_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "duration_minutes": {
+            "type": "number"
+          },
+          "price": {
+            "type": "string",
+            "description": "Stored as decimal string"
+          },
+          "is_active": {
+            "type": "boolean"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "mentor_id",
+          "title",
+          "description",
+          "duration_minutes",
+          "price",
+          "is_active",
+          "created_at",
+          "updated_at"
+        ]
+      },
+      "MentorDashboardAvailabilityResponse": {
+        "type": "object",
+        "properties": {
+          "day_of_week": {
+            "type": "integer"
+          },
+          "start_time": {
+            "type": "string"
+          },
+          "end_time": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "day_of_week",
           "start_time",
           "end_time"
         ]
       },
-      "UpdateSlotInput": {
+      "MentorDashboardBookingResponse": {
         "type": "object",
         "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "confirmed",
+              "completed",
+              "cancelled"
+            ]
+          },
+          "payment_status": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "string",
+            "description": "Stored as decimal string"
+          },
+          "meeting_link": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "plan_title": {
+            "type": "string"
+          },
+          "duration_minutes": {
+            "type": "number"
+          },
           "start_time": {
             "type": "string",
-            "format": "date-time"
+            "description": "ISO 8601 datetime"
           },
           "end_time": {
             "type": "string",
-            "format": "date-time"
+            "description": "ISO 8601 datetime"
+          },
+          "student_email": {
+            "type": "string",
+            "format": "email"
+          },
+          "student_name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "student_image": {
+            "type": [
+              "string",
+              "null"
+            ]
           }
-        }
+        },
+        "required": [
+          "id",
+          "status",
+          "payment_status",
+          "amount",
+          "meeting_link",
+          "created_at",
+          "plan_title",
+          "duration_minutes",
+          "start_time",
+          "end_time",
+          "student_email",
+          "student_name",
+          "student_image"
+        ]
       },
       "StoryInput": {
         "type": "object",
@@ -2594,7 +2973,9 @@
                     },
                     "data": {
                       "type": "object",
-                      "properties": {}
+                      "properties": {},
+                      "description": "No data returned for this operation",
+                      "example": {}
                     }
                   },
                   "required": [
@@ -2646,7 +3027,9 @@
                     },
                     "data": {
                       "type": "object",
-                      "properties": {}
+                      "properties": {},
+                      "description": "No data returned for this operation",
+                      "example": {}
                     }
                   },
                   "required": [
@@ -2761,7 +3144,9 @@
                     },
                     "data": {
                       "type": "object",
-                      "properties": {}
+                      "properties": {},
+                      "description": "No data returned for this operation",
+                      "example": {}
                     }
                   },
                   "required": [
@@ -2813,7 +3198,9 @@
                     },
                     "data": {
                       "type": "object",
-                      "properties": {}
+                      "properties": {},
+                      "description": "No data returned for this operation",
+                      "example": {}
                     }
                   },
                   "required": [
@@ -2865,7 +3252,9 @@
                     },
                     "data": {
                       "type": "object",
-                      "properties": {}
+                      "properties": {},
+                      "description": "No data returned for this operation",
+                      "example": {}
                     }
                   },
                   "required": [
@@ -2908,7 +3297,9 @@
                     },
                     "data": {
                       "type": "object",
-                      "properties": {}
+                      "properties": {},
+                      "description": "No data returned for this operation",
+                      "example": {}
                     }
                   },
                   "required": [
@@ -3019,7 +3410,9 @@
                     },
                     "data": {
                       "type": "object",
-                      "properties": {}
+                      "properties": {},
+                      "description": "No data returned for this operation",
+                      "example": {}
                     }
                   },
                   "required": [
@@ -3058,44 +3451,36 @@
                       "example": "Countries fetched successfully"
                     },
                     "data": {
-                      "type": "object",
-                      "properties": {
-                        "countries": {
-                          "type": "array",
-                          "items": {
-                            "type": "object",
-                            "properties": {
-                              "id": {
-                                "type": "string",
-                                "format": "uuid"
-                              },
-                              "name": {
-                                "type": "string"
-                              },
-                              "flag": {
-                                "type": [
-                                  "string",
-                                  "null"
-                                ]
-                              },
-                              "iso_code": {
-                                "type": [
-                                  "string",
-                                  "null"
-                                ]
-                              }
-                            },
-                            "required": [
-                              "id",
-                              "name",
-                              "flag"
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "flag": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "iso_code": {
+                            "type": [
+                              "string",
+                              "null"
                             ]
                           }
-                        }
-                      },
-                      "required": [
-                        "countries"
-                      ]
+                        },
+                        "required": [
+                          "id",
+                          "name",
+                          "flag"
+                        ]
+                      }
                     }
                   },
                   "required": [
@@ -3147,16 +3532,26 @@
                       "example": "States fetched successfully"
                     },
                     "data": {
-                      "type": "object",
-                      "properties": {
-                        "states": {
-                          "type": "array",
-                          "items": {}
-                        }
-                      },
-                      "required": [
-                        "states"
-                      ]
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "number"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "iso2": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "name",
+                          "iso2"
+                        ]
+                      }
                     }
                   },
                   "required": [
@@ -3206,31 +3601,23 @@
                       "example": "Exams fetched successfully"
                     },
                     "data": {
-                      "type": "object",
-                      "properties": {
-                        "exams": {
-                          "type": "array",
-                          "items": {
-                            "type": "object",
-                            "properties": {
-                              "id": {
-                                "type": "string",
-                                "format": "uuid"
-                              },
-                              "name": {
-                                "type": "string"
-                              }
-                            },
-                            "required": [
-                              "id",
-                              "name"
-                            ]
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "name": {
+                            "type": "string"
                           }
-                        }
-                      },
-                      "required": [
-                        "exams"
-                      ]
+                        },
+                        "required": [
+                          "id",
+                          "name"
+                        ]
+                      }
                     }
                   },
                   "required": [
@@ -3541,15 +3928,7 @@
                       "type": "string"
                     },
                     "data": {
-                      "type": "object",
-                      "properties": {
-                        "country": {
-                          "$ref": "#/components/schemas/CountryResponse"
-                        }
-                      },
-                      "required": [
-                        "country"
-                      ]
+                      "$ref": "#/components/schemas/CountryResponse"
                     }
                   },
                   "required": [
@@ -3611,15 +3990,7 @@
                       "type": "string"
                     },
                     "data": {
-                      "type": "object",
-                      "properties": {
-                        "country": {
-                          "$ref": "#/components/schemas/CountryResponse"
-                        }
-                      },
-                      "required": [
-                        "country"
-                      ]
+                      "$ref": "#/components/schemas/CountryResponse"
                     }
                   },
                   "required": [
@@ -3671,7 +4042,9 @@
                     },
                     "data": {
                       "type": "object",
-                      "properties": {}
+                      "properties": {},
+                      "description": "No data returned for this operation",
+                      "example": {}
                     }
                   },
                   "required": [
@@ -3724,18 +4097,10 @@
                       "type": "string"
                     },
                     "data": {
-                      "type": "object",
-                      "properties": {
-                        "exams": {
-                          "type": "array",
-                          "items": {
-                            "$ref": "#/components/schemas/ExamResponse"
-                          }
-                        }
-                      },
-                      "required": [
-                        "exams"
-                      ]
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ExamResponse"
+                      }
                     }
                   },
                   "required": [
@@ -3885,15 +4250,7 @@
                       "type": "string"
                     },
                     "data": {
-                      "type": "object",
-                      "properties": {
-                        "exam": {
-                          "$ref": "#/components/schemas/ExamResponse"
-                        }
-                      },
-                      "required": [
-                        "exam"
-                      ]
+                      "$ref": "#/components/schemas/ExamResponse"
                     }
                   },
                   "required": [
@@ -3955,15 +4312,7 @@
                       "type": "string"
                     },
                     "data": {
-                      "type": "object",
-                      "properties": {
-                        "exam": {
-                          "$ref": "#/components/schemas/ExamResponse"
-                        }
-                      },
-                      "required": [
-                        "exam"
-                      ]
+                      "$ref": "#/components/schemas/ExamResponse"
                     }
                   },
                   "required": [
@@ -4015,7 +4364,9 @@
                     },
                     "data": {
                       "type": "object",
-                      "properties": {}
+                      "properties": {},
+                      "description": "No data returned for this operation",
+                      "example": {}
                     }
                   },
                   "required": [
@@ -4371,15 +4722,7 @@
                       "type": "string"
                     },
                     "data": {
-                      "type": "object",
-                      "properties": {
-                        "user": {
-                          "$ref": "#/components/schemas/AdminUserResponse"
-                        }
-                      },
-                      "required": [
-                        "user"
-                      ]
+                      "$ref": "#/components/schemas/AdminUserResponse"
                     }
                   },
                   "required": [
@@ -4431,7 +4774,9 @@
                     },
                     "data": {
                       "type": "object",
-                      "properties": {}
+                      "properties": {},
+                      "description": "No data returned for this operation",
+                      "example": {}
                     }
                   },
                   "required": [
@@ -4493,15 +4838,7 @@
                       "type": "string"
                     },
                     "data": {
-                      "type": "object",
-                      "properties": {
-                        "user": {
-                          "$ref": "#/components/schemas/AdminUserResponse"
-                        }
-                      },
-                      "required": [
-                        "user"
-                      ]
+                      "$ref": "#/components/schemas/AdminUserResponse"
                     }
                   },
                   "required": [
@@ -4563,15 +4900,7 @@
                       "type": "string"
                     },
                     "data": {
-                      "type": "object",
-                      "properties": {
-                        "user": {
-                          "$ref": "#/components/schemas/AdminUserResponse"
-                        }
-                      },
-                      "required": [
-                        "user"
-                      ]
+                      "$ref": "#/components/schemas/AdminUserResponse"
                     }
                   },
                   "required": [
@@ -4717,18 +5046,10 @@
                       "type": "string"
                     },
                     "data": {
-                      "type": "object",
-                      "properties": {
-                        "matches": {
-                          "type": "array",
-                          "items": {
-                            "$ref": "#/components/schemas/MatchResponse"
-                          }
-                        }
-                      },
-                      "required": [
-                        "matches"
-                      ]
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/MatchResponse"
+                      }
                     }
                   },
                   "required": [
@@ -4782,7 +5103,9 @@
                     },
                     "data": {
                       "type": "object",
-                      "properties": {}
+                      "properties": {},
+                      "description": "No data returned for this operation",
+                      "example": {}
                     }
                   },
                   "required": [
@@ -5118,7 +5441,9 @@
                     },
                     "data": {
                       "type": "object",
-                      "properties": {}
+                      "properties": {},
+                      "description": "No data returned for this operation",
+                      "example": {}
                     }
                   },
                   "required": [
@@ -5339,18 +5664,10 @@
                       "type": "string"
                     },
                     "data": {
-                      "type": "object",
-                      "properties": {
-                        "bookings": {
-                          "type": "array",
-                          "items": {
-                            "$ref": "#/components/schemas/BookingResponse"
-                          }
-                        }
-                      },
-                      "required": [
-                        "bookings"
-                      ]
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/BookingResponse"
+                      }
                     }
                   },
                   "required": [
@@ -5515,7 +5832,9 @@
                     },
                     "data": {
                       "type": "object",
-                      "properties": {}
+                      "properties": {},
+                      "description": "No data returned for this operation",
+                      "example": {}
                     }
                   },
                   "required": [
@@ -5599,7 +5918,7 @@
         }
       }
     },
-    "/admin/mentors/{id}/slots": {
+    "/admin/mentors/{id}/availability": {
       "get": {
         "tags": [
           "Admin"
@@ -5609,7 +5928,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Get mentor slots",
+        "summary": "Get mentor availability",
         "description": "Admin only.",
         "parameters": [
           {
@@ -5624,7 +5943,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Mentor slots fetched",
+            "description": "Mentor availability fetched",
             "content": {
               "application/json": {
                 "schema": {
@@ -5637,18 +5956,26 @@
                       "type": "string"
                     },
                     "data": {
-                      "type": "object",
-                      "properties": {
-                        "slots": {
-                          "type": "array",
-                          "items": {
-                            "$ref": "#/components/schemas/MentorSlotResponse"
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "day_of_week": {
+                            "type": "number"
+                          },
+                          "start_time": {
+                            "type": "string"
+                          },
+                          "end_time": {
+                            "type": "string"
                           }
-                        }
-                      },
-                      "required": [
-                        "slots"
-                      ]
+                        },
+                        "required": [
+                          "day_of_week",
+                          "start_time",
+                          "end_time"
+                        ]
+                      }
                     }
                   },
                   "required": [
@@ -5661,10 +5988,8 @@
             }
           }
         }
-      }
-    },
-    "/admin/mentors/slots/{id}": {
-      "delete": {
+      },
+      "put": {
         "tags": [
           "Admin"
         ],
@@ -5673,8 +5998,8 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Delete mentor slot",
-        "description": "Admin only. Fails if the slot is currently booked.",
+        "summary": "Update mentor availability",
+        "description": "Admin only.",
         "parameters": [
           {
             "schema": {
@@ -5686,9 +6011,18 @@
             "in": "path"
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAvailabilityAdmin"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
-            "description": "Slot deleted",
+            "description": "Mentor availability updated",
             "content": {
               "application/json": {
                 "schema": {
@@ -5701,8 +6035,26 @@
                       "type": "string"
                     },
                     "data": {
-                      "type": "object",
-                      "properties": {}
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "day_of_week": {
+                            "type": "number"
+                          },
+                          "start_time": {
+                            "type": "string"
+                          },
+                          "end_time": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "day_of_week",
+                          "start_time",
+                          "end_time"
+                        ]
+                      }
                     }
                   },
                   "required": [
@@ -5755,18 +6107,10 @@
                       "type": "string"
                     },
                     "data": {
-                      "type": "object",
-                      "properties": {
-                        "plans": {
-                          "type": "array",
-                          "items": {
-                            "$ref": "#/components/schemas/MentorPlanResponse"
-                          }
-                        }
-                      },
-                      "required": [
-                        "plans"
-                      ]
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/MentorPlanResponse"
+                      }
                     }
                   },
                   "required": [
@@ -5880,7 +6224,9 @@
                     },
                     "data": {
                       "type": "object",
-                      "properties": {}
+                      "properties": {},
+                      "description": "No data returned for this operation",
+                      "example": {}
                     }
                   },
                   "required": [
@@ -6039,11 +6385,17 @@
                     "message": {
                       "type": "string"
                     },
-                    "data": {}
+                    "data": {
+                      "type": "object",
+                      "properties": {},
+                      "description": "No data returned for this operation",
+                      "example": {}
+                    }
                   },
                   "required": [
                     "success",
-                    "message"
+                    "message",
+                    "data"
                   ]
                 }
               }
@@ -6133,11 +6485,17 @@
                     "message": {
                       "type": "string"
                     },
-                    "data": {}
+                    "data": {
+                      "type": "object",
+                      "properties": {},
+                      "description": "No data returned for this operation",
+                      "example": {}
+                    }
                   },
                   "required": [
                     "success",
-                    "message"
+                    "message",
+                    "data"
                   ]
                 }
               }
@@ -6183,11 +6541,17 @@
                     "message": {
                       "type": "string"
                     },
-                    "data": {}
+                    "data": {
+                      "type": "object",
+                      "properties": {},
+                      "description": "No data returned for this operation",
+                      "example": {}
+                    }
                   },
                   "required": [
                     "success",
-                    "message"
+                    "message",
+                    "data"
                   ]
                 }
               }
@@ -6233,11 +6597,17 @@
                     "message": {
                       "type": "string"
                     },
-                    "data": {}
+                    "data": {
+                      "type": "object",
+                      "properties": {},
+                      "description": "No data returned for this operation",
+                      "example": {}
+                    }
                   },
                   "required": [
                     "success",
-                    "message"
+                    "message",
+                    "data"
                   ]
                 }
               }
@@ -6566,10 +6936,30 @@
                                 "string",
                                 "null"
                               ]
+                            },
+                            "exams": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "id": {
+                                    "type": "string",
+                                    "format": "uuid"
+                                  },
+                                  "name": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "id",
+                                  "name"
+                                ]
+                              }
                             }
                           },
                           "required": [
-                            "about"
+                            "about",
+                            "exams"
                           ]
                         }
                       ]
@@ -6654,7 +7044,7 @@
           }
         ],
         "summary": "Get mentor slots",
-        "description": "Get available mentor slots.",
+        "description": "Get available mentor slots for a specific date and plan. Slots are dynamically generated.",
         "parameters": [
           {
             "schema": {
@@ -6664,6 +7054,28 @@
             "required": true,
             "name": "id",
             "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Pricing plan ID to determine session duration"
+            },
+            "required": true,
+            "description": "Pricing plan ID to determine session duration",
+            "name": "planId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+              "description": "Date to fetch slots for (YYYY-MM-DD)"
+            },
+            "required": true,
+            "description": "Date to fetch slots for (YYYY-MM-DD)",
+            "name": "date",
+            "in": "query"
           }
         ],
         "responses": {
@@ -6681,10 +7093,18 @@
                       "type": "string"
                     },
                     "data": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/MentorSlot"
-                      }
+                      "type": "object",
+                      "properties": {
+                        "slots": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/MentorSlot"
+                          }
+                        }
+                      },
+                      "required": [
+                        "slots"
+                      ]
                     }
                   },
                   "required": [
@@ -6897,11 +7317,17 @@
                     "message": {
                       "type": "string"
                     },
-                    "data": {}
+                    "data": {
+                      "type": "object",
+                      "properties": {},
+                      "description": "No data returned",
+                      "example": {}
+                    }
                   },
                   "required": [
                     "success",
-                    "message"
+                    "message",
+                    "data"
                   ]
                 }
               }
@@ -6936,11 +7362,14 @@
                     "message": {
                       "type": "string"
                     },
-                    "data": {}
+                    "data": {
+                      "$ref": "#/components/schemas/MentorDashboardProfileResponse"
+                    }
                   },
                   "required": [
                     "success",
-                    "message"
+                    "message",
+                    "data"
                   ]
                 }
               }
@@ -6982,11 +7411,14 @@
                     "message": {
                       "type": "string"
                     },
-                    "data": {}
+                    "data": {
+                      "$ref": "#/components/schemas/MentorDashboardProfileResponse"
+                    }
                   },
                   "required": [
                     "success",
-                    "message"
+                    "message",
+                    "data"
                   ]
                 }
               }
@@ -7023,7 +7455,9 @@
                     },
                     "data": {
                       "type": "array",
-                      "items": {}
+                      "items": {
+                        "$ref": "#/components/schemas/MentorDashboardPlanResponse"
+                      }
                     }
                   },
                   "required": [
@@ -7071,11 +7505,14 @@
                     "message": {
                       "type": "string"
                     },
-                    "data": {}
+                    "data": {
+                      "$ref": "#/components/schemas/MentorDashboardPlanResponse"
+                    }
                   },
                   "required": [
                     "success",
-                    "message"
+                    "message",
+                    "data"
                   ]
                 }
               }
@@ -7130,11 +7567,14 @@
                     "message": {
                       "type": "string"
                     },
-                    "data": {}
+                    "data": {
+                      "$ref": "#/components/schemas/MentorDashboardPlanResponse"
+                    }
                   },
                   "required": [
                     "success",
-                    "message"
+                    "message",
+                    "data"
                   ]
                 }
               }
@@ -7178,11 +7618,15 @@
                     "message": {
                       "type": "string"
                     },
-                    "data": {}
+                    "data": {
+                      "type": "object",
+                      "properties": {}
+                    }
                   },
                   "required": [
                     "success",
-                    "message"
+                    "message",
+                    "data"
                   ]
                 }
               }
@@ -7191,7 +7635,7 @@
         }
       }
     },
-    "/mentor/slots": {
+    "/mentor/availability": {
       "get": {
         "tags": [
           "Mentor Dashboard"
@@ -7201,11 +7645,11 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Get slots",
-        "description": "Get all availability slots.",
+        "summary": "Get availability",
+        "description": "Get recurring weekly availability.",
         "responses": {
           "200": {
-            "description": "Slots fetched successfully",
+            "description": "Availability fetched successfully",
             "content": {
               "application/json": {
                 "schema": {
@@ -7219,7 +7663,9 @@
                     },
                     "data": {
                       "type": "array",
-                      "items": {}
+                      "items": {
+                        "$ref": "#/components/schemas/MentorDashboardAvailabilityResponse"
+                      }
                     }
                   },
                   "required": [
@@ -7233,7 +7679,7 @@
           }
         }
       },
-      "post": {
+      "put": {
         "tags": [
           "Mentor Dashboard"
         ],
@@ -7242,79 +7688,20 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Create slot",
-        "description": "Create a new availability slot.",
+        "summary": "Update availability",
+        "description": "Update recurring weekly availability. Overwrites existing availability.",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateSlotInput"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Slot created successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "message": {
-                      "type": "string"
-                    },
-                    "data": {}
-                  },
-                  "required": [
-                    "success",
-                    "message"
-                  ]
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/mentor/slots/{id}": {
-      "patch": {
-        "tags": [
-          "Mentor Dashboard"
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Update slot",
-        "description": "Update an availability slot.",
-        "parameters": [
-          {
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            },
-            "required": true,
-            "name": "id",
-            "in": "path"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateSlotInput"
+                "$ref": "#/components/schemas/UpdateAvailabilityInput"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Slot updated successfully",
+            "description": "Availability updated successfully",
             "content": {
               "application/json": {
                 "schema": {
@@ -7326,59 +7713,17 @@
                     "message": {
                       "type": "string"
                     },
-                    "data": {}
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/MentorDashboardAvailabilityResponse"
+                      }
+                    }
                   },
                   "required": [
                     "success",
-                    "message"
-                  ]
-                }
-              }
-            }
-          }
-        }
-      },
-      "delete": {
-        "tags": [
-          "Mentor Dashboard"
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Delete slot",
-        "description": "Delete an availability slot.",
-        "parameters": [
-          {
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            },
-            "required": true,
-            "name": "id",
-            "in": "path"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Slot deleted successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "message": {
-                      "type": "string"
-                    },
-                    "data": {}
-                  },
-                  "required": [
-                    "success",
-                    "message"
+                    "message",
+                    "data"
                   ]
                 }
               }
@@ -7415,7 +7760,9 @@
                     },
                     "data": {
                       "type": "array",
-                      "items": {}
+                      "items": {
+                        "$ref": "#/components/schemas/MentorDashboardBookingResponse"
+                      }
                     }
                   },
                   "required": [
@@ -7467,11 +7814,14 @@
                     "message": {
                       "type": "string"
                     },
-                    "data": {}
+                    "data": {
+                      "$ref": "#/components/schemas/MentorDashboardBookingResponse"
+                    }
                   },
                   "required": [
                     "success",
-                    "message"
+                    "message",
+                    "data"
                   ]
                 }
               }
@@ -7517,11 +7867,14 @@
                     "message": {
                       "type": "string"
                     },
-                    "data": {}
+                    "data": {
+                      "$ref": "#/components/schemas/MentorDashboardBookingResponse"
+                    }
                   },
                   "required": [
                     "success",
-                    "message"
+                    "message",
+                    "data"
                   ]
                 }
               }
@@ -7567,11 +7920,14 @@
                     "message": {
                       "type": "string"
                     },
-                    "data": {}
+                    "data": {
+                      "$ref": "#/components/schemas/MentorDashboardBookingResponse"
+                    }
                   },
                   "required": [
                     "success",
-                    "message"
+                    "message",
+                    "data"
                   ]
                 }
               }
@@ -7617,11 +7973,15 @@
                     "message": {
                       "type": "string"
                     },
-                    "data": {}
+                    "data": {
+                      "type": "object",
+                      "properties": {}
+                    }
                   },
                   "required": [
                     "success",
-                    "message"
+                    "message",
+                    "data"
                   ]
                 }
               }
@@ -7652,8 +8012,7 @@
                     "minLength": 1
                   },
                   "contentType": {
-                    "type": "string",
-                    "pattern": "^image\\/(jpeg|png|webp|gif|svg\\+xml)$"
+                    "type": "string"
                   }
                 },
                 "required": [
@@ -7743,7 +8102,9 @@
                     },
                     "data": {
                       "type": "object",
-                      "properties": {}
+                      "properties": {},
+                      "description": "No data returned for this operation",
+                      "example": {}
                     }
                   },
                   "required": [
@@ -7784,7 +8145,9 @@
                     },
                     "data": {
                       "type": "object",
-                      "properties": {}
+                      "properties": {},
+                      "description": "No data returned for this operation",
+                      "example": {}
                     }
                   },
                   "required": [
@@ -7838,7 +8201,9 @@
                     },
                     "data": {
                       "type": "object",
-                      "properties": {}
+                      "properties": {},
+                      "description": "No data returned for this operation",
+                      "example": {}
                     }
                   },
                   "required": [
@@ -9302,6 +9667,695 @@
                   "required": [
                     "id",
                     "status"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/communication/conversations/{conversationId}/read": {
+      "patch": {
+        "summary": "Mark conversation as read",
+        "description": "Mark all messages in the conversation as read",
+        "tags": [
+          "Communication"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "conversationId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Messages marked as read",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/communication/conversations/{conversationId}/attachments": {
+      "get": {
+        "summary": "Get conversation attachments",
+        "description": "Get all attachments for a specific conversation",
+        "tags": [
+          "Communication"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "conversationId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "cursor",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of attachments",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "format": "uuid"
+                              },
+                              "conversation_id": {
+                                "type": "string",
+                                "format": "uuid"
+                              },
+                              "sender_id": {
+                                "type": "string",
+                                "format": "uuid"
+                              },
+                              "message_type": {
+                                "type": "string",
+                                "enum": [
+                                  "TEXT",
+                                  "IMAGE",
+                                  "VIDEO",
+                                  "FILE",
+                                  "VOICE_NOTE",
+                                  "SYSTEM"
+                                ]
+                              },
+                              "message": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "reply_to_message_id": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ],
+                                "format": "uuid"
+                              },
+                              "read_at": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ],
+                                "format": "date-time"
+                              },
+                              "edited_at": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ],
+                                "format": "date-time"
+                              },
+                              "deleted_at": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ],
+                                "format": "date-time"
+                              },
+                              "created_at": {
+                                "type": "string",
+                                "format": "date-time"
+                              },
+                              "updated_at": {
+                                "type": "string",
+                                "format": "date-time"
+                              },
+                              "attachment": {
+                                "type": "object",
+                                "properties": {
+                                  "url": {
+                                    "type": "string"
+                                  },
+                                  "filename": {
+                                    "type": "string"
+                                  },
+                                  "mimeType": {
+                                    "type": "string"
+                                  },
+                                  "extension": {
+                                    "type": "string"
+                                  },
+                                  "size": {
+                                    "type": "number"
+                                  },
+                                  "durationSeconds": {
+                                    "type": [
+                                      "number",
+                                      "null"
+                                    ]
+                                  },
+                                  "thumbnailUrl": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "url",
+                                  "filename",
+                                  "mimeType",
+                                  "extension",
+                                  "size",
+                                  "durationSeconds",
+                                  "thumbnailUrl"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "conversation_id",
+                              "sender_id",
+                              "message_type",
+                              "message",
+                              "reply_to_message_id",
+                              "read_at",
+                              "edited_at",
+                              "deleted_at",
+                              "created_at",
+                              "updated_at"
+                            ]
+                          }
+                        },
+                        "nextCursor": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "items",
+                        "nextCursor"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/communication/conversations/{conversationId}/calls": {
+      "get": {
+        "summary": "Get call history",
+        "description": "Get call history for a conversation",
+        "tags": [
+          "Communication"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "conversationId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "cursor",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of calls",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "format": "uuid"
+                              },
+                              "conversation_id": {
+                                "type": "string",
+                                "format": "uuid"
+                              },
+                              "caller_id": {
+                                "type": "string",
+                                "format": "uuid"
+                              },
+                              "room_name": {
+                                "type": "string"
+                              },
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "VOICE",
+                                  "VIDEO"
+                                ]
+                              },
+                              "status": {
+                                "type": "string",
+                                "enum": [
+                                  "RINGING",
+                                  "ACTIVE",
+                                  "ENDED"
+                                ]
+                              },
+                              "started_at": {
+                                "type": "string",
+                                "format": "date-time"
+                              },
+                              "created_at": {
+                                "type": "string",
+                                "format": "date-time"
+                              },
+                              "ended_at": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ],
+                                "format": "date-time"
+                              },
+                              "ended_reason": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ],
+                                "enum": [
+                                  "REJECTED",
+                                  "MISSED",
+                                  "CANCELLED",
+                                  "COMPLETED",
+                                  null
+                                ]
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "conversation_id",
+                              "caller_id",
+                              "room_name",
+                              "type",
+                              "status",
+                              "started_at",
+                              "created_at",
+                              "ended_at",
+                              "ended_reason"
+                            ]
+                          }
+                        },
+                        "nextCursor": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "items",
+                        "nextCursor"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/communication/calls/{callId}/reject": {
+      "patch": {
+        "summary": "Reject a call",
+        "description": "Reject an incoming call",
+        "tags": [
+          "Communication"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "callId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Call rejected",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "RINGING",
+                            "ACTIVE",
+                            "ENDED"
+                          ]
+                        },
+                        "ended_reason": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "enum": [
+                            "REJECTED",
+                            "MISSED",
+                            "CANCELLED",
+                            "COMPLETED",
+                            null
+                          ]
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "status",
+                        "ended_reason"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/communication/conversations/{conversationId}/focus": {
+      "get": {
+        "summary": "Get focus history",
+        "description": "Get focus sessions history for a conversation",
+        "tags": [
+          "Communication"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "conversationId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "cursor",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of focus sessions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "format": "uuid"
+                              },
+                              "conversation_id": {
+                                "type": "string",
+                                "format": "uuid"
+                              },
+                              "initiator_id": {
+                                "type": "string",
+                                "format": "uuid"
+                              },
+                              "room_name": {
+                                "type": "string"
+                              },
+                              "duration_seconds": {
+                                "type": "integer"
+                              },
+                              "status": {
+                                "type": "string",
+                                "enum": [
+                                  "PENDING",
+                                  "ACTIVE",
+                                  "COMPLETED",
+                                  "CANCELLED"
+                                ]
+                              },
+                              "started_at": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ],
+                                "format": "date-time"
+                              },
+                              "ends_at": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ],
+                                "format": "date-time"
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "conversation_id",
+                              "initiator_id",
+                              "room_name",
+                              "duration_seconds",
+                              "status",
+                              "started_at",
+                              "ends_at"
+                            ]
+                          }
+                        },
+                        "nextCursor": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "items",
+                        "nextCursor"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/communication/focus/{focusId}/reject": {
+      "patch": {
+        "summary": "Reject a focus session",
+        "description": "Reject an incoming focus session request",
+        "tags": [
+          "Communication"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "focusId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Focus session rejected",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "PENDING",
+                            "ACTIVE",
+                            "COMPLETED",
+                            "CANCELLED"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "status"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message",
+                    "data"
                   ]
                 }
               }
