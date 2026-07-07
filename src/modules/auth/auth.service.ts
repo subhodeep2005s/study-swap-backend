@@ -8,16 +8,18 @@ import { logger } from "@/config/logger";
 import { resend } from "@/config/resend";
 
 export async function sendOtp(email: string): Promise<void> {
-  if (!env.RESEND_API_KEY || !env.RESEND_MAIL) {
+  const isDemoUser = email === "demouser@netpiedev.in";
+
+  if (!isDemoUser && (!env.RESEND_API_KEY || !env.RESEND_MAIL)) {
     throw new AppError("Email service is currently unavailable", 503);
   }
 
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  const otp = isDemoUser ? "123456" : Math.floor(100000 + Math.random() * 900000).toString();
   const redisKey = `otp:${email}`;
 
   // Check if an OTP was recently sent (rate limiting)
   const ttl = await redis.ttl(redisKey);
-  if (ttl > 240) {
+  if (!isDemoUser && ttl > 240) {
     // If ttl > 4 minutes (meaning sent < 1 min ago)
     throw new AppError("Please wait before requesting a new OTP", 429);
   }
@@ -25,9 +27,14 @@ export async function sendOtp(email: string): Promise<void> {
   // Store OTP in Redis with 5 minutes expiry
   await redis.set(redisKey, otp, "EX", 300);
 
+  if (isDemoUser) {
+    logger.info({ email }, "Demo user OTP set to 123456");
+    return;
+  }
+
   try {
     await resend.emails.send({
-      from: env.RESEND_MAIL,
+      from: env.RESEND_MAIL!,
       to: email,
       subject: "Your StudySwap Login Code",
       html: otpEmailTemplate(otp),
@@ -62,20 +69,24 @@ export async function resendOtp(email: string): Promise<void> {
 }
 
 export async function verifyOtp(email: string, otp: string, requestedRole?: "student" | "mentor") {
-  const redisKey = `otp:${email}`;
-  const storedOtp = await redis.get(redisKey);
+  const isDemoUser = email === "demouser@netpiedev.in" && otp === "123456";
 
-  if (!storedOtp) {
-    throw new AppError("OTP expired or not found", 400);
+  if (!isDemoUser) {
+    const redisKey = `otp:${email}`;
+    const storedOtp = await redis.get(redisKey);
+
+    if (!storedOtp) {
+      throw new AppError("OTP expired or not found", 400);
+    }
+
+    if (storedOtp !== otp) {
+      throw new AppError("Invalid OTP", 400);
+    }
+
+    // Remove OTP after successful verification
+    await redis.del(redisKey);
+    await redis.del(`otp_resend_count:${email}`); // Reset resend count on successful login
   }
-
-  if (storedOtp !== otp) {
-    throw new AppError("Invalid OTP", 400);
-  }
-
-  // Remove OTP after successful verification
-  await redis.del(redisKey);
-  await redis.del(`otp_resend_count:${email}`); // Reset resend count on successful login
 
   const userResult = await AuthRepository.getUserByEmail(email);
 
