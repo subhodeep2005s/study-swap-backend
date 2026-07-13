@@ -40,31 +40,31 @@ export class OnboardingRepository {
     );
   }
 
-  static async getExams(userId: string) {
+  static async getEducationNodes(userId: string) {
     const result = await query(
       `SELECT e.id, e.name 
-       FROM user_exams ue 
-       JOIN exams e ON ue.exam_id = e.id 
+       FROM user_education_nodes ue 
+       JOIN education_nodes e ON ue.node_id = e.id 
        WHERE ue.user_id = $1`,
       [userId]
     );
     return result.rows;
   }
 
-  static async saveExamsTransaction(userId: string, examIds: string[]) {
+  static async saveEducationNodesTransaction(userId: string, educationNodeIds: string[]) {
     const client = await getClient();
     try {
       await client.query("BEGIN");
       
-      // Clear existing exams for user
-      await client.query("DELETE FROM user_exams WHERE user_id = $1", [userId]);
+      // Clear existing nodes for user
+      await client.query("DELETE FROM user_education_nodes WHERE user_id = $1", [userId]);
       
-      // Insert new exams
-      if (examIds.length > 0) {
-        const placeholders = examIds.map((_, i) => `($1, $${i + 2})`).join(",");
+      // Insert new nodes
+      if (educationNodeIds.length > 0) {
+        const placeholders = educationNodeIds.map((_, i) => `($1, $${i + 2})`).join(",");
         await client.query(
-          `INSERT INTO user_exams (user_id, exam_id) VALUES ${placeholders}`,
-          [userId, ...examIds]
+          `INSERT INTO user_education_nodes (user_id, node_id) VALUES ${placeholders}`,
+          [userId, ...educationNodeIds]
         );
       }
       
@@ -95,7 +95,7 @@ export class OnboardingRepository {
       phoneNumber?: string;
       countryId: string;
       state?: string;
-      examIds: string[];
+      educationNodeIds: string[];
     }
   ) {
     const client = await getClient();
@@ -136,13 +136,13 @@ export class OnboardingRepository {
         [userId, data.countryId, data.state || null]
       );
 
-      // 4. Save exams
-      await client.query("DELETE FROM user_exams WHERE user_id = $1", [userId]);
-      if (data.examIds && data.examIds.length > 0) {
-        const placeholders = data.examIds.map((_, i) => `($1, $${i + 2})`).join(",");
+      // 4. Save education nodes
+      await client.query("DELETE FROM user_education_nodes WHERE user_id = $1", [userId]);
+      if (data.educationNodeIds && data.educationNodeIds.length > 0) {
+        const placeholders = data.educationNodeIds.map((_, i) => `($1, $${i + 2})`).join(",");
         await client.query(
-          `INSERT INTO user_exams (user_id, exam_id) VALUES ${placeholders}`,
-          [userId, ...data.examIds]
+          `INSERT INTO user_education_nodes (user_id, node_id) VALUES ${placeholders}`,
+          [userId, ...data.educationNodeIds]
         );
       }
 

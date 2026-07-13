@@ -17,9 +17,9 @@ export const profileSchema = z.object({
   }),
 });
 
-export const examsSchema = z.object({
+export const educationNodesSchema = z.object({
   body: z.object({
-    examIds: z.array(z.string().uuid("Invalid exam ID")),
+    educationNodeIds: z.array(z.string().uuid("Invalid education node ID")),
   }),
 });
 
@@ -57,13 +57,13 @@ export const mentorApplicationSchema = z.object({
     phoneNumber: z.string().min(5, "Phone number is too short").max(20).optional(),
     countryId: z.string().uuid("Invalid country ID"),
     state: z.string().min(1, "State is required").optional(),
-    examIds: z.array(z.string().uuid("Invalid exam ID")),
+    educationNodeIds: z.array(z.string().uuid("Invalid education node ID")),
   }),
 });
 
 export type CountryInput = z.infer<typeof countrySchema>["body"];
 export type ProfileInput = z.infer<typeof profileSchema>["body"];
-export type ExamsInput = z.infer<typeof examsSchema>["body"];
+export type EducationNodesInput = z.infer<typeof educationNodesSchema>["body"];
 export type StudyInput = z.infer<typeof studySchema>["body"];
 export type PreferencesInput = z.infer<typeof preferencesSchema>["body"];
 export type EnhanceBioInput = z.infer<typeof enhanceBioSchema>["body"];

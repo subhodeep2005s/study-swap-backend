@@ -12,14 +12,14 @@ import { sendMail } from "@/config/resend";
 const MATCH_LIMIT = 10;
 const LOCK_TTL = 30; // seconds
 
-function mapMatchReason(match: any, exams: string[], state: string | null) {
+function mapMatchReason(match: any, educationNodes: string[], state: string | null) {
   if (match.matchedBy === "exam_state") {
-    const commonExams = match.selectedExams.filter((e: string) => exams.includes(e));
-    const reasonStr = commonExams.length > 0 ? commonExams.join(", ") : "the same exams";
+    const commonNodes = match.selectedEducationNodes.filter((e: string) => educationNodes.includes(e));
+    const reasonStr = commonNodes.length > 0 ? commonNodes.join(", ") : "the same study goals";
     match.matchReason = `You both are preparing for ${reasonStr} and are from ${state || "the same state"}.`;
   } else if (match.matchedBy === "exam") {
-    const commonExams = match.selectedExams.filter((e: string) => exams.includes(e));
-    const reasonStr = commonExams.length > 0 ? commonExams.join(", ") : "the same exams";
+    const commonNodes = match.selectedEducationNodes.filter((e: string) => educationNodes.includes(e));
+    const reasonStr = commonNodes.length > 0 ? commonNodes.join(", ") : "the same study goals";
     match.matchReason = `You both are preparing for ${reasonStr}.`;
   }
   return match;
@@ -42,21 +42,21 @@ async function attachStories(matches: any[]) {
 export async function getPendingMatches(userId: string) {
   const matchesData = await MatchesRepository.getMatchesByStatus(userId, "pending");
   const context = await getMatchContext(userId);
-  const matches = matchesData.map(row => mapMatchReason(row, context.exams, context.state));
+  const matches = matchesData.map(row => mapMatchReason(row, context.educationNodes, context.state));
   return attachStories(matches);
 }
 
 export async function getSavedMatches(userId: string) {
   const matchesData = await MatchesRepository.getMatchesByStatus(userId, "saved");
   const context = await getMatchContext(userId);
-  const matches = matchesData.map(row => mapMatchReason(row, context.exams, context.state));
+  const matches = matchesData.map(row => mapMatchReason(row, context.educationNodes, context.state));
   return attachStories(matches);
 }
 
 export async function getAcceptedMatches(userId: string) {
   const matchesData = await MatchesRepository.getMatchesByStatus(userId, "accepted");
   const context = await getMatchContext(userId);
-  const matches = matchesData.map(row => mapMatchReason(row, context.exams, context.state));
+  const matches = matchesData.map(row => mapMatchReason(row, context.educationNodes, context.state));
   return attachStories(matches);
 }
 
@@ -66,7 +66,7 @@ export async function getMatch(userId: string, matchId: string) {
     throw new AppError("Match not found", 404);
   }
   const context = await getMatchContext(userId);
-  const mappedMatch = mapMatchReason(result, context.exams, context.state);
+  const mappedMatch = mapMatchReason(result, context.educationNodes, context.state);
   const storiesMap = await getStories([mappedMatch.userId]);
   mappedMatch.story = storiesMap[mappedMatch.userId] || null;
   return mappedMatch;
@@ -87,9 +87,9 @@ export async function refreshMatches(userId: string) {
       await client.query("BEGIN");
 
       // New algorithm:
-      // 1. Find users who share at least one exam (mandatory requirement)
-      // 2. Among those, rank by: exam_state (same exams + same state) > exam (same exams only)
-      // 3. Within each tier, sort by number of common exams (more = better match)
+      // 1. Find users who share at least one education node (mandatory requirement)
+      // 2. Among those, rank by: exam_state (same nodes + same state) > exam (same nodes only)
+      // 3. Within each tier, sort by number of common nodes (more = better match)
       // 4. NO state-only matches. NO unrelated profiles.
       const matchesRes = await MatchesRepository.generateMatches(client, userId, MATCH_LIMIT);
 

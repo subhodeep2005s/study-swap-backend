@@ -163,9 +163,10 @@ export class AdminRepository {
         e.name AS "name",
         c.name AS "countryName",
         count(ue.id)::int AS "studentCount"
-      FROM exams e
-      LEFT JOIN user_exams ue ON ue.exam_id = e.id
+      FROM education_nodes e
+      LEFT JOIN user_education_nodes ue ON ue.node_id = e.id
       LEFT JOIN countries c ON c.id = e.country_id
+      WHERE e.node_type IN ('EXAM', 'LEAF')
       GROUP BY e.id, e.name, c.name
       ORDER BY "studentCount" DESC
       LIMIT $1
@@ -228,31 +229,46 @@ export class AdminRepository {
   }
 
   // =========================================================================
-  // Exams (with pagination)
+  // Education Nodes (with pagination)
   // =========================================================================
-  static async getExams(params?: PaginationParams): Promise<PaginatedResult<any>> {
+  static async getEducationNodes(params?: PaginationParams & { parentId?: string; type?: string }): Promise<PaginatedResult<any>> {
     const page = params?.page ?? 1;
     const limit = params?.limit ?? 20;
     const search = params?.search;
 
-    let whereClause = "";
+    let whereClause = "WHERE 1=1";
     const queryParams: any[] = [];
 
     if (search) {
       queryParams.push(`%${search}%`);
-      whereClause = `WHERE e.name ILIKE $${queryParams.length}`;
+      whereClause += ` AND e.name ILIKE $${queryParams.length}`;
+    }
+    
+    if (params?.parentId !== undefined) {
+      if (params.parentId === null || params.parentId === "") {
+         whereClause += ` AND e.parent_id IS NULL`;
+      } else {
+         queryParams.push(params.parentId);
+         whereClause += ` AND e.parent_id = $${queryParams.length}`;
+      }
+    }
+    
+    if (params?.type) {
+      queryParams.push(params.type);
+      whereClause += ` AND e.node_type = $${queryParams.length}`;
     }
 
-    const countResult = await query(`SELECT count(*)::int AS total FROM exams e ${whereClause}`, queryParams);
+    const countResult = await query(`SELECT count(*)::int AS total FROM education_nodes e ${whereClause}`, queryParams);
     const total = countResult.rows[0]!.total;
 
     queryParams.push(limit, paginationOffset(page, limit));
     const result = await query(
-      `SELECT e.*, c.name as country_name 
-       FROM exams e 
+      `SELECT e.*, c.name as country_name, p.name as parent_name
+       FROM education_nodes e 
        LEFT JOIN countries c ON c.id = e.country_id
+       LEFT JOIN education_nodes p ON p.id = e.parent_id
        ${whereClause} 
-       ORDER BY e.created_at DESC 
+       ORDER BY e.sort_order ASC, e.created_at DESC 
        LIMIT $${queryParams.length - 1} OFFSET $${queryParams.length}`,
       queryParams
     );
@@ -263,31 +279,31 @@ export class AdminRepository {
     };
   }
 
-  static async getExamsByCountry(countryId: string) {
-    const result = await query("SELECT * FROM exams WHERE country_id = $1 ORDER BY created_at DESC", [countryId]);
+  static async getEducationNodesByCountry(countryId: string) {
+    const result = await query("SELECT * FROM education_nodes WHERE country_id = $1 ORDER BY parent_id NULLS FIRST, sort_order ASC", [countryId]);
     return result.rows;
   }
 
-  static async createExam(countryId: string | null | undefined, name: string, isActive: boolean) {
+  static async createEducationNode(countryId: string | null | undefined, parentId: string | null | undefined, name: string, nodeType: string, isActive: boolean, sortOrder: number = 0) {
     const result = await query(
-      "INSERT INTO exams (country_id, name, is_active) VALUES ($1, $2, COALESCE($3, true)) RETURNING *",
-      [countryId || null, name, isActive]
+      "INSERT INTO education_nodes (country_id, parent_id, name, node_type, is_active, sort_order) VALUES ($1, $2, $3, $4, COALESCE($5, true), $6) RETURNING *",
+      [countryId || null, parentId || null, name, nodeType, isActive, sortOrder]
     );
     return result.rows[0];
   }
 
-  static async updateExam(id: string, fields: UpdateField[]) {
+  static async updateEducationNode(id: string, fields: UpdateField[]) {
     const result = fields.length > 0
         ? await query(
-            `UPDATE exams SET ${buildSetClause(fields)}, updated_at = NOW() WHERE id = $${fields.length + 1} RETURNING *`,
+            `UPDATE education_nodes SET ${buildSetClause(fields)}, updated_at = NOW() WHERE id = $${fields.length + 1} RETURNING *`,
             [...fields.map(([, value]) => value), id]
           )
-        : await query("SELECT * FROM exams WHERE id = $1", [id]);
+        : await query("SELECT * FROM education_nodes WHERE id = $1", [id]);
     return result.rows[0];
   }
 
-  static async deleteExam(id: string) {
-    const result = await query("DELETE FROM exams WHERE id = $1 RETURNING id", [id]);
+  static async deleteEducationNode(id: string) {
+    const result = await query("DELETE FROM education_nodes WHERE id = $1 RETURNING id", [id]);
     return result.rows.length > 0;
   }
 
@@ -422,15 +438,15 @@ export class AdminRepository {
 
     const user: any = userResult.rows[0]!;
 
-    // Exams
-    const examsResult = await query(`
-      SELECT e.id, e.name, c.name as country_name
-      FROM user_exams ue
-      JOIN exams e ON e.id = ue.exam_id
-      LEFT JOIN countries c ON c.id = e.country_id
-      WHERE ue.user_id = $1
+    // Education Nodes
+    const educationResult = await query(`
+      SELECT en.id, en.name, c.name as country_name, en.node_type
+      FROM user_education_nodes uen
+      JOIN education_nodes en ON en.id = uen.node_id
+      LEFT JOIN countries c ON c.id = en.country_id
+      WHERE uen.user_id = $1
     `, [id]);
-    user.exams = examsResult.rows;
+    user.educationNodes = educationResult.rows;
 
     // Match stats
     const matchResult = await query(`

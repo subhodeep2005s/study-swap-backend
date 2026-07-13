@@ -4,13 +4,13 @@ import {
   adminLoginSchema, 
   createCountrySchema, 
   updateCountrySchema, 
-  createExamSchema, 
-  updateExamSchema, 
+  createEducationNodeSchema, 
+  updateEducationNodeSchema, 
   updateStudentSchema, 
   updateMentorUserSchema, 
   adminUserResponseSchema, 
   countryResponseSchema, 
-  examResponseSchema, 
+  educationNodeResponseSchema, 
   matchResponseSchema, 
   auditLogResponseSchema, 
   dashboardResponseSchema,
@@ -30,13 +30,13 @@ const security = [{ bearerAuth: [] }];
 const AdminLogin = registry.register("AdminLogin", adminLoginSchema.shape.body);
 const CreateCountry = registry.register("CreateCountry", createCountrySchema.shape.body);
 const UpdateCountry = registry.register("UpdateCountry", updateCountrySchema.shape.body);
-const CreateExam = registry.register("CreateExam", createExamSchema.shape.body);
-const UpdateExam = registry.register("UpdateExam", updateExamSchema.shape.body);
+const CreateEducationNode = registry.register("CreateEducationNode", createEducationNodeSchema.shape.body);
+const UpdateEducationNode = registry.register("UpdateEducationNode", updateEducationNodeSchema.shape.body);
 const UpdateStudent = registry.register("UpdateStudent", updateStudentSchema.shape.body);
 const UpdateMentorUser = registry.register("UpdateMentorUser", updateMentorUserSchema.shape.body);
 const AdminUserResponse = registry.register("AdminUserResponse", adminUserResponseSchema);
 const CountryResponse = registry.register("CountryResponse", countryResponseSchema);
-const ExamResponse = registry.register("ExamResponse", examResponseSchema);
+const EducationNodeResponse = registry.register("EducationNodeResponse", educationNodeResponseSchema);
 const MatchResponse = registry.register("MatchResponse", matchResponseSchema);
 const AuditLogResponse = registry.register("AuditLogResponse", auditLogResponseSchema);
 const DashboardResponse = registry.register("DashboardResponse", dashboardResponseSchema);
@@ -235,97 +235,99 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/admin/countries/{countryId}/exams",
+  path: "/admin/countries/{countryId}/education-nodes",
   tags,
   security,
-  summary: "Get exams by country",
+  summary: "Get education nodes by country",
   description: "Admin only.",
   request: {
     params: z.object({ countryId: z.string().uuid() }),
   },
   responses: {
     200: {
-      description: "Exams fetched",
-      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.array(ExamResponse) }) } },
+      description: "Education nodes fetched",
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.array(EducationNodeResponse) }) } },
     },
   },
 });
 
 // =========================================================================
-// Exams
+// Education Nodes
 // =========================================================================
 registry.registerPath({
   method: "get",
-  path: "/admin/exams",
+  path: "/admin/education-nodes",
   tags,
   security,
-  summary: "Get all exams",
+  summary: "Get all education nodes",
   description: "Admin only.",
   request: {
     query: z.object({
       page: z.coerce.number().optional(),
       limit: z.coerce.number().optional(),
       search: z.string().optional(),
+      parentId: z.string().optional(),
+      type: z.string().optional(),
     }),
   },
   responses: {
     200: {
-      description: "Exams fetched",
-      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.array(ExamResponse), pagination: PaginationResponse }) } },
+      description: "Education nodes fetched",
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.array(EducationNodeResponse), pagination: PaginationResponse }) } },
     },
   },
 });
 
 registry.registerPath({
   method: "post",
-  path: "/admin/exams",
+  path: "/admin/education-nodes",
   tags,
   security,
-  summary: "Create exam",
+  summary: "Create education node",
   description: "Admin only.",
   request: {
-    body: { content: { "application/json": { schema: CreateExam } } },
+    body: { content: { "application/json": { schema: CreateEducationNode } } },
   },
   responses: {
     201: {
-      description: "Exam created",
-      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: ExamResponse }) } },
+      description: "Education node created",
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: EducationNodeResponse }) } },
     },
   },
 });
 
 registry.registerPath({
   method: "patch",
-  path: "/admin/exams/{id}",
+  path: "/admin/education-nodes/{id}",
   tags,
   security,
-  summary: "Update exam",
+  summary: "Update education node",
   description: "Admin only.",
   request: {
     params: z.object({ id: z.string().uuid() }),
-    body: { content: { "application/json": { schema: UpdateExam } } },
+    body: { content: { "application/json": { schema: UpdateEducationNode } } },
   },
   responses: {
     200: {
-      description: "Exam updated",
-      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: ExamResponse }) } },
+      description: "Education node updated",
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: EducationNodeResponse }) } },
     },
   },
 });
 
 registry.registerPath({
   method: "delete",
-  path: "/admin/exams/{id}",
+  path: "/admin/education-nodes/{id}",
   tags,
   security,
-  summary: "Delete exam",
+  summary: "Delete education node",
   description: "Admin only.",
   request: {
     params: z.object({ id: z.string().uuid() }),
   },
   responses: {
     200: {
-      description: "Exam deleted",
+      description: "Education node deleted",
       content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({}).openapi({ description: "No data returned for this operation", example: {} }) }) } },
     },
   },

@@ -18,10 +18,10 @@ const matchProjectionQuery = `
     m.matched_by AS "matchedBy",
     (
       SELECT COALESCE(array_agg(e.name), ARRAY[]::text[])
-      FROM user_exams ue
-      JOIN exams e ON ue.exam_id = e.id
+      FROM user_education_nodes ue
+      JOIN education_nodes e ON ue.node_id = e.id
       WHERE ue.user_id = p.user_id
-    ) AS "selectedExams"
+    ) AS "selectedEducationNodes"
   FROM user_matches m
   JOIN profiles p ON p.user_id = m.matched_user_id
   WHERE m.user_id = $1 AND m.status = $2
@@ -37,14 +37,14 @@ export class MatchesRepository {
   static async getMatchContext(userId: string) {
     const profileRes = await query("SELECT state FROM profiles WHERE user_id = $1", [userId]);
     const state = profileRes.rows[0]?.state || null;
-    const examsRes = await query(`
+    const educationNodesRes = await query(`
       SELECT e.name 
-      FROM user_exams ue 
-      JOIN exams e ON ue.exam_id = e.id 
+      FROM user_education_nodes ue 
+      JOIN education_nodes e ON ue.node_id = e.id 
       WHERE ue.user_id = $1
     `, [userId]);
-    const exams = examsRes.rows.map((r: any) => r.name);
-    return { state, exams };
+    const educationNodes = educationNodesRes.rows.map((r: any) => r.name);
+    return { state, educationNodes };
   }
 
   static async getMatch(userId: string, matchId: string) {
@@ -66,10 +66,10 @@ export class MatchesRepository {
       m.status,
       (
         SELECT COALESCE(array_agg(e.name), ARRAY[]::text[])
-        FROM user_exams ue
-        JOIN exams e ON ue.exam_id = e.id
+        FROM user_education_nodes ue
+        JOIN education_nodes e ON ue.node_id = e.id
         WHERE ue.user_id = p.user_id
-      ) AS "selectedExams"
+      ) AS "selectedEducationNodes"
     FROM user_matches m
     JOIN profiles p ON p.user_id = m.matched_user_id
     WHERE m.user_id = $1 AND m.id = $2
@@ -82,11 +82,11 @@ export class MatchesRepository {
     const userInfoRes = await client.query('SELECT state FROM profiles WHERE user_id = $1', [userId]);
     const userState = userInfoRes.rows[0]?.state || null;
 
-    const userExamsRes = await client.query('SELECT exam_id FROM user_exams WHERE user_id = $1', [userId]);
-    const examIds = userExamsRes.rows.map(r => r.exam_id);
+    const userNodesRes = await client.query('SELECT node_id FROM user_education_nodes WHERE user_id = $1', [userId]);
+    const nodeIds = userNodesRes.rows.map(r => r.node_id);
 
-    if (examIds.length === 0) {
-      return { rows: [] }; // Cannot match if they have no exams
+    if (nodeIds.length === 0) {
+      return { rows: [] }; // Cannot match if they have no education nodes
     }
 
     const collectedMatches: any[] = [];
@@ -95,11 +95,11 @@ export class MatchesRepository {
     const baseFilter = `
       FROM users u
       JOIN profiles p ON u.id = p.user_id
-      JOIN user_exams ue ON ue.user_id = u.id
+      JOIN user_education_nodes ue ON ue.user_id = u.id
       WHERE u.role = 'student'
         AND u.id != $1
         AND u.onboarding_completed = true
-        AND ue.exam_id = ANY($2::uuid[])
+        AND ue.node_id = ANY($2::uuid[])
         AND NOT EXISTS (
           SELECT 1 FROM user_matches um 
           WHERE um.user_id = $1 
@@ -120,7 +120,7 @@ export class MatchesRepository {
       if (remaining <= 0) return;
       
       const query = getQuery(stateCondition, matchStatusCondition);
-      const res = await client.query(query, [userId, examIds, remaining, userState]);
+      const res = await client.query(query, [userId, nodeIds, remaining, userState]);
       
       for (const row of res.rows) {
         if (!collectedMatches.find(m => m.matched_user_id === row.matched_user_id)) {

@@ -3,7 +3,7 @@ import { z } from "zod";
 import {
   countrySchema,
   profileSchema,
-  examsSchema,
+  educationNodesSchema,
   studySchema,
   preferencesSchema,
   enhanceBioSchema,
@@ -15,7 +15,7 @@ const security = [{ bearerAuth: [] }];
 
 const CountryInput = registry.register("CountryInput", countrySchema.shape.body);
 const ProfileInput = registry.register("ProfileInput", profileSchema.shape.body);
-const ExamsInput = registry.register("ExamsInput", examsSchema.shape.body);
+const EducationNodesInput = registry.register("EducationNodesInput", educationNodesSchema.shape.body);
 const StudyInput = registry.register("StudyInput", studySchema.shape.body);
 const PreferencesInput = registry.register("PreferencesInput", preferencesSchema.shape.body);
 const EnhanceBioInput = registry.register("EnhanceBioInput", enhanceBioSchema.shape.body);
@@ -108,11 +108,11 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/onboarding/exams",
+  path: "/onboarding/education-nodes",
   tags,
   security,
-  summary: "Get user exams",
-  description: "Get the exams selected by the user.",
+  summary: "Get user education nodes",
+  description: "Get the education nodes selected by the user.",
   responses: {
     200: {
       description: "Success",
@@ -122,7 +122,7 @@ registry.registerPath({
             success: z.boolean(),
             message: z.string(),
             data: z.object({
-              exams: z.array(z.object({ id: z.string(), name: z.string() })),
+              educationNodes: z.array(z.object({ id: z.string(), name: z.string() })),
             }),
           }),
         },
@@ -133,15 +133,15 @@ registry.registerPath({
 
 registry.registerPath({
   method: "patch",
-  path: "/onboarding/exams",
+  path: "/onboarding/education-nodes",
   tags,
   security,
-  summary: "Save exams",
-  description: "Save the user's selected exams.",
+  summary: "Save education nodes",
+  description: "Save the user's selected education nodes.",
   request: {
     body: {
       content: {
-        "application/json": { schema: ExamsInput },
+        "application/json": { schema: EducationNodesInput },
       },
     },
   },

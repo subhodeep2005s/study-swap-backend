@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import { asyncHandler } from "@/core/utils/async-handler";
 import * as adminService from "./admin.service";
-import type { AdminLoginInput, CreateCountryInput, UpdateCountryInput, CreateExamInput, UpdateExamInput } from "./admin.schema";
+import type { AdminLoginInput, CreateCountryInput, UpdateCountryInput, CreateEducationNodeInput, UpdateEducationNodeInput } from "./admin.schema";
 
 // =========================================================================
 // Auth
@@ -48,32 +48,38 @@ export const deleteCountry = asyncHandler(async (req: Request<{ id: string }>, r
 });
 
 // =========================================================================
-// Exams
+// Education Nodes
 // =========================================================================
-export const getExams = asyncHandler(async (req: Request, res: Response) => {
-  const { page, limit, search } = req.query as any;
-  const result = await adminService.getExams({ page: Number(page) || 1, limit: Number(limit) || 20, search });
-  res.status(200).json({ success: true, message: "Exams fetched successfully", data: result.data, pagination: result.pagination });
+export const getEducationNodes = asyncHandler(async (req: Request, res: Response) => {
+  const { page, limit, search, parentId, type } = req.query as any;
+  const result = await adminService.getEducationNodes({ 
+    page: Number(page) || 1, 
+    limit: Number(limit) || 20, 
+    search, 
+    parentId, 
+    type 
+  });
+  res.status(200).json({ success: true, message: "Education nodes fetched successfully", data: result.data, pagination: result.pagination });
 });
 
-export const getExamsByCountry = asyncHandler(async (req: Request<{ countryId: string }>, res: Response) => {
-  const data = await adminService.getExamsByCountry(req.params.countryId);
-  res.status(200).json({ success: true, message: "Exams fetched", data });
+export const getEducationNodesByCountry = asyncHandler(async (req: Request<{ countryId: string }>, res: Response) => {
+  const data = await adminService.getEducationNodesByCountry(req.params.countryId);
+  res.status(200).json({ success: true, message: "Education nodes fetched", data });
 });
 
-export const createExam = asyncHandler(async (req: Request<unknown, unknown, CreateExamInput>, res: Response) => {
-  const data = await adminService.createExam(req.body);
-  res.status(201).json({ success: true, message: "Exam created", data });
+export const createEducationNode = asyncHandler(async (req: Request<unknown, unknown, CreateEducationNodeInput>, res: Response) => {
+  const data = await adminService.createEducationNode(req.body);
+  res.status(201).json({ success: true, message: "Education node created", data });
 });
 
-export const updateExam = asyncHandler(async (req: Request<{ id: string }, unknown, UpdateExamInput>, res: Response) => {
-  const data = await adminService.updateExam(req.params.id, req.body);
-  res.status(200).json({ success: true, message: "Exam updated", data });
+export const updateEducationNode = asyncHandler(async (req: Request<{ id: string }, unknown, UpdateEducationNodeInput>, res: Response) => {
+  const data = await adminService.updateEducationNode(req.params.id, req.body);
+  res.status(200).json({ success: true, message: "Education node updated", data });
 });
 
-export const deleteExam = asyncHandler(async (req: Request<{ id: string }>, res: Response) => {
-  await adminService.deleteExam(req.params.id);
-  res.status(200).json({ success: true, message: "Exam deleted", data: {} });
+export const deleteEducationNode = asyncHandler(async (req: Request<{ id: string }>, res: Response) => {
+  await adminService.deleteEducationNode(req.params.id);
+  res.status(200).json({ success: true, message: "Education node deleted", data: {} });
 });
 
 // =========================================================================

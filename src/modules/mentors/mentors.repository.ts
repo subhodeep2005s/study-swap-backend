@@ -19,7 +19,7 @@ export class MentorsRepository {
     return result.rows;
   }
 
-  static async getMentorsByMyExams(userId: string) {
+  static async getMentorsByMyEducationNodes(userId: string) {
     const result = await query(`
       SELECT DISTINCT
         m.id, m.title, m.qualification, m.experience_years, 
@@ -27,8 +27,8 @@ export class MentorsRepository {
         p.full_name, p.profile_image, p.bio, p.country_id, p.state
       FROM mentors m
       JOIN profiles p ON p.user_id = m.user_id
-      JOIN user_exams mentor_ue ON mentor_ue.user_id = m.user_id
-      JOIN user_exams student_ue ON student_ue.exam_id = mentor_ue.exam_id
+      JOIN user_education_nodes mentor_ue ON mentor_ue.user_id = m.user_id
+      JOIN user_education_nodes student_ue ON student_ue.node_id = mentor_ue.node_id
       WHERE m.is_verified = true AND student_ue.user_id = $1
       AND EXISTS (SELECT 1 FROM mentor_plans mp WHERE mp.mentor_id = m.id AND mp.is_active = true)
       AND EXISTS (SELECT 1 FROM mentor_availability ma WHERE ma.mentor_id = m.id)
@@ -49,14 +49,14 @@ export class MentorsRepository {
     const mentor = result.rows[0];
     if (!mentor) return null;
 
-    // Fetch exams
-    const examsResult = await query(`
+    // Fetch education nodes
+    const educationNodesResult = await query(`
       SELECT e.id, e.name 
-      FROM user_exams ue
-      JOIN exams e ON e.id = ue.exam_id
+      FROM user_education_nodes ue
+      JOIN education_nodes e ON e.id = ue.node_id
       WHERE ue.user_id = $1
     `, [mentor.user_id]);
-    mentor.exams = examsResult.rows;
+    mentor.educationNodes = educationNodesResult.rows;
 
     return mentor;
   }

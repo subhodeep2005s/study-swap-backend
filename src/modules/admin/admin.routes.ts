@@ -7,8 +7,8 @@ import {
   adminLoginSchema, 
   createCountrySchema, 
   updateCountrySchema, 
-  createExamSchema, 
-  updateExamSchema, 
+  createEducationNodeSchema, 
+  updateEducationNodeSchema, 
   updateStudentSchema, 
   updateMentorUserSchema,
   updateMentorSchema,
@@ -45,15 +45,15 @@ router.get("/countries", adminController.getCountries);
 router.post("/countries", validate(createCountrySchema), adminController.createCountry);
 router.patch("/countries/:id", validate(updateCountrySchema), adminController.updateCountry);
 router.delete("/countries/:id", adminController.deleteCountry);
-router.get("/countries/:countryId/exams", adminController.getExamsByCountry);
+router.get("/countries/:countryId/education-nodes", adminController.getEducationNodesByCountry);
 
 // =========================================================================
-// Exams
+// Education Nodes
 // =========================================================================
-router.get("/exams", adminController.getExams);
-router.post("/exams", validate(createExamSchema), adminController.createExam);
-router.patch("/exams/:id", validate(updateExamSchema), adminController.updateExam);
-router.delete("/exams/:id", adminController.deleteExam);
+router.get("/education-nodes", adminController.getEducationNodes);
+router.post("/education-nodes", validate(createEducationNodeSchema), adminController.createEducationNode);
+router.patch("/education-nodes/:id", validate(updateEducationNodeSchema), adminController.updateEducationNode);
+router.delete("/education-nodes/:id", adminController.deleteEducationNode);
 
 // =========================================================================
 // Users

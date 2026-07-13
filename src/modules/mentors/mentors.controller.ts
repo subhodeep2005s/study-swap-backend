@@ -7,9 +7,9 @@ export const getMentors = asyncHandler(async (req: Request, res: Response) => {
   res.status(200).json({ success: true, message: "Mentors fetched successfully", data: mentors });
 });
 
-export const getMentorsByMyExams = asyncHandler(async (req: Request, res: Response) => {
+export const getMentorsByMyEducationNodes = asyncHandler(async (req: Request, res: Response) => {
   const userId = req.user!.id;
-  const mentors = await mentorsService.getMentorsByMyExams(userId);
+  const mentors = await mentorsService.getMentorsByMyEducationNodes(userId);
   res.status(200).json({ success: true, message: "Mentors fetched successfully", data: mentors });
 });
 

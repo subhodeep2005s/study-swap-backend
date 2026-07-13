@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import { asyncHandler } from "@/core/utils/async-handler";
 import * as onboardingService from "./onboarding.service";
-import type { CountryInput, ProfileInput, ExamsInput, StudyInput, PreferencesInput, EnhanceBioInput, MentorApplicationInput } from "./onboarding.schema";
+import type { CountryInput, ProfileInput, EducationNodesInput, StudyInput, PreferencesInput, EnhanceBioInput, MentorApplicationInput } from "./onboarding.schema";
 
 export const getStatus = asyncHandler(async (req: Request, res: Response) => {
   const data = await onboardingService.getStatus(req.user!.id);
@@ -18,14 +18,14 @@ export const updateProfile = asyncHandler(async (req: Request<unknown, unknown, 
   res.status(200).json({ success: true, message: "Profile updated successfully", data: {} });
 });
 
-export const getExams = asyncHandler(async (req: Request, res: Response) => {
-  const data = await onboardingService.getExams(req.user!.id);
-  res.status(200).json({ success: true, message: "Exams fetched successfully", data });
+export const getEducationNodes = asyncHandler(async (req: Request, res: Response) => {
+  const data = await onboardingService.getEducationNodes(req.user!.id);
+  res.status(200).json({ success: true, message: "Education nodes fetched successfully", data });
 });
 
-export const saveExams = asyncHandler(async (req: Request<unknown, unknown, ExamsInput>, res: Response) => {
-  await onboardingService.saveExams(req.user!.id, req.body);
-  res.status(200).json({ success: true, message: "Exams saved successfully", data: {} });
+export const saveEducationNodes = asyncHandler(async (req: Request<unknown, unknown, EducationNodesInput>, res: Response) => {
+  await onboardingService.saveEducationNodes(req.user!.id, req.body);
+  res.status(200).json({ success: true, message: "Education nodes saved successfully", data: {} });
 });
 
 export const saveStudyDetails = asyncHandler(async (req: Request<unknown, unknown, StudyInput>, res: Response) => {

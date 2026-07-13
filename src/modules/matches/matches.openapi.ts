@@ -17,8 +17,8 @@ const matchSchema = registry.register("Match", z.object({
   needHelpWith: z.string().nullable(),
   studyTime: z.string().nullable(),
   lookingFor: z.array(z.string()).nullable(),
-  selectedExams: z.array(z.string()),
-  matchedBy: z.enum(["exam_state", "exam"]).openapi({ description: "exam_state = same exams + same state (highest priority), exam = same exams only" }),
+  selectedEducationNodes: z.array(z.string()),
+  matchedBy: z.enum(["exam_state", "exam"]).openapi({ description: "exam_state = same education nodes + same state (highest priority), exam = same education nodes only" }),
   matchReason: z.string(),
   story: z.string().nullable().openapi({ description: "Story image URL if available and active (<24 hours old)" }),
 }));
@@ -63,7 +63,7 @@ registry.registerPath({
   tags,
   security,
   summary: "Refresh matches",
-  description: "Generates a new batch of study partner recommendations. Algorithm priority: 1) Same exam(s) + same state (highest), 2) Same exam(s) only. Exam matching is mandatory — profiles with no shared exams are never included. Returns up to 10 matches.",
+  description: "Generates a new batch of study partner recommendations. Algorithm priority: 1) Same education node(s) + same state (highest), 2) Same education node(s) only. Matching is mandatory — profiles with no shared education nodes are never included. Returns up to 10 matches.",
   responses: {
     200: {
       description: "Matches refreshed successfully or matching in progress.",

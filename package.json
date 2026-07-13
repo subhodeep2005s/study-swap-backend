@@ -14,7 +14,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest --reporter=verbose --run",
     "db:migrate": "node-pg-migrate up --migrations-dir=src/db/migrations",
-    "db:migrate:new": "node-pg-migrate create --migration-file-language=sql --migrations-dir=src/db/migrations"
+    "db:migrate:new": "node-pg-migrate create --migration-file-language=sql --migrations-dir=src/db/migrations",
+    "db:seed:education": "tsx src/db/seeders/education.seeder.ts"
   },
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "^8.4.1",

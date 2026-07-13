@@ -41,21 +41,33 @@ export const updateCountrySchema = z.object({
 });
 
 // =========================================================================
-// Exams
+// Education Nodes
 // =========================================================================
-export const createExamSchema = z.object({
+export const createEducationNodeSchema = z.object({
   body: z.object({
     countryId: z.string().uuid("Invalid country ID"),
+    parentId: z.string().uuid().nullable().optional(),
     name: z.string().min(1, "Name is required"),
+    nodeType: z.enum([
+      "COUNTRY", "CATEGORY", "SUB_CATEGORY", "GROUP", "BOARD",
+      "STREAM", "COURSE", "EXAM", "SPECIALIZATION", "CLASS", "SUBJECT", "LEAF"
+    ]),
     isActive: z.boolean().optional(),
+    sortOrder: z.number().int().optional(),
   }),
 });
 
-export const updateExamSchema = z.object({
+export const updateEducationNodeSchema = z.object({
   body: z.object({
-    countryId: z.string().uuid("Invalid country ID").optional(),
+    countryId: z.string().uuid().optional(),
+    parentId: z.string().uuid().nullable().optional(),
     name: z.string().min(1).optional(),
+    nodeType: z.enum([
+      "COUNTRY", "CATEGORY", "SUB_CATEGORY", "GROUP", "BOARD",
+      "STREAM", "COURSE", "EXAM", "SPECIALIZATION", "CLASS", "SUBJECT", "LEAF"
+    ]).optional(),
     isActive: z.boolean().optional(),
+    sortOrder: z.number().int().optional(),
   }),
 });
 
@@ -78,7 +90,7 @@ export const updateStudentSchema = z.object({
     needHelpWith: z.string().optional(),
     studyTime: z.enum(["morning", "afternoon", "evening", "late_night"]).optional(),
     lookingFor: z.array(z.string()).optional(),
-    examIds: z.array(z.string().uuid()).optional(),
+    educationNodeIds: z.array(z.string().uuid()).optional(),
   }),
 });
 
@@ -132,7 +144,7 @@ export const updateMentorSchema = z.object({
     phone_number: z.string().optional(),
     country_id: z.string().uuid().nullable().optional(),
     state: z.string().optional(),
-    exam_ids: z.array(z.string().uuid()).optional(),
+    education_node_ids: z.array(z.string().uuid()).optional(),
   }),
 });
 
@@ -195,11 +207,14 @@ export const countryResponseSchema = z.object({
   updated_at: z.string().or(z.date()),
 });
 
-export const examResponseSchema = z.object({
+export const educationNodeResponseSchema = z.object({
   id: z.string().uuid(),
   country_id: z.string().uuid(),
+  parent_id: z.string().uuid().nullable(),
   name: z.string(),
+  node_type: z.string(),
   is_active: z.boolean(),
+  sort_order: z.number(),
   created_at: z.string().or(z.date()),
   updated_at: z.string().or(z.date()),
 });
@@ -327,8 +342,8 @@ export const bookingResponseSchema = z.object({
 export type AdminLoginInput = z.infer<typeof adminLoginSchema>["body"];
 export type CreateCountryInput = z.infer<typeof createCountrySchema>["body"];
 export type UpdateCountryInput = z.infer<typeof updateCountrySchema>["body"];
-export type CreateExamInput = z.infer<typeof createExamSchema>["body"];
-export type UpdateExamInput = z.infer<typeof updateExamSchema>["body"];
+export type CreateEducationNodeInput = z.infer<typeof createEducationNodeSchema>["body"];
+export type UpdateEducationNodeInput = z.infer<typeof updateEducationNodeSchema>["body"];
 export type UpdateStudentInput = z.infer<typeof updateStudentSchema>["body"];
 export type UpdateMentorUserInput = z.infer<typeof updateMentorUserSchema>["body"];
 export type UpdateMentorInput = z.infer<typeof updateMentorSchema>["body"];

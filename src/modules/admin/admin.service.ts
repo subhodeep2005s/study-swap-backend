@@ -2,7 +2,7 @@ import { env } from "@/config/env";
 import { AppError } from "@/core/errors/AppError";
 import { redis } from "@/config/redis";
 import { generateToken } from "@/core/utils/jwt";
-import type { AdminLoginInput, CreateCountryInput, UpdateCountryInput, CreateExamInput, UpdateExamInput } from "./admin.schema";
+import type { AdminLoginInput, CreateCountryInput, UpdateCountryInput, CreateEducationNodeInput, UpdateEducationNodeInput } from "./admin.schema";
 import { AdminRepository, type PaginationParams } from "./admin.repository";
 import { GoogleService } from "@/modules/google/google.service";
 import { logger } from "@/config/logger";
@@ -96,34 +96,37 @@ export async function deleteCountry(id: string) {
 }
 
 // =========================================================================
-// Exams
+// Education Nodes
 // =========================================================================
-export async function getExams(params?: PaginationParams) {
-  return await AdminRepository.getExams(params);
+export async function getEducationNodes(params?: PaginationParams & { parentId?: string; type?: string }) {
+  return await AdminRepository.getEducationNodes(params);
 }
 
-export async function getExamsByCountry(countryId: string) {
-  return await AdminRepository.getExamsByCountry(countryId);
+export async function getEducationNodesByCountry(countryId: string) {
+  return await AdminRepository.getEducationNodesByCountry(countryId);
 }
 
-export async function createExam(input: CreateExamInput) {
-  return await AdminRepository.createExam(input.countryId, input.name, input.isActive ?? true);
+export async function createEducationNode(input: CreateEducationNodeInput) {
+  return await AdminRepository.createEducationNode(input.countryId, input.parentId, input.name, input.nodeType, input.isActive ?? true, input.sortOrder);
 }
 
-export async function updateExam(id: string, input: UpdateExamInput) {
+export async function updateEducationNode(id: string, input: UpdateEducationNodeInput) {
   const fields: UpdateField[] = [];
   addField(fields, "country_id", input.countryId);
+  addField(fields, "parent_id", input.parentId);
   addField(fields, "name", input.name);
+  addField(fields, "node_type", input.nodeType);
   addField(fields, "is_active", input.isActive);
+  addField(fields, "sort_order", input.sortOrder);
 
-  const result = await AdminRepository.updateExam(id, fields);
-  if (!result) throw new AppError("Exam not found", 404);
+  const result = await AdminRepository.updateEducationNode(id, fields);
+  if (!result) throw new AppError("Node not found", 404);
   return result;
 }
 
-export async function deleteExam(id: string) {
-  const deleted = await AdminRepository.deleteExam(id);
-  if (!deleted) throw new AppError("Exam not found", 404);
+export async function deleteEducationNode(id: string) {
+  const deleted = await AdminRepository.deleteEducationNode(id);
+  if (!deleted) throw new AppError("Node not found", 404);
 }
 
 // =========================================================================
@@ -172,8 +175,8 @@ export async function updateStudent(id: string, input: any) {
   const result = await AdminRepository.updateUserTransaction(id, userFields, userValues, profileFields);
   if (result.error) throw new AppError(result.error, result.code);
 
-  if (input.examIds !== undefined) {
-    await OnboardingRepository.saveExamsTransaction(id, input.examIds);
+  if (input.educationNodeIds !== undefined) {
+    await OnboardingRepository.saveEducationNodesTransaction(id, input.educationNodeIds);
   }
 
   return await getUserById(id);
@@ -212,8 +215,8 @@ export async function updateMentorUser(id: string, input: any) {
   const result = await AdminRepository.updateUserTransaction(id, userFields, userValues, profileFields, mentorFields);
   if (result.error) throw new AppError(result.error, result.code);
 
-  if (input.examIds !== undefined) {
-    await OnboardingRepository.saveExamsTransaction(id, input.examIds);
+  if (input.educationNodeIds !== undefined) {
+    await OnboardingRepository.saveEducationNodesTransaction(id, input.educationNodeIds);
   }
 
   return await getUserById(id);
@@ -281,8 +284,8 @@ export async function updateMentor(id: string, data: any) {
     }
   }
 
-  if (data.exam_ids !== undefined) {
-    await OnboardingRepository.saveExamsTransaction(userId, data.exam_ids);
+  if (data.education_node_ids !== undefined) {
+    await OnboardingRepository.saveEducationNodesTransaction(userId, data.education_node_ids);
   }
 
   const fields: string[] = [];

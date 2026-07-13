@@ -19,12 +19,12 @@ export async function getMentors() {
   return result;
 }
 
-export async function getMentorsByMyExams(userId: string) {
-  const cacheKey = `cache:mentors:my-exams:${userId}`;
+export async function getMentorsByMyEducationNodes(userId: string) {
+  const cacheKey = `cache:mentors:my-nodes:${userId}`;
   const cached = await redis.get(cacheKey);
   if (cached) return JSON.parse(cached);
 
-  const result = await MentorsRepository.getMentorsByMyExams(userId);
+  const result = await MentorsRepository.getMentorsByMyEducationNodes(userId);
   
   await redis.set(cacheKey, JSON.stringify(result), "EX", 300); // 5 minutes
   return result;

@@ -74,11 +74,11 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/mentors/my-exams-mentors",
+  path: "/mentors/my-education-nodes-mentors",
   tags,
   security,
-  summary: "Get mentors by user exams",
-  description: "Browse verified mentors that match the user's selected exams.",
+  summary: "Get mentors by user education nodes",
+  description: "Browse verified mentors that match the user's selected education nodes.",
   responses: {
     200: {
       description: "Mentors fetched successfully",
@@ -98,7 +98,7 @@ registry.registerPath({
   responses: {
     200: {
       description: "Mentor fetched successfully",
-      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: Mentor.extend({ about: z.string().nullable(), exams: z.array(z.object({ id: z.string().uuid(), name: z.string() })) }) }) } },
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: Mentor.extend({ about: z.string().nullable(), educationNodes: z.array(z.object({ id: z.string().uuid(), name: z.string() })) }) }) } },
     },
   },
 });

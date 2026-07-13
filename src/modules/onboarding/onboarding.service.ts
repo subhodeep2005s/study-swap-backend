@@ -1,5 +1,11 @@
 import { AppError } from "@/core/errors/AppError";
-import type { CountryInput, ProfileInput, ExamsInput, StudyInput, PreferencesInput } from "./onboarding.schema";
+import type {
+  CountryInput,
+  ProfileInput,
+  EducationNodesInput,
+  StudyInput,
+  PreferencesInput,
+} from "./onboarding.schema";
 import { redis } from "@/config/redis";
 import { enhanceBioPrompt } from "./onboarding.ai";
 import { welcomeEmailTemplate } from "@/core/utils/email-templates";
@@ -44,12 +50,12 @@ export async function updateProfile(userId: string, input: ProfileInput) {
   await OnboardingRepository.upsertProfile(userId, fields);
 }
 
-export async function getExams(userId: string) {
-  return await OnboardingRepository.getExams(userId);
+export async function getEducationNodes(userId: string) {
+  return await OnboardingRepository.getEducationNodes(userId);
 }
 
-export async function saveExams(userId: string, input: ExamsInput) {
-  await OnboardingRepository.saveExamsTransaction(userId, input.examIds);
+export async function saveEducationNodes(userId: string, input: EducationNodesInput) {
+  await OnboardingRepository.saveEducationNodesTransaction(userId, input.educationNodeIds);
 }
 
 export async function saveStudyDetails(userId: string, input: StudyInput) {
@@ -91,8 +97,8 @@ export async function completeOnboarding(userId: string, email: string) {
     userId,
     "Welcome to StudySwap! 🎉",
     "Your profile is ready. Go find your first study partner!",
-    { type: "onboarding_complete" }
-  ).catch(err => console.error("Push error", err));
+    { type: "onboarding_complete" },
+  ).catch((err) => console.error("Push error", err));
 }
 
 export async function enhanceBio(bio: string): Promise<string> {
@@ -123,22 +129,25 @@ export async function enhanceBio(bio: string): Promise<string> {
   }
 }
 
-export async function applyForMentor(userId: string, input: import("./onboarding.schema").MentorApplicationInput) {
+export async function applyForMentor(
+  userId: string,
+  input: import("./onboarding.schema").MentorApplicationInput,
+) {
   // Call the transaction method to upsert mentor data and update user role to 'mentor'
   await OnboardingRepository.applyForMentorTransaction(userId, input);
-  
+
   // Invalidate mentors cache list
   await redis.del("cache:mentors:list");
-  
+
   // Fetch user details for notification
   const userResult = await query(
     `SELECT u.email, p.full_name as name 
      FROM users u 
      LEFT JOIN profiles p ON p.user_id = u.id 
      WHERE u.id = $1`,
-    [userId]
+    [userId],
   );
-  
+
   if (userResult.rows[0]) {
     const { email, name } = userResult.rows[0];
     eventEmitter.emit(Event.MENTOR_REGISTERED, {
