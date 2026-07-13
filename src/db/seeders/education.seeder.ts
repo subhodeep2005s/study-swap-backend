@@ -1,4 +1,4 @@
-import { getClient } from "../index";
+import { getClient } from "@/config/db";
 import { logger } from "../../config/logger";
 
 interface SeedNode {

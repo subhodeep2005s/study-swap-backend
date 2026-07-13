@@ -153,7 +153,7 @@ export async function getMe(userId: string) {
     needHelpWith: user.need_help_with,
     studyTime: user.study_time,
     lookingFor: user.looking_for,
-    exams: user.exams,
+    educationNodes: user.educationNodes,
   };
 }
 

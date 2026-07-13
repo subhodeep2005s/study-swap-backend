@@ -481,7 +481,7 @@ export type MatchEmailProfile = {
   bio?: string | null;
   strongIn?: string | null;
   needHelpWith?: string | null;
-  selectedExams?: string[] | null;
+  selectedEducationNodes?: string[] | null;
   matchReason?: string | null;
 };
 
@@ -493,9 +493,9 @@ function matchProfileImage(match: MatchEmailProfile): string {
 }
 
 function matchCard(match: MatchEmailProfile): string {
-  const exams = match.selectedExams?.slice(0, 3) ?? [];
+  const nodes = match.selectedEducationNodes?.slice(0, 3) ?? [];
   const tags = [
-    ...exams.map((exam) => `Exam: ${exam}`),
+    ...nodes.map((node) => `Studying: ${node}`),
     match.strongIn ? `Strong in: ${match.strongIn}` : null,
     match.needHelpWith ? `Needs help: ${match.needHelpWith}` : null,
   ].filter(Boolean);

@@ -30,7 +30,7 @@ const MentorDashboardProfileResponse = registry.register("MentorDashboardProfile
   country_id: z.string().uuid().nullable(),
   state: z.string().nullable(),
   email: z.string().email(),
-  exams: z.array(z.object({ id: z.string().uuid(), name: z.string() })),
+  educationNodes: z.array(z.object({ id: z.string().uuid(), name: z.string() })),
 }));
 
 const PlanResponse = registry.register("MentorDashboardPlanResponse", z.object({
