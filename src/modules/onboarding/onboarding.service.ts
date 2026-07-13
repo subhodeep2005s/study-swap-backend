@@ -9,6 +9,8 @@ import { logger } from "@/config/logger";
 import { resend } from "@/config/resend";
 import { NotificationService } from "@/modules/notifications/notification.service";
 import { OnboardingRepository } from "./onboarding.repository";
+import { query } from "@/config/db";
+import { eventEmitter, Event } from "@/config/event";
 
 type ProfileField = [column: string, value: unknown];
 
@@ -128,5 +130,22 @@ export async function applyForMentor(userId: string, input: import("./onboarding
   // Invalidate mentors cache list
   await redis.del("cache:mentors:list");
   
-  // Note: we don't send an email here yet, typically that happens upon admin verification.
+  // Fetch user details for notification
+  const userResult = await query(
+    `SELECT u.email, p.full_name as name 
+     FROM users u 
+     LEFT JOIN profiles p ON p.user_id = u.id 
+     WHERE u.id = $1`,
+    [userId]
+  );
+  
+  if (userResult.rows[0]) {
+    const { email, name } = userResult.rows[0];
+    eventEmitter.emit(Event.MENTOR_REGISTERED, {
+      mentorId: userId,
+      email,
+      name: name || "Mentor",
+      phoneNumber: input.phoneNumber || "Not provided",
+    });
+  }
 }

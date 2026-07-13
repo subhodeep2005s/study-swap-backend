@@ -2,9 +2,52 @@ import { Event, eventEmitter } from "@/config/event";
 import { sendMail } from "@/config/resend";
 import { logger } from "@/config/logger";
 import { query } from "@/config/db";
-import { bookingConfirmationEmailTemplate } from "@/core/utils/email-templates";
+import {
+  bookingConfirmationEmailTemplate,
+  mentorRegistrationAdminTemplate,
+  mentorVerifiedTemplate,
+} from "@/core/utils/email-templates";
 
 export function mentorSubscribers() {
+  eventEmitter.on(Event.MENTOR_REGISTERED, async (payload) => {
+    try {
+      const { email, name, phoneNumber } = payload;
+      const adminEmail = "sarkarsubhodeep417@gmail.com";
+      
+      const html = mentorRegistrationAdminTemplate({
+        mentorName: name,
+        email,
+        phoneNumber,
+      });
+
+      await sendMail({
+        to: adminEmail,
+        subject: "New Mentor Registration - Action Required",
+        html,
+      });
+    } catch (error) {
+      logger.error({ error, payload }, "Failed to process mentor registered event");
+    }
+  });
+
+  eventEmitter.on(Event.MENTOR_VERIFIED, async (payload) => {
+    try {
+      const { email, name } = payload;
+      
+      const html = mentorVerifiedTemplate({
+        mentorName: name,
+      });
+
+      await sendMail({
+        to: email,
+        subject: "Your Mentor Profile is Approved! 🎉",
+        html,
+      });
+    } catch (error) {
+      logger.error({ error, payload }, "Failed to process mentor verified event");
+    }
+  });
+
   eventEmitter.on(Event.MENTOR_SESSION_BOOKED, async (payload) => {
     try {
       const { studentId, bookingId } = payload;

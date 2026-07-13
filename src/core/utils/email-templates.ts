@@ -766,3 +766,82 @@ export function welcomeEmailTemplate(): string {
 </body>
 </html>`;
 }
+
+export function mentorRegistrationAdminTemplate({
+  mentorName,
+  email,
+  phoneNumber,
+}: {
+  mentorName: string;
+  email: string;
+  phoneNumber: string;
+}): string {
+  const body = `
+    <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
+      <tr>
+        <td style="font-size:16px;color:#8B8B9E;line-height:1.6;padding-bottom:28px;text-align:center;">
+          A new mentor has registered on StudySwap and is awaiting admin approval.
+        </td>
+      </tr>
+    </table>
+    <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background-color:rgba(30,144,255,0.06);border:1px solid rgba(30,144,255,0.1);border-radius:14px;margin-bottom:28px;">
+      <tr>
+        <td style="padding:18px 20px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
+            <tr>
+              <td style="font-size:13px;color:#8B8B9E;line-height:1.6;padding-bottom:10px;">
+                <strong style="color:#FFFFFF;">Name:</strong> ${escapeHtml(mentorName)}
+              </td>
+            </tr>
+            <tr>
+              <td style="font-size:13px;color:#8B8B9E;line-height:1.6;padding-bottom:10px;">
+                <strong style="color:#FFFFFF;">Email:</strong> ${escapeHtml(email)}
+              </td>
+            </tr>
+            <tr>
+              <td style="font-size:13px;color:#8B8B9E;line-height:1.6;">
+                <strong style="color:#FFFFFF;">Phone Number:</strong> ${escapeHtml(phoneNumber)}
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  `;
+
+  return darkEmailLayout({
+    title: "New Mentor Registration",
+    preheader: `New mentor ${mentorName} is awaiting approval.`,
+    eyebrow: "Admin Alert",
+    heading: "New Mentor Registered 🎓",
+    body,
+  });
+}
+
+export function mentorVerifiedTemplate({ mentorName }: { mentorName: string }): string {
+  const body = `
+    <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
+      <tr>
+        <td style="font-size:16px;color:#8B8B9E;line-height:1.6;padding-bottom:28px;text-align:center;">
+          Hi ${escapeHtml(mentorName)}, your mentor profile has been successfully verified by an admin! 🎉
+        </td>
+      </tr>
+      <tr>
+        <td style="font-size:16px;color:#8B8B9E;line-height:1.6;padding-bottom:28px;text-align:center;">
+          You are now listed in the public mentor directory and students can start booking sessions with you.
+        </td>
+      </tr>
+    </table>
+    <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="padding-bottom:16px;">
+      <tr><td align="center">${ctaButton("Go to Dashboard", APP_HOME_URL)}</td></tr>
+    </table>
+  `;
+
+  return darkEmailLayout({
+    title: "Mentor Profile Verified",
+    preheader: "Your mentor profile has been approved!",
+    eyebrow: "Account Verified",
+    heading: "You are officially a Mentor! 🚀",
+    body,
+  });
+}

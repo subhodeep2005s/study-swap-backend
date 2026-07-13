@@ -7,6 +7,7 @@ import { AdminRepository, type PaginationParams } from "./admin.repository";
 import { GoogleService } from "@/modules/google/google.service";
 import { logger } from "@/config/logger";
 import { OnboardingRepository } from "@/modules/onboarding/onboarding.repository";
+import { eventEmitter, Event } from "@/config/event";
 
 type UpdateField = [column: string, value: unknown];
 
@@ -315,6 +316,16 @@ export async function verifyMentor(id: string) {
   const result = await AdminRepository.verifyAdminMentor(id);
   if (!result) throw new AppError("Mentor not found", 404);
   await redis.del("cache:mentors:list");
+
+  const mentor = await AdminRepository.getAdminMentor(id);
+  if (mentor) {
+    eventEmitter.emit(Event.MENTOR_VERIFIED, {
+      mentorId: id,
+      email: mentor.email,
+      name: mentor.full_name || "Mentor",
+    });
+  }
+
   return result;
 }
 

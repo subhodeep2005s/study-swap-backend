@@ -11,6 +11,8 @@ export enum Event {
   USER_DELETE_PROFILE = "user.delete-profile",
 
   MENTOR_SESSION_BOOKED = "mentor.session-booked",
+  MENTOR_REGISTERED = "mentor.registered",
+  MENTOR_VERIFIED = "mentor.verified",
   MATCHES_REFRESHED = "matches.refreshed",
 
   AUDIT_LOG = "audit.log",
@@ -62,6 +64,19 @@ export type EventPayload = {
   [Event.MENTOR_SESSION_BOOKED]: {
     studentId: string;
     bookingId: string;
+  };
+
+  [Event.MENTOR_REGISTERED]: {
+    mentorId: string;
+    email: string;
+    name: string;
+    phoneNumber: string;
+  };
+
+  [Event.MENTOR_VERIFIED]: {
+    mentorId: string;
+    email: string;
+    name: string;
   };
 
   [Event.MATCHES_REFRESHED]: {
