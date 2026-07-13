@@ -292,7 +292,9 @@ export async function runEducationSeeder() {
 }
 
 // Allow running directly
-if (require.main === module) {
+import { fileURLToPath } from 'url';
+
+if (import.meta.url.startsWith('file:') && process.argv[1] === fileURLToPath(import.meta.url)) {
   runEducationSeeder()
     .then(() => process.exit(0))
     .catch((err) => {
