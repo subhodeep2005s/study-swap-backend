@@ -85,7 +85,7 @@ export async function runUsersSeeder() {
           userId,
           faker.company.name(),
           faker.person.jobTitle(),
-          `https://linkedin.com/in/${faker.internet.userName()}`
+          `https://linkedin.com/in/${faker.internet.username()}`
         ]);
       }
     };
