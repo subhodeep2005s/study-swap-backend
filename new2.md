@@ -52,6 +52,16 @@ During student onboarding or profile editing, the student must select their educ
      }
      ```
 
+### Handling Unknown Depths (Dynamic Rendering)
+Since the new architecture supports an **infinite** number of levels (e.g., `Country -> University -> Degree -> Branch -> Subject`), the frontend **CANNOT** hardcode a fixed 3-step wizard (like "Select Board, Select Class, Select Subject").
+- **Dynamic Stepper:** Instead, implement a dynamic stack or drill-down component. 
+- **Recursive Logic:**
+  1. Fetch children of the currently selected node.
+  2. If the children array has items, push a new "Step" to the UI stack and render those children as a list.
+  3. Keep rendering new lists until a node returns `[]` (an empty array) for its children.
+  4. Once `[]` is returned, treat the items in that final list as the "Leaf Nodes" and switch the UI to allow multi-selection checkboxes.
+- **Breadcrumbs:** Implement a breadcrumb trail (e.g., `CBSE > Class 10 > ...`) so the user can see their current depth and navigate backwards dynamically.
+
 ### Frontend Edge Cases to Handle for Students
 - **No Children Present (Empty Branch):** If a user clicks a node (e.g., "General Knowledge Exam") and `nodes.filter(n => n.parentId === selectedId)` returns `[]` (an empty array), the frontend MUST immediately recognize this node as a Leaf Node and allow them to select it directly.
 - **Back Navigation / Unselecting a Parent:** If a user is on Step 4 but clicks "Back" and changes their Board from "CBSE" to "ICSE", you **MUST** clear all selected child nodes (like Class 10 and Math) from the local state. Otherwise, you'll submit mismatched hierarchy data.
