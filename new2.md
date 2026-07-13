@@ -134,3 +134,52 @@ The Admin is responsible for building this tree dynamically.
 - **Delete Confirmation Warning:** The frontend MUST intercept any delete action on a node that has children. Show a red modal: *"WARNING: You are deleting a parent node. This will PERMANENTLY delete all nested sub-categories and forcefully remove them from all users' profiles. Type 'CONFIRM' to proceed."*
 - **Moving Nodes (Parent Swap):** To move a node (e.g., move a subject from Class 10 to Class 11), the frontend just sends `PATCH /admin/education-nodes/{id}` with `"parentId": "<CLASS_11_ID>"`.
 - **Pagination Caveat:** For building the tree visually, the Admin panel should fetch nodes with a high `limit` (e.g., `?limit=1000`) so the entire tree can be constructed synchronously on the frontend.
+
+---
+
+## 4. API Schema & Payload Changes Summary
+
+Since the entire backend dropped the `exams` table, all endpoints that previously dealt with `exam_ids` or returned `exams` have been updated to use `educationNodes` or `educationNodeIds`. You must update your frontend API calls and state management to reflect these new keys.
+
+### 4.1. Auth Module (`/auth/me`)
+- **Old Response:** Returned an array called `exams`.
+- **New Response:** Returns an array called `educationNodes`.
+  ```json
+  // New Response Format
+  {
+    "success": true,
+    "data": {
+      "id": "...",
+      "role": "student",
+      // ...other fields
+      "educationNodes": [
+        { "id": "uuid", "name": "Mathematics" },
+        { "id": "uuid", "name": "Physics" }
+      ]
+    }
+  }
+  ```
+
+### 4.2. Onboarding Module
+- **Endpoint:** `PATCH /onboarding/education-nodes` (Note: Method changed to PATCH)
+- **Old Payload:** Expected `{ "examIds": ["uuid1", "uuid2"] }`
+- **New Payload:** Expects `{ "educationNodeIds": ["uuid1", "uuid2"] }`
+
+### 4.3. Mentor Bookings Module (`/mentors/me` and `/mentors/{id}`)
+- **Updating Profile (`PATCH /mentors/me`):**
+  - **Old Payload:** `{ "exam_ids": ["uuid1"] }`
+  - **New Payload:** `{ "education_node_ids": ["uuid1"] }`
+- **Fetching Profile (`GET /mentors/me`):**
+  - **Old Response:** `{ "data": { ..., "exams": [...] } }`
+  - **New Response:** `{ "data": { ..., "educationNodes": [...] } }`
+
+### 4.4. Matches Module (`/matches`)
+- **Old Response:** The match object contained `selectedExams: ["Math", "Science"]`.
+- **New Response:** The match object contains `selectedEducationNodes: ["Math", "Science"]`.
+- **Matched By Tags:** The `matchedBy` field can still return `"exam_state"` or `"exam"`. These strings are retained for analytics and ranking, but they conceptually mean "Education Node Match + State Match" and "Education Node Match Only" now.
+
+### 4.5. Admin Panel (`/admin/dashboard` & `/admin/education-nodes`)
+- **Top Exams Chart:** The `/admin/dashboard` endpoint's `topExams` array will now return data based on the most popular `education_nodes` (specifically those with `node_type = 'EXAM'` or `'LEAF'`).
+- **Education Nodes CRUD:** The `/admin/education-nodes` endpoints replace the old `/admin/exams` endpoints.
+  - Creation Payload: `{ "countryId": "...", "parentId": null, "name": "CBSE", "nodeType": "BOARD", "isActive": true, "sortOrder": 0 }`
+  - Fetch Payload (`GET /admin/education-nodes`): Returns the paginated array of nodes with `parent_id` relationships.
