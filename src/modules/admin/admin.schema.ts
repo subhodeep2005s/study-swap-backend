@@ -45,29 +45,29 @@ export const updateCountrySchema = z.object({
 // =========================================================================
 export const createEducationNodeSchema = z.object({
   body: z.object({
-    countryId: z.string().uuid("Invalid country ID"),
-    parentId: z.string().uuid().nullable().optional(),
-    name: z.string().min(1, "Name is required"),
+    countryId: z.string().uuid("Invalid country ID").describe("The ID of the country this node belongs to."),
+    parentId: z.string().uuid().nullable().optional().describe("The UUID of the parent node. Set to null for a root node (e.g., a top-level Board or University)."),
+    name: z.string().min(1, "Name is required").describe("The display name of the education node (e.g., 'Class 10', 'CBSE')."),
     nodeType: z.enum([
       "COUNTRY", "CATEGORY", "SUB_CATEGORY", "GROUP", "BOARD",
       "STREAM", "COURSE", "EXAM", "SPECIALIZATION", "CLASS", "SUBJECT", "LEAF"
-    ]),
-    isActive: z.boolean().optional(),
-    sortOrder: z.number().int().optional(),
+    ]).describe("The conceptual type of this node. Helps the frontend choose an appropriate icon or label."),
+    isActive: z.boolean().optional().describe("Whether this node is active and visible to students/mentors."),
+    sortOrder: z.number().int().optional().describe("Used to order nodes logically (e.g., Class 1 before Class 2)."),
   }),
 });
 
 export const updateEducationNodeSchema = z.object({
   body: z.object({
-    countryId: z.string().uuid().optional(),
-    parentId: z.string().uuid().nullable().optional(),
-    name: z.string().min(1).optional(),
+    countryId: z.string().uuid().optional().describe("The ID of the country this node belongs to."),
+    parentId: z.string().uuid().nullable().optional().describe("The UUID of the parent node. Set to null to make this a root node."),
+    name: z.string().min(1).optional().describe("The display name of the education node."),
     nodeType: z.enum([
       "COUNTRY", "CATEGORY", "SUB_CATEGORY", "GROUP", "BOARD",
       "STREAM", "COURSE", "EXAM", "SPECIALIZATION", "CLASS", "SUBJECT", "LEAF"
-    ]).optional(),
-    isActive: z.boolean().optional(),
-    sortOrder: z.number().int().optional(),
+    ]).optional().describe("The conceptual type of this node."),
+    isActive: z.boolean().optional().describe("Whether this node is active and visible to students/mentors."),
+    sortOrder: z.number().int().optional().describe("Sort priority."),
   }),
 });
 

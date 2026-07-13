@@ -245,10 +245,10 @@
           }
         }
       },
-      "ExamsInput": {
+      "EducationNodesInput": {
         "type": "object",
         "properties": {
-          "examIds": {
+          "educationNodeIds": {
             "type": "array",
             "items": {
               "type": "string",
@@ -257,7 +257,7 @@
           }
         },
         "required": [
-          "examIds"
+          "educationNodeIds"
         ]
       },
       "StudyInput": {
@@ -342,7 +342,7 @@
             "type": "string",
             "minLength": 1
           },
-          "examIds": {
+          "educationNodeIds": {
             "type": "array",
             "items": {
               "type": "string",
@@ -356,7 +356,7 @@
           "experienceYears",
           "hourlyPrice",
           "countryId",
-          "examIds"
+          "educationNodeIds"
         ]
       },
       "AdminLogin": {
@@ -419,39 +419,106 @@
           }
         }
       },
-      "CreateExam": {
+      "CreateEducationNode": {
         "type": "object",
         "properties": {
           "countryId": {
             "type": "string",
-            "format": "uuid"
+            "format": "uuid",
+            "description": "The ID of the country this node belongs to."
+          },
+          "parentId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "The UUID of the parent node. Set to null for a root node (e.g., a top-level Board or University)."
           },
           "name": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "description": "The display name of the education node (e.g., 'Class 10', 'CBSE')."
+          },
+          "nodeType": {
+            "type": "string",
+            "enum": [
+              "COUNTRY",
+              "CATEGORY",
+              "SUB_CATEGORY",
+              "GROUP",
+              "BOARD",
+              "STREAM",
+              "COURSE",
+              "EXAM",
+              "SPECIALIZATION",
+              "CLASS",
+              "SUBJECT",
+              "LEAF"
+            ],
+            "description": "The conceptual type of this node. Helps the frontend choose an appropriate icon or label."
           },
           "isActive": {
-            "type": "boolean"
+            "type": "boolean",
+            "description": "Whether this node is active and visible to students/mentors."
+          },
+          "sortOrder": {
+            "type": "integer",
+            "description": "Used to order nodes logically (e.g., Class 1 before Class 2)."
           }
         },
         "required": [
           "countryId",
-          "name"
+          "name",
+          "nodeType"
         ]
       },
-      "UpdateExam": {
+      "UpdateEducationNode": {
         "type": "object",
         "properties": {
           "countryId": {
             "type": "string",
-            "format": "uuid"
+            "format": "uuid",
+            "description": "The ID of the country this node belongs to."
+          },
+          "parentId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "The UUID of the parent node. Set to null to make this a root node."
           },
           "name": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "description": "The display name of the education node."
+          },
+          "nodeType": {
+            "type": "string",
+            "enum": [
+              "COUNTRY",
+              "CATEGORY",
+              "SUB_CATEGORY",
+              "GROUP",
+              "BOARD",
+              "STREAM",
+              "COURSE",
+              "EXAM",
+              "SPECIALIZATION",
+              "CLASS",
+              "SUBJECT",
+              "LEAF"
+            ],
+            "description": "The conceptual type of this node."
           },
           "isActive": {
-            "type": "boolean"
+            "type": "boolean",
+            "description": "Whether this node is active and visible to students/mentors."
+          },
+          "sortOrder": {
+            "type": "integer",
+            "description": "Sort priority."
           }
         }
       },
@@ -523,7 +590,7 @@
               "type": "string"
             }
           },
-          "examIds": {
+          "educationNodeIds": {
             "type": "array",
             "items": {
               "type": "string",
@@ -600,7 +667,7 @@
               "type": "string"
             }
           },
-          "examIds": {
+          "educationNodeIds": {
             "type": "array",
             "items": {
               "type": "string",
@@ -792,7 +859,7 @@
           "updated_at"
         ]
       },
-      "ExamResponse": {
+      "EducationNodeResponse": {
         "type": "object",
         "properties": {
           "id": {
@@ -803,11 +870,24 @@
             "type": "string",
             "format": "uuid"
           },
+          "parent_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
           "name": {
+            "type": "string"
+          },
+          "node_type": {
             "type": "string"
           },
           "is_active": {
             "type": "boolean"
+          },
+          "sort_order": {
+            "type": "number"
           },
           "created_at": {
             "anyOf": [
@@ -835,8 +915,11 @@
         "required": [
           "id",
           "country_id",
+          "parent_id",
           "name",
+          "node_type",
           "is_active",
+          "sort_order",
           "created_at",
           "updated_at"
         ]
@@ -1211,7 +1294,7 @@
           "state": {
             "type": "string"
           },
-          "exam_ids": {
+          "education_node_ids": {
             "type": "array",
             "items": {
               "type": "string",
@@ -1795,7 +1878,7 @@
               "type": "string"
             }
           },
-          "selectedExams": {
+          "selectedEducationNodes": {
             "type": "array",
             "items": {
               "type": "string"
@@ -1807,7 +1890,7 @@
               "exam_state",
               "exam"
             ],
-            "description": "exam_state = same exams + same state (highest priority), exam = same exams only"
+            "description": "exam_state = same education nodes + same state (highest priority), exam = same education nodes only"
           },
           "matchReason": {
             "type": "string"
@@ -1833,7 +1916,7 @@
           "needHelpWith",
           "studyTime",
           "lookingFor",
-          "selectedExams",
+          "selectedEducationNodes",
           "matchedBy",
           "matchReason",
           "story"
@@ -3074,7 +3157,7 @@
         }
       }
     },
-    "/onboarding/exams": {
+    "/onboarding/education-nodes": {
       "get": {
         "tags": [
           "Onboarding"
@@ -3084,8 +3167,8 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Get user exams",
-        "description": "Get the exams selected by the user.",
+        "summary": "Get user education nodes",
+        "description": "Get the education nodes selected by the user.",
         "responses": {
           "200": {
             "description": "Success",
@@ -3103,7 +3186,7 @@
                     "data": {
                       "type": "object",
                       "properties": {
-                        "exams": {
+                        "educationNodes": {
                           "type": "array",
                           "items": {
                             "type": "object",
@@ -3123,7 +3206,7 @@
                         }
                       },
                       "required": [
-                        "exams"
+                        "educationNodes"
                       ]
                     }
                   },
@@ -3147,13 +3230,13 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Save exams",
-        "description": "Save the user's selected exams.",
+        "summary": "Save education nodes",
+        "description": "Save the user's selected education nodes.",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ExamsInput"
+                "$ref": "#/components/schemas/EducationNodesInput"
               }
             }
           }
@@ -3599,10 +3682,10 @@
     "/exams/{countryId}": {
       "get": {
         "tags": [
-          "Exams"
+          "Education Nodes"
         ],
-        "summary": "Get exams by country",
-        "description": "Returns a list of active exams for a given country.",
+        "summary": "Get education nodes by country",
+        "description": "Returns the full hierarchical tree of education nodes for a given country. Each node has a parentId that references another node. Root nodes have parentId = null. Frontend should recursively build the tree from this flat array.",
         "parameters": [
           {
             "schema": {
@@ -3616,19 +3699,17 @@
         ],
         "responses": {
           "200": {
-            "description": "Exams fetched successfully",
+            "description": "Education nodes fetched",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
                     "success": {
-                      "type": "boolean",
-                      "example": true
+                      "type": "boolean"
                     },
                     "message": {
-                      "type": "string",
-                      "example": "Exams fetched successfully"
+                      "type": "string"
                     },
                     "data": {
                       "type": "array",
@@ -3639,13 +3720,33 @@
                             "type": "string",
                             "format": "uuid"
                           },
+                          "parent_id": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "format": "uuid",
+                            "description": "The parent node ID. Null for root-level nodes."
+                          },
                           "name": {
-                            "type": "string"
+                            "type": "string",
+                            "description": "The display name of this node (e.g., 'CBSE', 'Class 10', 'Mathematics')."
+                          },
+                          "node_type": {
+                            "type": "string",
+                            "description": "The conceptual type (BOARD, CLASS, SUBJECT, EXAM, COURSE, etc.)."
+                          },
+                          "sort_order": {
+                            "type": "number",
+                            "description": "Sorting priority among siblings."
                           }
                         },
                         "required": [
                           "id",
-                          "name"
+                          "parent_id",
+                          "name",
+                          "node_type",
+                          "sort_order"
                         ]
                       }
                     }
@@ -4089,7 +4190,7 @@
         }
       }
     },
-    "/admin/countries/{countryId}/exams": {
+    "/admin/countries/{countryId}/education-nodes": {
       "get": {
         "tags": [
           "Admin"
@@ -4099,7 +4200,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Get exams by country",
+        "summary": "Get education nodes by country",
         "description": "Admin only.",
         "parameters": [
           {
@@ -4114,7 +4215,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Exams fetched",
+            "description": "Education nodes fetched",
             "content": {
               "application/json": {
                 "schema": {
@@ -4129,7 +4230,7 @@
                     "data": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/ExamResponse"
+                        "$ref": "#/components/schemas/EducationNodeResponse"
                       }
                     }
                   },
@@ -4145,7 +4246,7 @@
         }
       }
     },
-    "/admin/exams": {
+    "/admin/education-nodes": {
       "get": {
         "tags": [
           "Admin"
@@ -4155,7 +4256,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Get all exams",
+        "summary": "Get all education nodes",
         "description": "Admin only.",
         "parameters": [
           {
@@ -4187,11 +4288,27 @@
             "required": false,
             "name": "search",
             "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "parentId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "type",
+            "in": "query"
           }
         ],
         "responses": {
           "200": {
-            "description": "Exams fetched",
+            "description": "Education nodes fetched",
             "content": {
               "application/json": {
                 "schema": {
@@ -4206,7 +4323,7 @@
                     "data": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/ExamResponse"
+                        "$ref": "#/components/schemas/EducationNodeResponse"
                       }
                     },
                     "pagination": {
@@ -4254,20 +4371,20 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Create exam",
+        "summary": "Create education node",
         "description": "Admin only.",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateExam"
+                "$ref": "#/components/schemas/CreateEducationNode"
               }
             }
           }
         },
         "responses": {
           "201": {
-            "description": "Exam created",
+            "description": "Education node created",
             "content": {
               "application/json": {
                 "schema": {
@@ -4280,7 +4397,7 @@
                       "type": "string"
                     },
                     "data": {
-                      "$ref": "#/components/schemas/ExamResponse"
+                      "$ref": "#/components/schemas/EducationNodeResponse"
                     }
                   },
                   "required": [
@@ -4295,7 +4412,7 @@
         }
       }
     },
-    "/admin/exams/{id}": {
+    "/admin/education-nodes/{id}": {
       "patch": {
         "tags": [
           "Admin"
@@ -4305,7 +4422,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Update exam",
+        "summary": "Update education node",
         "description": "Admin only.",
         "parameters": [
           {
@@ -4322,14 +4439,14 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateExam"
+                "$ref": "#/components/schemas/UpdateEducationNode"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Exam updated",
+            "description": "Education node updated",
             "content": {
               "application/json": {
                 "schema": {
@@ -4342,7 +4459,7 @@
                       "type": "string"
                     },
                     "data": {
-                      "$ref": "#/components/schemas/ExamResponse"
+                      "$ref": "#/components/schemas/EducationNodeResponse"
                     }
                   },
                   "required": [
@@ -4365,7 +4482,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Delete exam",
+        "summary": "Delete education node",
         "description": "Admin only.",
         "parameters": [
           {
@@ -4380,7 +4497,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Exam deleted",
+            "description": "Education node deleted",
             "content": {
               "application/json": {
                 "schema": {
@@ -6445,7 +6562,7 @@
           }
         ],
         "summary": "Refresh matches",
-        "description": "Generates a new batch of study partner recommendations. Algorithm priority: 1) Same exam(s) + same state (highest), 2) Same exam(s) only. Exam matching is mandatory — profiles with no shared exams are never included. Returns up to 10 matches.",
+        "description": "Generates a new batch of study partner recommendations. Algorithm priority: 1) Same education node(s) + same state (highest), 2) Same education node(s) only. Matching is mandatory — profiles with no shared education nodes are never included. Returns up to 10 matches.",
         "responses": {
           "200": {
             "description": "Matches refreshed successfully or matching in progress.",
@@ -6871,7 +6988,7 @@
         }
       }
     },
-    "/mentors/my-exams-mentors": {
+    "/mentors/my-education-nodes-mentors": {
       "get": {
         "tags": [
           "Mentors (Student View)"
@@ -6881,8 +6998,8 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Get mentors by user exams",
-        "description": "Browse verified mentors that match the user's selected exams.",
+        "summary": "Get mentors by user education nodes",
+        "description": "Browse verified mentors that match the user's selected education nodes.",
         "responses": {
           "200": {
             "description": "Mentors fetched successfully",
@@ -6967,7 +7084,7 @@
                                 "null"
                               ]
                             },
-                            "exams": {
+                            "educationNodes": {
                               "type": "array",
                               "items": {
                                 "type": "object",
@@ -6989,7 +7106,7 @@
                           },
                           "required": [
                             "about",
-                            "exams"
+                            "educationNodes"
                           ]
                         }
                       ]

@@ -26,27 +26,44 @@ During student onboarding or profile editing, the student must select their educ
    - Call `GET /countries`.
    - The user selects a country (e.g., India). Keep the `countryId` in state.
 
-2. **Step 2: Fetch Top-Level Nodes (Root Nodes)**
-   - Call `GET /countries/{countryId}/education-nodes`
-   - Filter this array on the frontend: `nodes.filter(node => node.parentId === null)`.
-   - Display these as the first level of choices (e.g., "CBSE", "ICSE", "State Board").
-   - The user taps one (e.g., "CBSE").
+2. **Step 2: Fetch ALL Education Nodes for that Country (Single API Call)**
+   - Call `GET /exams/{countryId}`
+   - ⚠️ **This returns a FLAT ARRAY, not a nested tree.** Every node in the response has an `id`, `parent_id`, `name`, `node_type`, and `sort_order`.
+   - **Store this entire array in local state.** You will NOT make any more API calls. All drill-down happens locally by filtering this array.
+   - **Example API Response:**
+     ```json
+     [
+       { "id": "aaa", "parent_id": null, "name": "School Education", "node_type": "CATEGORY", "sort_order": 0 },
+       { "id": "bbb", "parent_id": "aaa", "name": "CBSE", "node_type": "BOARD", "sort_order": 0 },
+       { "id": "ccc", "parent_id": "bbb", "name": "Class 10", "node_type": "CLASS", "sort_order": 3 },
+       { "id": "ddd", "parent_id": "ccc", "name": "Mathematics", "node_type": "SUBJECT", "sort_order": 0 },
+       { "id": "eee", "parent_id": null, "name": "Graduation", "node_type": "CATEGORY", "sort_order": 1 },
+       { "id": "fff", "parent_id": "eee", "name": "B.Tech", "node_type": "COURSE", "sort_order": 0 }
+     ]
+     ```
 
-3. **Step 3: Drill Down (Recursive Fetching from Local State)**
-   - Once "CBSE" is selected, filter the array again to find its children: `nodes.filter(node => node.parentId === CBSE_NODE_ID)`.
-   - Display these (e.g., "Class 10", "Class 11", "Class 12").
-   - User taps "Class 10".
+3. **Step 3: Display Root Nodes (First Screen)**
+   - Filter locally: `nodes.filter(node => node.parent_id === null)`.
+   - This gives root categories like "School Education", "Graduation", "National Competitive Exams".
+   - The user taps one (e.g., "School Education").
 
-4. **Step 4: Reach Leaf Nodes (Final Selection)**
-   - Filter for children of "Class 10": `nodes.filter(node => node.parentId === CLASS_10_NODE_ID)`.
-   - If the children array has items (e.g., "Math", "Science"), show them.
-   - **Crucial:** Since these are the final subjects (Leaf Nodes), allow the user to **MULTI-SELECT** them. 
+4. **Step 4: Drill Down (Recursive Filtering from Local State)**
+   - Once "School Education" is selected, filter again: `nodes.filter(node => node.parent_id === SCHOOL_EDUCATION_ID)`.
+   - This gives sub-categories like "National Boards", "State Boards".
+   - User taps "National Boards" → filter again → shows "CBSE", "ICSE", "NIOS".
+   - User taps "CBSE" → filter again → shows "Class 7", "Class 8", ... "Class 12".
+   - User taps "Class 10" → filter again → if empty, "Class 10" IS the leaf.
 
-5. **Step 5: Submitting Data**
+5. **Step 5: Reach Leaf Nodes (Final Selection)**
+   - Filter for children of "Class 10": `nodes.filter(node => node.parent_id === CLASS_10_ID)`.
+   - If the children array has items (e.g., "Math", "Science"), show them and allow **MULTI-SELECT**.
+   - If the children array is **EMPTY**, "Class 10" itself is the leaf node — allow the user to select it directly.
+
+6. **Step 6: Submitting Data**
    - Collect the IDs of all selected Leaf Nodes.
    - Send them to the backend:
      ```json
-     // POST /onboarding/education-nodes
+     // PATCH /onboarding/education-nodes
      {
        "educationNodeIds": ["<MATH_NODE_ID>", "<SCIENCE_NODE_ID>"]
      }

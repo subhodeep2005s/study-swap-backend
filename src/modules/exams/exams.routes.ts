@@ -6,6 +6,6 @@ import "./exams.openapi";
 
 const router = Router();
 
-router.get("/:countryId", validate(getExamsSchema), examsController.getExamsByCountry);
+router.get("/:countryId", validate(getExamsSchema), examsController.getEducationNodesByCountry);
 
 export default router;
