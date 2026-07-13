@@ -86,11 +86,11 @@ export async function refreshMatches(userId: string) {
     try {
       await client.query("BEGIN");
 
-      // New algorithm:
-      // 1. Find users who share at least one education node (mandatory requirement)
-      // 2. Among those, rank by: exam_state (same nodes + same state) > exam (same nodes only)
-      // 3. Within each tier, sort by number of common nodes (more = better match)
-      // 4. NO state-only matches. NO unrelated profiles.
+      // StudySwap Matching Algorithm V3:
+      // 1. Strictly silo by Streams (School, Competitive, Graduation, Diploma, Research)
+      // 2. Hierarchical fallbacks based on specific priorities per Stream (e.g., Class ±1)
+      // 3. Fallbacks prioritize Same State > Different State.
+      // 4. Excludes blocked/rejected/accepted matches. Never returns yourself.
       const matchesRes = await MatchesRepository.generateMatches(client, userId, MATCH_LIMIT);
 
       if (matchesRes.rows.length > 0) {

@@ -79,99 +79,99 @@ export class MatchesRepository {
   }
 
   static async generateMatches(client: PoolClient, userId: string, limit: number) {
+    const { resolvePriorityBuckets } = await import("./matches.logic");
     const userInfoRes = await client.query('SELECT state FROM profiles WHERE user_id = $1', [userId]);
     const userState = userInfoRes.rows[0]?.state || null;
 
-    const userNodesRes = await client.query('SELECT node_id FROM user_education_nodes WHERE user_id = $1', [userId]);
-    const nodeIds = userNodesRes.rows.map(r => r.node_id);
-
-    if (nodeIds.length === 0) {
-      return { rows: [] }; // Cannot match if they have no education nodes
-    }
+    const buckets = await resolvePriorityBuckets(client, userId);
+    if (buckets.length === 0) return { rows: [] };
 
     const collectedMatches: any[] = [];
     let remaining = limit;
 
-    const baseFilter = `
-      FROM users u
-      JOIN profiles p ON u.id = p.user_id
-      JOIN user_education_nodes ue ON ue.user_id = u.id
-      WHERE u.role = 'student'
-        AND u.id != $1
-        AND u.onboarding_completed = true
-        AND ue.node_id = ANY($2::uuid[])
-        AND NOT EXISTS (
-          SELECT 1 FROM user_matches um 
-          WHERE um.user_id = $1 
-            AND um.matched_user_id = u.id 
-            AND um.status IN ('accepted', 'rejected', 'removed')
-        )
-    `;
+    const userTypes = ['NEVER_SEEN', 'PENDING', 'SAVED'];
 
-    const getQuery = (stateCondition: string, matchStatusCondition: string) => `
-      SELECT DISTINCT u.id AS matched_user_id
-      ${baseFilter}
-      AND ${stateCondition}
-      AND ${matchStatusCondition}
-      LIMIT $3
-    `;
+    for (const userType of userTypes) {
+      for (const bucket of buckets) {
+        if (remaining <= 0) break;
 
-    const runQuery = async (stateCondition: string, matchStatusCondition: string, matchedBy: string) => {
-      if (remaining <= 0) return;
-      
-      const query = getQuery(stateCondition, matchStatusCondition);
-      const res = await client.query(query, [userId, nodeIds, remaining, userState]);
-      
-      for (const row of res.rows) {
-        if (!collectedMatches.find(m => m.matched_user_id === row.matched_user_id)) {
-          collectedMatches.push({
-            matched_user_id: row.matched_user_id,
-            matched_by: matchedBy
-          });
-          remaining--;
-          if (remaining <= 0) break;
+        let stateCondition = '';
+        if (bucket.stateMatch === true) {
+           stateCondition = userState ? 'AND (p.state IS NOT NULL AND p.state = $3)' : 'AND FALSE';
+        } else if (bucket.stateMatch === false) {
+           stateCondition = userState ? 'AND (p.state IS NULL OR p.state != $3)' : 'AND TRUE';
+        }
+
+        let userTypeCondition = '';
+        if (userType === 'NEVER_SEEN') {
+           userTypeCondition = 'AND NOT EXISTS (SELECT 1 FROM user_matches um WHERE um.user_id = $1 AND um.matched_user_id = u.id)';
+        } else if (userType === 'PENDING' || userType === 'SAVED') {
+           userTypeCondition = `AND EXISTS (SELECT 1 FROM user_matches um WHERE um.user_id = $1 AND um.matched_user_id = u.id AND um.status = '${userType.toLowerCase()}')`;
+        }
+
+        const query = `
+          SELECT matched_user_id FROM (
+            SELECT DISTINCT u.id AS matched_user_id
+            FROM users u
+            JOIN profiles p ON u.id = p.user_id
+            JOIN user_education_nodes ue ON ue.user_id = u.id
+            WHERE u.role = 'student'
+              AND u.id != $1
+              AND u.onboarding_completed = true
+              AND ue.node_id = ANY($2::uuid[])
+              AND NOT EXISTS (
+                SELECT 1 FROM user_matches um 
+                WHERE um.user_id = $1 
+                  AND um.matched_user_id = u.id 
+                  AND um.status IN ('accepted', 'rejected', 'removed')
+              )
+              ${stateCondition}
+              ${userTypeCondition}
+          ) sub
+          ORDER BY md5(matched_user_id::text || gen_random_uuid()::text)
+          LIMIT $4
+        `;
+
+        const res = await client.query(query, userState ? [userId, bucket.targetNodeIds, userState, remaining] : [userId, bucket.targetNodeIds, null, remaining]);
+
+        for (const row of res.rows) {
+          if (!collectedMatches.find(m => m.matched_user_id === row.matched_user_id)) {
+            collectedMatches.push({
+              matched_user_id: row.matched_user_id,
+              matched_by: bucket.sourcePriority === 1 || bucket.sourcePriority === 3 || bucket.sourcePriority === 5 ? 'exam_state' : 'exam', // Backward compat
+              source_priority: bucket.sourcePriority
+            });
+            remaining--;
+            if (remaining <= 0) break;
+          }
         }
       }
-    };
-
-    let stateMatchStr = 'FALSE';
-    let stateDiffStr = 'TRUE';
-    if (userState) {
-      stateMatchStr = '(p.state IS NOT NULL AND p.state = $4)';
-      stateDiffStr = '(p.state IS NULL OR p.state != $4)';
+      if (remaining <= 0) break;
     }
-
-    const neverShownStr = 'NOT EXISTS (SELECT 1 FROM user_matches um WHERE um.user_id = $1 AND um.matched_user_id = u.id)';
-    const pendingSavedStr = "EXISTS (SELECT 1 FROM user_matches um WHERE um.user_id = $1 AND um.matched_user_id = u.id AND um.status IN ('pending', 'saved'))";
-
-    // Priority 1: Same Exam, Same State, Never Shown
-    await runQuery(stateMatchStr, neverShownStr, 'exam_state');
-
-    // Priority 2: Same Exam, Diff State, Never Shown
-    await runQuery(stateDiffStr, neverShownStr, 'exam');
-
-    // Priority 3: Same Exam, Same State, Pending/Saved
-    await runQuery(stateMatchStr, pendingSavedStr, 'exam_state');
-
-    // Priority 4: Same Exam, Diff State, Pending/Saved
-    await runQuery(stateDiffStr, pendingSavedStr, 'exam');
 
     return { rows: collectedMatches };
   }
 
   static async insertMatches(client: PoolClient, userId: string, matches: any[]) {
+    if (matches.length === 0) return;
     const valuesParams: any[] = [];
     const queryValues: string[] = [];
     let index = 1;
     for (const m of matches) {
-      queryValues.push(`($${index++}, $${index++}, $${index++}, 'pending')`);
-      valuesParams.push(userId, m.matched_user_id, m.matched_by);
+      queryValues.push(`($${index++}, $${index++}, $${index++}, 'pending', $${index++}, NOW())`);
+      valuesParams.push(userId, m.matched_user_id, m.matched_by, m.source_priority);
     }
     await client.query(`
-      INSERT INTO user_matches (user_id, matched_user_id, matched_by, status)
+      INSERT INTO user_matches (user_id, matched_user_id, matched_by, status, source_priority, shown_at)
       VALUES ${queryValues.join(", ")}
       ON CONFLICT (user_id, matched_user_id) 
-      DO UPDATE SET status = 'pending', matched_by = EXCLUDED.matched_by, updated_at = NOW()
+      DO UPDATE SET 
+        status = 'pending', 
+        matched_by = EXCLUDED.matched_by,
+        source_priority = EXCLUDED.source_priority,
+        refresh_number = user_matches.refresh_number + 1,
+        shown_at = NOW(),
+        updated_at = NOW()
     `, valuesParams);
   }
 
