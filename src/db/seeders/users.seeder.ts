@@ -104,6 +104,30 @@ export async function runUsersSeeder() {
     }
     logger.info(`Seeded ${NUM_MENTORS} dummy mentors.`);
 
+    // 4. Update EXISTING users who have 0 education nodes (migrating from old exams system)
+    const existingUsersRes = await client.query(`
+      SELECT u.id 
+      FROM users u
+      LEFT JOIN user_education_nodes uen ON u.id = uen.user_id
+      WHERE uen.user_id IS NULL
+    `);
+
+    let updatedExisting = 0;
+    for (const user of existingUsersRes.rows) {
+      const randomNodes = getRandomNodes(Math.floor(Math.random() * 3) + 1);
+      for (const nodeId of randomNodes) {
+        await client.query(`
+          INSERT INTO user_education_nodes (user_id, node_id)
+          VALUES ($1, $2)
+        `, [user.id, nodeId]);
+      }
+      updatedExisting++;
+    }
+    
+    if (updatedExisting > 0) {
+      logger.info(`Assigned random education nodes to ${updatedExisting} existing users who had none.`);
+    }
+
     await client.query("COMMIT");
     logger.info("Users seeding completed successfully.");
   } catch (error) {
