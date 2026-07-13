@@ -449,7 +449,7 @@ export class AdminRepository {
     if (user.role === "mentor") {
       const mentorResult = await query(`
         SELECT m.id, m.title, m.qualification, m.experience_years, m.hourly_price, 
-               m.rating, m.total_reviews, m.about, m.is_verified, m.created_at
+               m.rating, m.total_reviews, m.about, m.is_verified, m.phone_number, m.created_at
         FROM mentors m WHERE m.user_id = $1
       `, [id]);
       user.mentor = mentorResult.rows[0] || null;

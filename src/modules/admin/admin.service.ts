@@ -206,6 +206,7 @@ export async function updateMentorUser(id: string, input: any) {
   addField(mentorFields, "experience_years", input.experienceYears);
   addField(mentorFields, "hourly_price", input.hourlyPrice);
   addField(mentorFields, "is_verified", input.isVerified);
+  addField(mentorFields, "phone_number", input.phoneNumber);
 
   const result = await AdminRepository.updateUserTransaction(id, userFields, userValues, profileFields, mentorFields);
   if (result.error) throw new AppError(result.error, result.code);
@@ -292,6 +293,7 @@ export async function updateMentor(id: string, data: any) {
   if (data.experience_years !== undefined) { fields.push(`experience_years = $${idx++}`); values.push(data.experience_years); }
   if (data.hourly_price !== undefined) { fields.push(`hourly_price = $${idx++}`); values.push(data.hourly_price); }
   if (data.is_verified !== undefined) { fields.push(`is_verified = $${idx++}`); values.push(data.is_verified); }
+  if (data.phone_number !== undefined) { fields.push(`phone_number = $${idx++}`); values.push(data.phone_number); }
 
   if (fields.length > 0) {
     const result = await AdminRepository.updateAdminMentor(id, fields, values);

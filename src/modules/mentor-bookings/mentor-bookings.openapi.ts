@@ -26,6 +26,7 @@ const MentorDashboardProfileResponse = registry.register("MentorDashboardProfile
   is_verified: z.boolean(),
   full_name: z.string().nullable(),
   profile_image: z.string().nullable(),
+  phone_number: z.string().nullable(),
   country_id: z.string().uuid().nullable(),
   state: z.string().nullable(),
   email: z.string().email(),

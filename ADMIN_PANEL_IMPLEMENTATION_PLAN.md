@@ -294,6 +294,7 @@ Updates general user details, profiles, AND active credentials for a mentor user
     "experienceYears": 8,
     "hourlyPrice": 95.0,
     "isVerified": true,
+    "phoneNumber": "+1234567890",
     "examIds": ["exam_uuid"]
   }
   ```
@@ -338,6 +339,7 @@ Deletes a user account. Automatically triggers cascading database deletion for m
         "total_reviews": 12,
         "about": "I help students excel.",
         "is_verified": true,
+        "phone_number": "+1234567890",
         "created_at": "2026-07-01T12:00:00.000Z",
         "updated_at": "2026-07-05T12:00:00.000Z",
         "full_name": "Jane Doe",
@@ -369,6 +371,7 @@ Deletes a user account. Automatically triggers cascading database deletion for m
       "total_reviews": 12,
       "about": "Chemistry tutor details",
       "is_verified": true,
+      "phone_number": "+1234567890",
       "created_at": "2026-07-01T12:00:00.000Z",
       "updated_at": "2026-07-05T12:00:00.000Z",
       "full_name": "Jane Doe",
@@ -391,6 +394,7 @@ Deletes a user account. Automatically triggers cascading database deletion for m
     "experience_years": 6,
     "hourly_price": 55.00,
     "is_verified": true,
+    "phone_number": "+1234567890",
     "country_id": "country_uuid",
     "state": "California",
     "exam_ids": ["exam_uuid"]

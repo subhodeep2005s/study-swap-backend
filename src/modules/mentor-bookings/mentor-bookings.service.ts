@@ -33,6 +33,7 @@ export async function updateMentorProfile(userId: string, data: any) {
   if (data.experience_years !== undefined) { fields.push(`experience_years = $${idx++}`); values.push(data.experience_years); }
   if (data.hourly_price !== undefined) { fields.push(`hourly_price = $${idx++}`); values.push(data.hourly_price); }
   if (data.about !== undefined) { fields.push(`about = $${idx++}`); values.push(data.about); }
+  if (data.phone_number !== undefined) { fields.push(`phone_number = $${idx++}`); values.push(data.phone_number); }
   
   const result = await MentorBookingsRepository.updateMentorProfile(mentorId, fields, values);
 

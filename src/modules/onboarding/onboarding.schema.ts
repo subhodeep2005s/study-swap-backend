@@ -54,6 +54,7 @@ export const mentorApplicationSchema = z.object({
     experienceYears: z.number().int().min(0, "Experience cannot be negative"),
     hourlyPrice: z.number().min(0, "Hourly price cannot be negative"),
     about: z.string().max(1000, "About section is too long").optional(),
+    phoneNumber: z.string().min(5, "Phone number is too short").max(20).optional(),
     countryId: z.string().uuid("Invalid country ID"),
     state: z.string().min(1, "State is required").optional(),
     examIds: z.array(z.string().uuid("Invalid exam ID")),

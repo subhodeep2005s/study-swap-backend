@@ -7,6 +7,7 @@ export const updateMentorProfileSchema = z.object({
     experience_years: z.number().min(0, "Experience must be positive").optional(),
     hourly_price: z.number().min(0, "Price must be positive").optional(),
     about: z.string().optional(),
+    phone_number: z.string().min(5, "Phone number is too short").max(20).optional(),
     country_id: z.string().uuid("Invalid country ID").nullable().optional(),
     state: z.string().optional(),
     exam_ids: z.array(z.string().uuid("Invalid exam ID")).optional(),

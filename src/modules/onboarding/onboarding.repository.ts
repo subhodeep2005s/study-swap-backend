@@ -92,6 +92,7 @@ export class OnboardingRepository {
       experienceYears: number;
       hourlyPrice: number;
       about?: string;
+      phoneNumber?: string;
       countryId: string;
       state?: string;
       examIds: string[];
@@ -103,17 +104,18 @@ export class OnboardingRepository {
 
       // 1. Upsert into mentors table
       await client.query(
-        `INSERT INTO mentors (user_id, title, qualification, experience_years, hourly_price, about, is_verified) 
-         VALUES ($1, $2, $3, $4, $5, $6, true)
+        `INSERT INTO mentors (user_id, title, qualification, experience_years, hourly_price, about, phone_number, is_verified) 
+         VALUES ($1, $2, $3, $4, $5, $6, $7, false)
          ON CONFLICT (user_id) DO UPDATE SET 
            title = EXCLUDED.title,
            qualification = EXCLUDED.qualification,
            experience_years = EXCLUDED.experience_years,
            hourly_price = EXCLUDED.hourly_price,
            about = EXCLUDED.about,
-           is_verified = true,
+           phone_number = EXCLUDED.phone_number,
+           is_verified = false,
            updated_at = NOW()`,
-        [userId, data.title, data.qualification, data.experienceYears, data.hourlyPrice, data.about || null]
+        [userId, data.title, data.qualification, data.experienceYears, data.hourlyPrice, data.about || null, data.phoneNumber || null]
       );
 
       // 2. Update user role

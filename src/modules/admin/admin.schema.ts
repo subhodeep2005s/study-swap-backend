@@ -89,6 +89,7 @@ export const updateMentorUserSchema = updateStudentSchema.extend({
     experienceYears: z.number().optional(),
     hourlyPrice: z.number().optional(),
     isVerified: z.boolean().optional(),
+    phoneNumber: z.string().optional(),
   }),
 });
 
@@ -128,6 +129,7 @@ export const updateMentorSchema = z.object({
     experience_years: z.number().optional(),
     hourly_price: z.number().optional(),
     is_verified: z.boolean().optional(),
+    phone_number: z.string().optional(),
     country_id: z.string().uuid().nullable().optional(),
     state: z.string().optional(),
     exam_ids: z.array(z.string().uuid()).optional(),
@@ -263,6 +265,7 @@ export const mentorProfileResponseSchema = z.object({
   total_reviews: z.number(),
   about: z.string().nullable(),
   is_verified: z.boolean(),
+  phone_number: z.string().nullable(),
   created_at: z.string().or(z.date()),
   updated_at: z.string().or(z.date()),
   full_name: z.string().nullable(),

@@ -50,8 +50,8 @@ Set their name, age, and bio.
   }
   ```
 
-### Step 2: Mentor Application (Auto-Verifies)
-Submit their professional mentor details along with their country, state, and exams they teach. **This instantly verifies them and lists them publicly.**
+### Step 2: Mentor Application (Pending Approval)
+Submit their professional mentor details along with their country, state, and exams they teach. **They are initially unverified and will not be listed publicly until an admin approves them.**
 - **Route:** `POST /onboarding/mentor-application`
 - **Body:**
   ```json
@@ -61,6 +61,7 @@ Submit their professional mentor details along with their country, state, and ex
     "experienceYears": 5,
     "hourlyPrice": 50,
     "about": "I specialize in calculus and algebra.",
+    "phoneNumber": "+1234567890",
     "countryId": "38a8df0b-222a-43cf-be72-a1b72e53efc1",
     "state": "California",
     "examIds": [
@@ -89,6 +90,7 @@ These routes are restricted to users with the `mentor` role.
   {
     "title": "Lead Instructor",
     "hourly_price": 60,
+    "phone_number": "+1234567890",
     "country_id": "38a8df0b-222a-43cf-be72-a1b72e53efc1",
     "state": "Nevada",
     "exam_ids": [
