@@ -79,13 +79,15 @@ export async function runUsersSeeder() {
       // If mentor, insert mentor profile
       if (role === 'mentor') {
         await client.query(`
-          INSERT INTO mentors (user_id, company_name, job_title, linkedin_url, is_verified)
-          VALUES ($1, $2, $3, $4, true)
+          INSERT INTO mentors (user_id, title, qualification, experience_years, hourly_price, about, is_verified)
+          VALUES ($1, $2, $3, $4, $5, $6, true)
         `, [
           userId,
-          faker.company.name(),
           faker.person.jobTitle(),
-          `https://linkedin.com/in/${faker.internet.username()}`
+          "PhD in Computer Science",
+          Math.floor(Math.random() * 10) + 2, // 2-11 years
+          Math.floor(Math.random() * 50) + 10, // $10-$60/hr
+          faker.person.bio()
         ]);
       }
     };
