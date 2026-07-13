@@ -140,6 +140,7 @@ export async function runUsersSeeder() {
 }
 
 // Allow running directly
+// @ts-ignore
 if (import.meta.url.startsWith('file:') && process.argv[1] === fileURLToPath(import.meta.url)) {
   runUsersSeeder()
     .then(() => process.exit(0))

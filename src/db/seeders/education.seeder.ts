@@ -299,7 +299,7 @@ export async function runEducationSeeder() {
 
 // Allow running directly
 import { fileURLToPath } from 'url';
-
+// @ts-ignore
 if (import.meta.url.startsWith('file:') && process.argv[1] === fileURLToPath(import.meta.url)) {
   runEducationSeeder()
     .then(() => process.exit(0))
