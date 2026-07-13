@@ -140,7 +140,7 @@ export async function getStudents(params?: PaginationParams) {
   return await AdminRepository.getStudents(params);
 }
 
-export async function getMentorsUsers(params?: PaginationParams) {
+export async function getMentorsUsers(params?: PaginationParams & { isVerified?: boolean }) {
   return await AdminRepository.getMentorsUsers(params);
 }
 

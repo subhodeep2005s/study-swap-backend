@@ -392,6 +392,7 @@ registry.registerPath({
       page: z.coerce.number().optional(),
       limit: z.coerce.number().optional(),
       search: z.string().optional(),
+      isVerified: z.enum(["true", "false"]).optional(),
     }),
   },
   responses: {

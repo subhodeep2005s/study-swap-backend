@@ -382,21 +382,32 @@ export class AdminRepository {
     };
   }
 
-  static async getMentorsUsers(params?: PaginationParams): Promise<PaginatedResult<any>> {
+  static async getMentorsUsers(params?: PaginationParams & { isVerified?: boolean }): Promise<PaginatedResult<any>> {
     const page = params?.page ?? 1;
     const limit = params?.limit ?? 20;
     const search = params?.search;
+    const isVerified = params?.isVerified;
 
     const queryParams: any[] = [];
     let searchClause = "";
+    let verifiedClause = "";
 
     if (search) {
       queryParams.push(`%${search}%`);
       searchClause = `AND (p.full_name ILIKE $${queryParams.length} OR u.email ILIKE $${queryParams.length})`;
     }
 
+    if (isVerified !== undefined) {
+      queryParams.push(isVerified);
+      verifiedClause = `AND m.is_verified = $${queryParams.length}`;
+    }
+
     const countResult = await query(
-      `SELECT count(*)::int AS total FROM users u LEFT JOIN profiles p ON u.id = p.user_id WHERE u.role = 'mentor' ${searchClause}`,
+      `SELECT count(*)::int AS total 
+       FROM users u 
+       LEFT JOIN profiles p ON u.id = p.user_id 
+       LEFT JOIN mentors m ON u.id = m.user_id
+       WHERE u.role = 'mentor' ${searchClause} ${verifiedClause}`,
       queryParams
     );
     const total = countResult.rows[0]!.total;
@@ -404,10 +415,12 @@ export class AdminRepository {
     queryParams.push(limit, paginationOffset(page, limit));
     const result = await query(`
       SELECT u.id, u.email, u.role, u.email_verified, u.onboarding_completed, u.created_at, 
-             p.full_name, p.profile_image, p.country_id, p.state, p.gender, p.age
+             p.full_name, p.profile_image, p.country_id, p.state, p.gender, p.age,
+             m.title, m.qualification, m.experience_years, m.hourly_price, m.is_verified
       FROM users u
       LEFT JOIN profiles p ON u.id = p.user_id
-      WHERE u.role = 'mentor' ${searchClause}
+      LEFT JOIN mentors m ON u.id = m.user_id
+      WHERE u.role = 'mentor' ${searchClause} ${verifiedClause}
       ORDER BY u.created_at DESC
       LIMIT $${queryParams.length - 1} OFFSET $${queryParams.length}
     `, queryParams);

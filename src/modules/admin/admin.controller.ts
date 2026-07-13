@@ -98,8 +98,9 @@ export const getStudents = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const getMentorsUsers = asyncHandler(async (req: Request, res: Response) => {
-  const { page, limit, search } = req.query as any;
-  const result = await adminService.getMentorsUsers({ page: Number(page) || 1, limit: Number(limit) || 20, search });
+  const { page, limit, search, isVerified } = req.query as any;
+  const isVerifiedBool = isVerified === 'true' ? true : isVerified === 'false' ? false : undefined;
+  const result = await adminService.getMentorsUsers({ page: Number(page) || 1, limit: Number(limit) || 20, search, isVerified: isVerifiedBool });
   res.status(200).json({ success: true, message: "Mentors fetched successfully", data: result.data, pagination: result.pagination });
 });
 
