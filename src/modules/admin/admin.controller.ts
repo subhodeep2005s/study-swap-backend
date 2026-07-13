@@ -163,8 +163,10 @@ export const getAuditLogs = asyncHandler(async (req: Request, res: Response) => 
 // Mentors (Merged)
 // =========================================================================
 export const getMentors = asyncHandler(async (req: Request, res: Response) => {
-  const mentors = await adminService.getMentors();
-  res.status(200).json({ success: true, message: "Mentors fetched", data: mentors });
+  const { page, limit, search, isVerified } = req.query as any;
+  const isVerifiedBool = isVerified === 'true' ? true : isVerified === 'false' ? false : undefined;
+  const result = await adminService.getMentors({ page: Number(page) || 1, limit: Number(limit) || 20, search, isVerified: isVerifiedBool });
+  res.status(200).json({ success: true, message: "Mentors fetched", data: result.data, pagination: result.pagination });
 });
 
 export const getMentor = asyncHandler(async (req: Request<{ id: string }>, res: Response) => {

@@ -574,11 +574,19 @@ registry.registerPath({
   tags,
   security,
   summary: "Get all mentors",
-  description: "Admin only.",
+  description: "Admin only. Supports pagination, search, and verification status filtering.",
+  request: {
+    query: z.object({
+      page: z.coerce.number().optional(),
+      limit: z.coerce.number().optional(),
+      search: z.string().optional(),
+      isVerified: z.enum(["true", "false"]).optional(),
+    }),
+  },
   responses: {
     200: {
       description: "Mentors fetched",
-      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.array(MentorProfileResponse) }) } },
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.array(MentorProfileResponse), pagination: PaginationResponse }) } },
     },
   },
 });

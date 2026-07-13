@@ -523,7 +523,37 @@ export class AdminRepository {
   // =========================================================================
   // Mentors (admin view)
   // =========================================================================
-  static async getAdminMentors() {
+  static async getMentors(params?: PaginationParams & { isVerified?: boolean }): Promise<PaginatedResult<any>> {
+    const page = params?.page ?? 1;
+    const limit = params?.limit ?? 20;
+    const search = params?.search;
+    const isVerified = params?.isVerified;
+
+    const queryParams: any[] = [];
+    let searchClause = "";
+    let verifiedClause = "";
+
+    if (search) {
+      queryParams.push(`%${search}%`);
+      searchClause = `AND (p.full_name ILIKE $${queryParams.length} OR u.email ILIKE $${queryParams.length})`;
+    }
+
+    if (isVerified !== undefined) {
+      queryParams.push(isVerified);
+      verifiedClause = `AND m.is_verified = $${queryParams.length}`;
+    }
+
+    const countResult = await query(
+      `SELECT count(*)::int AS total 
+       FROM mentors m
+       JOIN profiles p ON p.user_id = m.user_id
+       JOIN users u ON u.id = m.user_id
+       WHERE 1=1 ${searchClause} ${verifiedClause}`,
+      queryParams
+    );
+    const total = countResult.rows[0]!.total;
+
+    queryParams.push(limit, paginationOffset(page, limit));
     const result = await query(`
       SELECT m.*, p.full_name, p.profile_image, u.email,
         (SELECT count(*)::int FROM mentor_bookings b WHERE b.mentor_id = m.id) AS total_bookings,
@@ -531,9 +561,15 @@ export class AdminRepository {
       FROM mentors m
       JOIN profiles p ON p.user_id = m.user_id
       JOIN users u ON u.id = m.user_id
+      WHERE 1=1 ${searchClause} ${verifiedClause}
       ORDER BY m.created_at DESC
-    `);
-    return result.rows;
+      LIMIT $${queryParams.length - 1} OFFSET $${queryParams.length}
+    `, queryParams);
+
+    return {
+      data: result.rows,
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) }
+    };
   }
 
   static async getAdminMentor(id: string) {

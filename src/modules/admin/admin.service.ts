@@ -260,8 +260,8 @@ export async function getAuditLogs(params: {
 // =========================================================================
 // Mentors (Merged)
 // =========================================================================
-export async function getMentors() {
-  return await AdminRepository.getAdminMentors();
+export async function getMentors(params?: PaginationParams & { isVerified?: boolean }) {
+  return await AdminRepository.getMentors(params);
 }
 
 export async function getMentor(id: string) {
