@@ -10,7 +10,7 @@ export const updateMentorProfileSchema = z.object({
     phone_number: z.string().min(5, "Phone number is too short").max(20).optional(),
     country_id: z.string().uuid("Invalid country ID").nullable().optional(),
     state: z.string().optional(),
-    exam_ids: z.array(z.string().uuid("Invalid exam ID")).optional(),
+    education_node_ids: z.array(z.string().uuid("Invalid education node ID")).optional(),
   }),
 });
 

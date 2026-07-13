@@ -20,8 +20,8 @@ export async function updateMentorProfile(userId: string, data: any) {
     }
   }
 
-  if (data.exam_ids !== undefined) {
-    await OnboardingRepository.saveExamsTransaction(userId, data.exam_ids);
+  if (data.education_node_ids !== undefined) {
+    await OnboardingRepository.saveEducationNodesTransaction(userId, data.education_node_ids);
   }
   
   const fields: string[] = [];

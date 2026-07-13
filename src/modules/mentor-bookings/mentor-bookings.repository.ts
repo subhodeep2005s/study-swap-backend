@@ -25,14 +25,14 @@ export class MentorBookingsRepository {
     const mentor = result.rows[0];
     if (!mentor) return null;
 
-    // Fetch exams
-    const examsResult = await query(`
-      SELECT e.id, e.name 
-      FROM user_exams ue
-      JOIN exams e ON e.id = ue.exam_id
-      WHERE ue.user_id = $1
+    // Fetch education nodes
+    const educationNodesResult = await query(`
+      SELECT en.id, en.name 
+      FROM user_education_nodes uen
+      JOIN education_nodes en ON en.id = uen.node_id
+      WHERE uen.user_id = $1
     `, [mentor.user_id]);
-    mentor.exams = examsResult.rows;
+    mentor.educationNodes = educationNodesResult.rows;
 
     return mentor;
   }
