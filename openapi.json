@@ -329,6 +329,11 @@
             "type": "string",
             "maxLength": 1000
           },
+          "phoneNumber": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 20
+          },
           "countryId": {
             "type": "string",
             "format": "uuid"
@@ -616,6 +621,9 @@
           },
           "isVerified": {
             "type": "boolean"
+          },
+          "phoneNumber": {
+            "type": "string"
           }
         }
       },
@@ -1190,6 +1198,9 @@
           "is_verified": {
             "type": "boolean"
           },
+          "phone_number": {
+            "type": "string"
+          },
           "country_id": {
             "type": [
               "string",
@@ -1327,6 +1338,12 @@
           "is_verified": {
             "type": "boolean"
           },
+          "phone_number": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "created_at": {
             "anyOf": [
               {
@@ -1385,6 +1402,7 @@
           "total_reviews",
           "about",
           "is_verified",
+          "phone_number",
           "created_at",
           "updated_at",
           "full_name",
@@ -2082,6 +2100,11 @@
           "about": {
             "type": "string"
           },
+          "phone_number": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 20
+          },
           "country_id": {
             "type": [
               "string",
@@ -2255,6 +2278,12 @@
               "null"
             ]
           },
+          "phone_number": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "country_id": {
             "type": [
               "string",
@@ -2305,6 +2334,7 @@
           "is_verified",
           "full_name",
           "profile_image",
+          "phone_number",
           "country_id",
           "state",
           "email",
