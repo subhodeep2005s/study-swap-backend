@@ -1,0 +1,109 @@
+# Dynamic Education Directory - Full Frontend Implementation Guide
+
+This guide is for the Frontend Developers (React, React Native, Next.js, etc.) building the Student App, Mentor App, and Admin Panel. The backend has migrated from a simple flat `exams` table to a fully dynamic hierarchical `education_nodes` tree structure.
+
+## Overview of the New System
+
+The database now uses an `education_nodes` table where nodes can have parents. This enables infinite flexibility to support ANY educational pathway, not just schools!
+
+**Examples of Hierarchies:**
+1. **Schooling:** `Country (India) -> Board (CBSE) -> Class (Class 10) -> Subject (Mathematics)`
+2. **University/College:** `Country (India) -> University (Delhi University) -> Degree (B.Tech) -> Specialization (Computer Science) -> Semester (Sem 1)`
+3. **Competitive Exams:** `Country (India) -> Category (Medical) -> Exam (NEET) -> Subject (Biology)`
+- **Root Node:** A node with `parentId = null`. Usually, these represent top-level entities (like Boards or Universities) under a specific Country.
+- **Child Node:** A node with a `parentId`.
+- **Leaf Node:** A node that has NO children. **These are the only nodes users should ultimately select.**
+
+---
+
+## 1. Student App Implementation (Onboarding & Profile)
+
+During student onboarding or profile editing, the student must select their educational background by drilling down the tree.
+
+### Step-by-Step Flow
+
+1. **Step 1: Select Country**
+   - Call `GET /countries`.
+   - The user selects a country (e.g., India). Keep the `countryId` in state.
+
+2. **Step 2: Fetch Top-Level Nodes (Root Nodes)**
+   - Call `GET /countries/{countryId}/education-nodes`
+   - Filter this array on the frontend: `nodes.filter(node => node.parentId === null)`.
+   - Display these as the first level of choices (e.g., "CBSE", "ICSE", "State Board").
+   - The user taps one (e.g., "CBSE").
+
+3. **Step 3: Drill Down (Recursive Fetching from Local State)**
+   - Once "CBSE" is selected, filter the array again to find its children: `nodes.filter(node => node.parentId === CBSE_NODE_ID)`.
+   - Display these (e.g., "Class 10", "Class 11", "Class 12").
+   - User taps "Class 10".
+
+4. **Step 4: Reach Leaf Nodes (Final Selection)**
+   - Filter for children of "Class 10": `nodes.filter(node => node.parentId === CLASS_10_NODE_ID)`.
+   - If the children array has items (e.g., "Math", "Science"), show them.
+   - **Crucial:** Since these are the final subjects (Leaf Nodes), allow the user to **MULTI-SELECT** them. 
+
+5. **Step 5: Submitting Data**
+   - Collect the IDs of all selected Leaf Nodes.
+   - Send them to the backend:
+     ```json
+     // POST /onboarding/education-nodes
+     {
+       "educationNodeIds": ["<MATH_NODE_ID>", "<SCIENCE_NODE_ID>"]
+     }
+     ```
+
+### Frontend Edge Cases to Handle for Students
+- **No Children Present (Empty Branch):** If a user clicks a node (e.g., "General Knowledge Exam") and `nodes.filter(n => n.parentId === selectedId)` returns `[]` (an empty array), the frontend MUST immediately recognize this node as a Leaf Node and allow them to select it directly.
+- **Back Navigation / Unselecting a Parent:** If a user is on Step 4 but clicks "Back" and changes their Board from "CBSE" to "ICSE", you **MUST** clear all selected child nodes (like Class 10 and Math) from the local state. Otherwise, you'll submit mismatched hierarchy data.
+- **Offline / Loading:** Fetch the entire tree for the country once at the start of onboarding. Cache it in Memory/Zustand/Redux so drill-downs are instant without loading spinners.
+
+---
+
+## 2. Mentor App Implementation (Onboarding & Profile)
+
+Mentors define what subjects/exams they can teach. This uses the exact same `education_nodes` tree.
+
+### Step-by-Step Flow
+- The UI flow is **identical** to the Student App. 
+- Use the same recursive drill-down component.
+- **Endpoint:** Mentors submit their selected node IDs during their application step (`POST /onboarding/mentor-application` or `PATCH /mentors/me`).
+
+### Handling Mentor Matching
+- The frontend **does not** need to do anything special for matching.
+- The backend matches students and mentors automatically based on intersections of their `user_education_nodes`. If the mentor selected the exact same nodes as the student, they will appear in the student's matchmaking feed.
+
+### Frontend Edge Cases to Handle for Mentors
+- **Minimum Selection Requirement:** A mentor *must* select at least one node. The UI should disable the "Continue" button if `selectedNodes.length === 0`.
+- **Node Deletions by Admin:** If an Admin deletes a node, it vanishes from the database. When a mentor views their profile, the frontend might encounter an ID that no longer exists in the `/education-nodes` response. The UI should gracefully drop unknown IDs and prompt the mentor: *"Some of your subjects were updated. Please review your expertise."*
+
+---
+
+## 3. Admin Panel Implementation (Managing the Tree)
+
+The Admin is responsible for building this tree dynamically.
+
+### CRUD Operations for Education Nodes
+
+1. **Viewing the Tree (Read)**
+   - Call `GET /admin/education-nodes`.
+   - The frontend should map the flat array into a nested JSON object by linking `parentId` to `id`.
+   - Use a UI component like `rc-tree` or MUI TreeView to display the collapsible hierarchy.
+
+2. **Creating Nodes (Create)**
+   - When the admin clicks "Add Node" at the root level:
+     - Form payload: `{ "countryId": "<ID>", "parentId": null, "name": "CBSE", "nodeType": "BOARD", "isActive": true }`
+   - When the admin clicks "Add Sub-Node" under "CBSE":
+     - Form payload: `{ "countryId": "<ID>", "parentId": "<CBSE_NODE_ID>", "name": "Class 10", "nodeType": "CLASS", "isActive": true }`
+
+3. **Updating Nodes (Update)**
+   - Form payload: `PATCH /admin/education-nodes/{id}` with new names or changing `isActive`.
+   - Changing `isActive` to `false` should ideally be visualized as "grayed out" in the Tree UI.
+
+4. **Deleting Nodes (Delete - EXTREMELY DANGEROUS)**
+   - `DELETE /admin/education-nodes/{id}`
+   - **Backend Behavior:** The database uses `ON DELETE CASCADE`. If an admin deletes "CBSE", **ALL** classes and subjects under CBSE are instantly deleted. Furthermore, it wipes those nodes from all Students and Mentors who selected them.
+
+### Frontend Edge Cases to Handle for Admins
+- **Delete Confirmation Warning:** The frontend MUST intercept any delete action on a node that has children. Show a red modal: *"WARNING: You are deleting a parent node. This will PERMANENTLY delete all nested sub-categories and forcefully remove them from all users' profiles. Type 'CONFIRM' to proceed."*
+- **Moving Nodes (Parent Swap):** To move a node (e.g., move a subject from Class 10 to Class 11), the frontend just sends `PATCH /admin/education-nodes/{id}` with `"parentId": "<CLASS_11_ID>"`.
+- **Pagination Caveat:** For building the tree visually, the Admin panel should fetch nodes with a high `limit` (e.g., `?limit=1000`) so the entire tree can be constructed synchronously on the frontend.
