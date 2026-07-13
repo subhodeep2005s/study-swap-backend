@@ -183,24 +183,30 @@ const INDIA_HIERARCHY: SeedNode[] = [
 
 const INTERNATIONAL_HIERARCHY: SeedNode[] = [
   {
-    name: "English Proficiency",
+    name: "International Exams",
     type: "CATEGORY",
-    children: ["IELTS", "TOEFL", "PTE", "OET", "Duolingo", "CELPIP"].map(n => ({ name: n, type: "EXAM" }))
-  },
-  {
-    name: "Study Abroad",
-    type: "CATEGORY",
-    children: ["SAT", "ACT", "GRE", "GMAT", "LSAT", "MCAT", "DAT", "PCAT"].map(n => ({ name: n, type: "EXAM" }))
-  },
-  {
-    name: "Medical Licensing",
-    type: "CATEGORY",
-    children: ["USMLE", "PLAB", "AMC", "DHA", "HAAD", "MOH UAE", "NCLEX", "Prometric"].map(n => ({ name: n, type: "EXAM" }))
-  },
-  {
-    name: "Finance",
-    type: "CATEGORY",
-    children: ["CFA", "FRM", "ACCA", "CPA", "CIMA"].map(n => ({ name: n, type: "EXAM" }))
+    children: [
+      {
+        name: "English Proficiency",
+        type: "SUB_CATEGORY",
+        children: ["IELTS", "TOEFL", "PTE", "OET", "Duolingo", "CELPIP"].map(n => ({ name: n, type: "EXAM" }))
+      },
+      {
+        name: "Study Abroad",
+        type: "SUB_CATEGORY",
+        children: ["SAT", "ACT", "GRE", "GMAT", "LSAT", "MCAT", "DAT", "PCAT"].map(n => ({ name: n, type: "EXAM" }))
+      },
+      {
+        name: "Medical Licensing",
+        type: "SUB_CATEGORY",
+        children: ["USMLE", "PLAB", "AMC", "DHA", "HAAD", "MOH UAE", "NCLEX", "Prometric"].map(n => ({ name: n, type: "EXAM" }))
+      },
+      {
+        name: "Finance",
+        type: "SUB_CATEGORY",
+        children: ["CFA", "FRM", "ACCA", "CPA", "CIMA"].map(n => ({ name: n, type: "EXAM" }))
+      }
+    ]
   }
 ];
 
