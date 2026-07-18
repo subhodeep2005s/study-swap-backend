@@ -122,7 +122,7 @@ async function updateMatchStatus(userId: string, matchId: string, currentStatus:
 }
 
 export async function acceptMatch(userId: string, matchId: string) {
-  await updateMatchStatus(userId, matchId, ["pending"], "accepted");
+  await updateMatchStatus(userId, matchId, ["pending", "saved"], "accepted");
   await CommunicationRepository.getOrCreateConversation(matchId);
 
   // Send an email to the user who was accepted
@@ -177,7 +177,7 @@ export async function acceptMatch(userId: string, matchId: string) {
 }
 
 export async function rejectMatch(userId: string, matchId: string) {
-  await updateMatchStatus(userId, matchId, ["pending"], "rejected");
+  await updateMatchStatus(userId, matchId, ["pending", "saved"], "rejected");
 }
 
 export async function saveMatch(userId: string, matchId: string) {
