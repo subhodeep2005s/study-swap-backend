@@ -2,9 +2,10 @@ import type { Request, Response } from "express";
 import { asyncHandler } from "@/core/utils/async-handler";
 import * as mentorsService from "./mentors.service";
 
-export const getMentors = asyncHandler(async (req: Request, res: Response) => {
-  const mentors = await mentorsService.getMentors();
-  res.status(200).json({ success: true, message: "Mentors fetched successfully", data: mentors });
+export const getMentors = asyncHandler(async (req: Request<{}, any, any, { cursor?: string }>, res: Response) => {
+  const { cursor } = req.query;
+  const result = await mentorsService.getMentors(cursor);
+  res.status(200).json({ success: true, message: "Mentors fetched successfully", data: result });
 });
 
 export const getMentorsByMyEducationNodes = asyncHandler(async (req: Request, res: Response) => {

@@ -4,16 +4,31 @@ import { Event, eventEmitter } from "@/config/event";
 import { redis } from "@/config/redis";
 import { logger } from "@/config/logger";
 import { query } from "@/config/db";
+import { encodeCursor, decodeCursor } from "@/core/utils/pagination";
 import { sendMail } from "@/config/resend";
 import { MentorsRepository } from "./mentors.repository";
 import { GoogleService } from "@/modules/google/google.service";
 
-export async function getMentors() {
-  const cacheKey = "cache:mentors:list";
+export async function getMentors(cursor?: string, limit: number = 10) {
+  let lastId: string | undefined;
+  if (cursor) {
+    const decoded = decodeCursor<{ lastId: string }>(cursor);
+    if (decoded?.lastId) lastId = decoded.lastId;
+  }
+
+  const cacheKey = `cache:mentors:list:${cursor || 'first'}:${limit}`;
   const cached = await redis.get(cacheKey);
   if (cached) return JSON.parse(cached);
 
-  const result = await MentorsRepository.getVerifiedMentors();
+  const items = await MentorsRepository.getVerifiedMentors(lastId, limit);
+  
+  let nextCursor: string | null = null;
+  if (items.length === limit && items.length > 0) {
+    const lastItem = items[items.length - 1];
+    nextCursor = encodeCursor({ lastId: lastItem!.id });
+  }
+
+  const result = { items, nextCursor };
   
   await redis.set(cacheKey, JSON.stringify(result), "EX", 300); // 5 minutes
   return result;

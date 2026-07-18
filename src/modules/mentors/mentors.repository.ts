@@ -4,8 +4,8 @@ import { NotificationService } from "@/modules/notifications/notification.servic
 import type { PoolClient } from "pg";
 
 export class MentorsRepository {
-  static async getVerifiedMentors() {
-    const result = await query(`
+  static async getVerifiedMentors(cursorId?: string, limit: number = 10) {
+    let sql = `
       SELECT 
         m.id, m.title, m.qualification, m.experience_years, 
         m.hourly_price, m.rating, m.total_reviews, m.is_verified,
@@ -15,7 +15,19 @@ export class MentorsRepository {
       WHERE m.is_verified = true
       AND EXISTS (SELECT 1 FROM mentor_plans mp WHERE mp.mentor_id = m.id AND mp.is_active = true)
       AND EXISTS (SELECT 1 FROM mentor_availability ma WHERE ma.mentor_id = m.id)
-    `);
+    `;
+
+    const params: any[] = [];
+
+    if (cursorId) {
+      params.push(cursorId);
+      sql += ` AND m.id < $${params.length}`;
+    }
+
+    params.push(limit);
+    sql += ` ORDER BY m.id DESC LIMIT $${params.length}`;
+
+    const result = await query(sql, params);
     return result.rows;
   }
 
