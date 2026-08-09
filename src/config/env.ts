@@ -1,4 +1,21 @@
-import "dotenv/config";
+import dotenv from "dotenv";
+import path from "path";
+
+// ─── Load the correct .env file based on NODE_ENV ────────────────────────────
+// Priority:
+//   production  → .env.production  (production DB + Redis at 72.61.255.43)
+//   development → .env             (local DB + local Redis)
+//   test        → .env             (local, same as development)
+// ─────────────────────────────────────────────────────────────────────────────
+const nodeEnv = process.env.NODE_ENV ?? "development";
+const envFile = nodeEnv === "production" ? ".env.production" : ".env";
+const envPath = path.join(process.cwd(), envFile);
+
+dotenv.config({ path: envPath });
+
+console.log(`[env] Loaded: ${envFile}  (NODE_ENV=${nodeEnv})`);
+
+
 import { z } from "zod";
 
 const emptyToUndefined = (value: unknown) => (value === "" ? undefined : value);
