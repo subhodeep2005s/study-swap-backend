@@ -23,7 +23,7 @@ import { redis } from "../../src/config/redis";
 vi.mock("../../src/modules/mentors/mentors.repository", () => ({
   MentorsRepository: {
     getVerifiedMentors: vi.fn(),
-    getMentorsByMyExams: vi.fn(),
+    getMentorsByMyEducationNodes: vi.fn(),
     getMentor: vi.fn(),
     getMentorPlans: vi.fn(),
     getMentorPlan: vi.fn(),
@@ -62,14 +62,14 @@ describe("Mentors Module Integration Tests", () => {
       vi.mocked(MentorsRepository.getVerifiedMentors).mockResolvedValue([] as any);
       const response = await request(app).get("/mentors").set("Authorization", `Bearer ${validToken}`);
       expect(response.status).toBe(200);
-      expect(response.body.data).toEqual([]);
+      expect(response.body.data).toEqual({ items: [], nextCursor: null });
     });
   });
 
-  describe("GET /mentors/my-exams-mentors", () => {
-    it("should get mentors by exams", async () => {
-      vi.mocked(MentorsRepository.getMentorsByMyExams).mockResolvedValue([] as any);
-      const response = await request(app).get("/mentors/my-exams-mentors").set("Authorization", `Bearer ${validToken}`);
+  describe("GET /mentors/my-education-nodes-mentors", () => {
+    it("should get mentors by education nodes", async () => {
+      vi.mocked(MentorsRepository.getMentorsByMyEducationNodes).mockResolvedValue([] as any);
+      const response = await request(app).get("/mentors/my-education-nodes-mentors").set("Authorization", `Bearer ${validToken}`);
       expect(response.status).toBe(200);
     });
   });

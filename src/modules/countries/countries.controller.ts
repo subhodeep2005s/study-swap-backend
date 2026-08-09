@@ -19,3 +19,12 @@ export const getStates = asyncHandler(async (req: Request<{ countryCode: string 
     data,
   });
 });
+
+export const getExams = asyncHandler(async (req: Request<{ countryId: string }>, res: Response) => {
+  const data = await countriesService.getExamsByCountry(req.params.countryId);
+  res.status(200).json({
+    success: true,
+    message: "Exams fetched successfully",
+    data,
+  });
+});

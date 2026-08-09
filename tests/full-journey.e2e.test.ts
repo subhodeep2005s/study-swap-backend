@@ -197,7 +197,7 @@ describe("StudySwap Backend - Full Day In The Life Journey", () => {
         .get("/mentors")
         .set("Authorization", `Bearer ${studentToken}`);
       expect(res.status).toBe(200);
-      expect(Array.isArray(res.body.data)).toBe(true);
+      expect(Array.isArray(res.body.data.items)).toBe(true);
     });
 
     it("✅ Student views mentor dashboard", async () => {

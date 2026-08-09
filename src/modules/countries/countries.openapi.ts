@@ -56,3 +56,30 @@ registry.registerPath({
     },
   },
 });
+
+registry.registerPath({
+  method: "get",
+  path: "/countries/{countryId}/exams",
+  tags: ["Education Nodes"],
+  summary: "Get exams by country",
+  description: "Returns a list of exams for a specific country.",
+  request: {
+    params: z.object({
+      countryId: z.string().uuid().openapi({ example: "123e4567-e89b-12d3-a456-426614174000" }),
+    }),
+  },
+  responses: {
+    200: {
+      description: "Exams fetched successfully",
+      content: {
+        "application/json": {
+          schema: z.object({
+            success: z.boolean().openapi({ example: true }),
+            message: z.string().openapi({ example: "Exams fetched successfully" }),
+            data: z.array(z.object({ id: z.string().uuid(), name: z.string() })),
+          }),
+        },
+      },
+    },
+  },
+});

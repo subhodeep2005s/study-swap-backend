@@ -1,9 +1,9 @@
 import { getClient } from "../../config/db";
 import { logger } from "../../config/logger";
-import { faker } from "@faker-js/faker";
+import { fakerEN_IN as faker } from "@faker-js/faker";
 import { fileURLToPath } from 'url';
 
-const NUM_STUDENTS = 200;
+const NUM_STUDENTS = 100;
 const NUM_MENTORS = 50;
 
 const STATES = [
@@ -20,21 +20,26 @@ export async function runUsersSeeder() {
     await client.query("BEGIN");
     logger.info("Seeding Users & Mentors...");
 
-    // 1. Fetch valid education nodes (CLASS, COURSE, EXAM)
+    // 0. Fetch India country_id
+    const countryRes = await client.query(`SELECT id FROM countries WHERE name = 'India'`);
+    const indiaId = countryRes.rows.length > 0 ? countryRes.rows[0].id : null;
+
+    // 1. Fetch valid education nodes (CLASS, COURSE, EXAM) specifically popular ones
     const nodesRes = await client.query(`
-      SELECT id FROM education_nodes 
-      WHERE node_type IN ('CLASS', 'COURSE', 'EXAM')
+      SELECT id, name FROM education_nodes 
+      WHERE node_type IN ('EXAM', 'COURSE')
+      AND name IN ('UPSC CSE', 'JEE Main', 'JEE Advanced', 'NEET UG', 'CAT', 'GATE')
     `);
     
     if (nodesRes.rows.length === 0) {
-      throw new Error("No education nodes found. Please run db:seed:education first.");
+      throw new Error("No specific education nodes found. Please run db:seed:education first.");
     }
     const nodeIds = nodesRes.rows.map(r => r.id);
 
     // Helper to get random items
     const getRandomNodes = (count: number) => {
       const shuffled = [...nodeIds].sort(() => 0.5 - Math.random());
-      return shuffled.slice(0, count);
+      return shuffled.slice(0, Math.min(count, shuffled.length));
     };
 
     const getRandomState = () => STATES[Math.floor(Math.random() * STATES.length)];
@@ -56,15 +61,20 @@ export async function runUsersSeeder() {
 
       // Insert Profile
       await client.query(`
-        INSERT INTO profiles (user_id, full_name, state, bio, age, gender)
-        VALUES ($1, $2, $3, $4, $5, $6)
+        INSERT INTO profiles (user_id, full_name, state, bio, age, gender, country_id, strong_in, need_help_with, study_time, looking_for)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
       `, [
         userId, 
         name, 
         state, 
         bio, 
         Math.floor(Math.random() * 10) + 15, // Age 15-25
-        Math.random() > 0.5 ? 'male' : 'female'
+        Math.random() > 0.5 ? 'male' : 'female',
+        indiaId,
+        faker.helpers.arrayElement(['Math', 'Physics', 'Chemistry', 'Biology', 'History']),
+        faker.helpers.arrayElement(['Physics', 'Chemistry', 'Math', 'English']),
+        faker.helpers.arrayElement(['morning', 'afternoon', 'evening', 'late_night']),
+        faker.helpers.arrayElements(['Study Partner', 'Mentor', 'Doubt Solving'], 2)
       ]);
 
       // Assign Random Education Nodes (1 to 3 nodes)
@@ -76,19 +86,37 @@ export async function runUsersSeeder() {
         `, [userId, nodeId]);
       }
 
-      // If mentor, insert mentor profile
+      // If mentor, insert mentor profile, plan, and availability
       if (role === 'mentor') {
-        await client.query(`
-          INSERT INTO mentors (user_id, title, qualification, experience_years, hourly_price, about, is_verified)
-          VALUES ($1, $2, $3, $4, $5, $6, true)
+        const mentorRes = await client.query(`
+          INSERT INTO mentors (user_id, title, qualification, experience_years, hourly_price, about, is_verified, phone_number)
+          VALUES ($1, $2, $3, $4, $5, $6, true, $7)
+          RETURNING id
         `, [
           userId,
           faker.person.jobTitle(),
           "PhD in Computer Science",
           Math.floor(Math.random() * 10) + 2, // 2-11 years
           Math.floor(Math.random() * 50) + 10, // $10-$60/hr
-          faker.person.bio()
+          faker.person.bio(),
+          "+91" + faker.string.numeric(10) // Indian phone number
         ]);
+        
+        const mentorId = mentorRes.rows[0].id;
+
+        // Insert a default active plan
+        await client.query(`
+          INSERT INTO mentor_plans (mentor_id, title, description, duration_minutes, price, is_active)
+          VALUES ($1, '1-on-1 Mentorship', 'Detailed guidance session', 60, 50.00, true)
+        `, [mentorId]);
+
+        // Insert default availability (e.g. Monday to Friday, 9am-5pm)
+        for (let day = 1; day <= 5; day++) {
+          await client.query(`
+            INSERT INTO mentor_availability (mentor_id, day_of_week, start_time, end_time)
+            VALUES ($1, $2, '09:00:00', '17:00:00')
+          `, [mentorId, day]);
+        }
       }
     };
 

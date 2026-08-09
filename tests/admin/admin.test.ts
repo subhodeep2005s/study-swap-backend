@@ -47,7 +47,7 @@ vi.mock("../../src/modules/admin/admin.repository", () => ({
     getMatches: vi.fn(),
     getMatchesByUser: vi.fn(),
     getAuditLogs: vi.fn(),
-    getAdminMentors: vi.fn(),
+    getMentors: vi.fn(),
     getAdminMentor: vi.fn(),
     getAdminBookings: vi.fn(),
     getAdminBooking: vi.fn(),
@@ -168,41 +168,8 @@ describe("Admin Module Integration Tests", () => {
       expect(response.status).toBe(200);
     });
 
-    it("should get exams by country", async () => {
-      vi.mocked(AdminRepository.getExamsByCountry).mockResolvedValue([] as any);
-      const response = await request(app).get(`/admin/countries/${validUuid}/exams`).set("Authorization", `Bearer ${validToken}`);
-      expect(response.status).toBe(200);
-    });
-  });
 
-  describe("Exams", () => {
-    const validUuid = "123e4567-e89b-12d3-a456-426614174000";
 
-    it("should get exams", async () => {
-      vi.mocked(AdminRepository.getExams).mockResolvedValue({ data: [], pagination: {} } as any);
-      const response = await request(app).get("/admin/exams").set("Authorization", `Bearer ${validToken}`);
-      expect(response.status).toBe(200);
-    });
-
-    it("should create exam", async () => {
-      vi.mocked(AdminRepository.createExam).mockResolvedValue({} as any);
-      const response = await request(app).post("/admin/exams").set("Authorization", `Bearer ${validToken}`)
-        .send({ name: "SAT", countryId: validUuid });
-      expect(response.status).toBe(201);
-    });
-
-    it("should update exam", async () => {
-      vi.mocked(AdminRepository.updateExam).mockResolvedValue({} as any);
-      const response = await request(app).patch(`/admin/exams/${validUuid}`).set("Authorization", `Bearer ${validToken}`)
-        .send({ name: "SAT Updated" });
-      expect(response.status).toBe(200);
-    });
-
-    it("should delete exam", async () => {
-      vi.mocked(AdminRepository.deleteExam).mockResolvedValue(true as any);
-      const response = await request(app).delete(`/admin/exams/${validUuid}`).set("Authorization", `Bearer ${validToken}`);
-      expect(response.status).toBe(200);
-    });
   });
 
   describe("Users", () => {
@@ -257,7 +224,7 @@ describe("Admin Module Integration Tests", () => {
     const validUuid = "123e4567-e89b-12d3-a456-426614174000";
 
     it("should get mentors", async () => {
-      vi.mocked(AdminRepository.getAdminMentors).mockResolvedValue([] as any);
+      vi.mocked(AdminRepository.getMentors).mockResolvedValue({ items: [], meta: { page: 1, limit: 10, total: 0, totalPages: 0 } });
       const response = await request(app).get("/admin/mentors").set("Authorization", `Bearer ${validToken}`);
       expect(response.status).toBe(200);
     });

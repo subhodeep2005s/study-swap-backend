@@ -111,9 +111,8 @@ export async function enhanceBio(bio: string): Promise<string> {
     const ai = new GoogleGenAI({ apiKey: env.GEMINI_API_KEY });
     const prompt = enhanceBioPrompt(bio);
 
-    // Using the official SDK generateContent method
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-3.5-flash",
       contents: prompt,
     });
 

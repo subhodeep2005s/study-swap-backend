@@ -6,13 +6,21 @@ import crypto from "crypto";
 
 export const generatePresignedUrl = asyncHandler(
   async (req: Request<{}, {}, PresignedUrlBody>, res: Response) => {
-    const { fileName, contentType } = req.body;
+    const { fileName, contentType, uploadType } = req.body;
     const userId = req.user!.id;
 
     // Generate a unique key for the file to avoid collisions
     const fileExtension = fileName.split(".").pop();
     const uniqueId = crypto.randomBytes(8).toString("hex");
-    const key = `profile-images/${userId}/${uniqueId}.${fileExtension}`;
+    
+    let keyPrefix = "profile-images";
+    if (uploadType === "anonymous-avatar") {
+      keyPrefix = "anonymous-avatars";
+    } else if (uploadType === "forum-media") {
+      keyPrefix = "anonymous-forum/posts";
+    }
+
+    const key = `${keyPrefix}/${userId}/${uniqueId}.${fileExtension}`;
 
     // Get the presigned URL from S3 (expires in 5 minutes)
     const url = await getPresignedUploadUrl(key, contentType, 300);

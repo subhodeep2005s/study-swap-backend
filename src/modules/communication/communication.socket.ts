@@ -9,6 +9,13 @@ import { CommunicationRepository } from "./communication.repository";
 
 let io: SocketIOServer;
 
+export function closeSocketIO() {
+  if (io) {
+    io.close();
+    logger.info("Socket.IO server closed.");
+  }
+}
+
 export async function initSocketIO(server: any) {
   io = new SocketIOServer(server, {
     cors: {

@@ -85,8 +85,8 @@ describe("Booking Flow - E2E (Google Meet Integration)", () => {
       const countryRes = await query("SELECT id FROM countries LIMIT 1");
       const countryId = countryRes.rows[0]?.id;
 
-      const examRes = await query("SELECT id FROM exams LIMIT 1");
-      const examIds = examRes.rows.map(r => r.id);
+      const nodeRes = await query("SELECT id FROM education_nodes LIMIT 1");
+      const educationNodeIds = nodeRes.rows.map(r => r.id);
 
       const res = await request(app)
         .post("/onboarding/mentor-application")
@@ -99,7 +99,7 @@ describe("Booking Flow - E2E (Google Meet Integration)", () => {
           about: "I help students ace their exams.",
           countryId,
           state: "New York",
-          examIds
+          educationNodeIds
         });
       expect(res.status).toBe(200);
 

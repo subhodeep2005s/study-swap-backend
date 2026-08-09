@@ -5,7 +5,7 @@ import { query, getClient } from "../src/config/db";
 import { faker } from "@faker-js/faker";
 
 const EXAMS = ["JEE", "NEET", "UPSC"];
-const MENTORS_PER_EXAM = 10;
+const MENTORS_PER_EXAM = 17;
 
 async function seedMentors() {
   const client = await getClient();
@@ -21,7 +21,7 @@ async function seedMentors() {
     const countryId = countryRes.rows[0].id;
 
     for (const examName of EXAMS) {
-      const examRes = await client.query("SELECT id FROM exams WHERE name = $1 AND country_id = $2", [examName, countryId]);
+      const examRes = await client.query("SELECT id FROM education_nodes WHERE name = $1 AND country_id = $2 AND node_type = 'EXAM'", [examName, countryId]);
       if (examRes.rows.length === 0) {
         throw new Error(`Exam ${examName} not found.`);
       }
@@ -61,7 +61,7 @@ async function seedMentors() {
 
         // 3. User Exams
         await client.query(
-          `INSERT INTO user_exams (user_id, exam_id) VALUES ($1, $2)`,
+          `INSERT INTO user_education_nodes (user_id, node_id) VALUES ($1, $2)`,
           [userId, examId]
         );
         console.log(`Created user_exam for ${userId}`);

@@ -24,8 +24,8 @@ vi.mock("../../src/modules/onboarding/onboarding.repository", () => ({
     getStatus: vi.fn(),
     checkCountryExists: vi.fn(),
     saveCountry: vi.fn(),
-    getExams: vi.fn(),
-    saveExamsTransaction: vi.fn(),
+    getEducationNodes: vi.fn(),
+    saveEducationNodesTransaction: vi.fn(),
     completeOnboarding: vi.fn(),
     applyForMentorTransaction: vi.fn(),
   },
@@ -107,12 +107,12 @@ describe("Onboarding Module Integration Tests", () => {
     });
   });
 
-  describe("GET /onboarding/exams", () => {
-    it("should return saved exams for user", async () => {
-      vi.mocked(OnboardingRepository.getExams).mockResolvedValue([{ id: "exam-1", name: "JEE" }] as any);
+  describe("GET /onboarding/education-nodes", () => {
+    it("should return saved education nodes for user", async () => {
+      vi.mocked(OnboardingRepository.getEducationNodes).mockResolvedValue([{ id: "exam-1", name: "JEE" }] as any);
 
       const response = await request(app)
-        .get("/onboarding/exams")
+        .get("/onboarding/education-nodes")
         .set("Authorization", `Bearer ${validToken}`);
 
       expect(response.status).toBe(200);
@@ -120,15 +120,15 @@ describe("Onboarding Module Integration Tests", () => {
     });
   });
 
-  describe("PATCH /onboarding/exams", () => {
-    it("should save exams for user", async () => {
+  describe("PATCH /onboarding/education-nodes", () => {
+    it("should save education nodes for user", async () => {
       const response = await request(app)
-        .patch("/onboarding/exams")
+        .patch("/onboarding/education-nodes")
         .set("Authorization", `Bearer ${validToken}`)
-        .send({ examIds: ["b594b2a3-6b74-42b7-a3f1-d007c0f0a4f5"] });
+        .send({ educationNodeIds: ["b594b2a3-6b74-42b7-a3f1-d007c0f0a4f5"] });
 
       expect(response.status).toBe(200);
-      expect(OnboardingRepository.saveExamsTransaction).toHaveBeenCalled();
+      expect(OnboardingRepository.saveEducationNodesTransaction).toHaveBeenCalled();
     });
   });
 
@@ -199,7 +199,7 @@ describe("Onboarding Module Integration Tests", () => {
           experienceYears: 5,
           hourlyPrice: 100,
           countryId: "b594b2a3-6b74-42b7-a3f1-d007c0f0a4f5",
-          examIds: []
+          educationNodeIds: []
         });
 
       expect(response.status).toBe(200);

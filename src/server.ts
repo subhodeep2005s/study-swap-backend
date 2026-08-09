@@ -3,8 +3,10 @@ import { env } from "./config/env";
 import { logger } from "./config/logger";
 import { closePool } from "./config/db";
 import { closeRedis } from "./config/redis";
-import { initSocketIO } from "./modules/communication/communication.socket";
-import { startCommunicationScheduler } from "./modules/communication/communication.scheduler";
+import { initSocketIO, closeSocketIO } from "./modules/communication/communication.socket";
+import { startCommunicationScheduler, stopCommunicationScheduler } from "./modules/communication/communication.scheduler";
+import { startAIScheduler, stopAIScheduler } from "./modules/ai-companion/ai.scheduler";
+import { NotesScheduler } from "./modules/notes/notes.scheduler";
 
 async function startServer(): Promise<void> {
   try {
@@ -15,6 +17,8 @@ async function startServer(): Promise<void> {
 
     await initSocketIO(server);
     startCommunicationScheduler();
+    startAIScheduler();
+    NotesScheduler.init();
 
     let isShuttingDown = false;
 
@@ -26,6 +30,15 @@ async function startServer(): Promise<void> {
 
       server.close(async () => {
         logger.info("HTTP server closed");
+
+        try {
+          stopCommunicationScheduler();
+          stopAIScheduler();
+          NotesScheduler.stop();
+          closeSocketIO();
+        } catch (e) {
+          logger.error(e, "Error during scheduler/socket shutdown");
+        }
 
         try {
           await closePool();

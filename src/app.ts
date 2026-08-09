@@ -11,6 +11,7 @@ import authRoutes from "@/modules/auth/auth.routes";
 import onboardingRoutes from "@/modules/onboarding/onboarding.routes";
 import countriesRoutes from "@/modules/countries/countries.routes";
 import examsRoutes from "@/modules/exams/exams.routes";
+
 import adminRoutes from "@/modules/admin/admin.routes";
 import matchesRoutes from "@/modules/matches/matches.routes";
 import { mentorsRoutes } from "@/modules/mentors/mentors.routes";
@@ -18,6 +19,9 @@ import { mentorBookingsRoutes } from "@/modules/mentor-bookings/mentor-bookings.
 import { uploadsRoutes } from "@/modules/uploads/uploads.routes";
 import storiesRoutes from "@/modules/stories/stories.routes";
 import communicationRoutes from "@/modules/communication/communication.routes";
+import { forumRoutes } from "@/modules/forum/forum.routes";
+import { aiRoutes } from "@/modules/ai-companion/ai.routes";
+import { notesRoutes } from "@/modules/notes/notes.routes";
 
 import { env } from "./config/env";
 import { scalarMiddleware } from "./config/scalar";
@@ -55,6 +59,7 @@ export function createApp(): Application {
   app.use("/onboarding", onboardingRoutes);
   app.use("/countries", countriesRoutes);
   app.use("/exams", examsRoutes);
+
   app.use("/admin", adminRoutes);
   app.use("/matches", matchesRoutes);
   app.use("/mentors", mentorsRoutes);
@@ -62,6 +67,9 @@ export function createApp(): Application {
   app.use("/uploads", uploadsRoutes);
   app.use("/stories", storiesRoutes);
   app.use("/communication", communicationRoutes);
+  app.use("/forum", forumRoutes);
+  app.use("/ai", aiRoutes);
+  app.use("/notes", notesRoutes);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

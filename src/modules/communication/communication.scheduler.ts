@@ -8,10 +8,12 @@ import { CommunicationRepository } from "./communication.repository";
 import { MessageService } from "./message.service";
 import { NotificationService } from "@/modules/notifications/notification.service";
 
+let commSchedulerTask: any = null;
+
 export function startCommunicationScheduler() {
   logger.info("Starting Communication Scheduler (node-cron)");
   
-  cron.schedule("*/30 * * * * *", async () => {
+  commSchedulerTask = cron.schedule("*/30 * * * * *", async () => {
     try {
       const lockKey = "communication:scheduler_lock";
       const lockAcquired = await redis.set(lockKey, "locked", "EX", 25, "NX");
@@ -29,6 +31,13 @@ export function startCommunicationScheduler() {
       logger.error(err, "Error in communication scheduler");
     }
   });
+}
+
+export function stopCommunicationScheduler() {
+  if (commSchedulerTask) {
+    commSchedulerTask.stop();
+    logger.info("Communication Scheduler stopped.");
+  }
 }
 
 async function processMissedCalls() {

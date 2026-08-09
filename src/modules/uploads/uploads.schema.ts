@@ -7,6 +7,10 @@ const allowedContentTypes = [
   "image/webp",
   "image/gif",
   "image/svg+xml",
+  // Videos
+  "video/mp4",
+  "video/webm",
+  "video/quicktime",
   // Documents
   "application/pdf",
   "application/msword", // .doc
@@ -20,6 +24,7 @@ export const presignedUrlSchema = z.object({
   body: z.object({
     fileName: z.string().min(1, "File name is required"),
     contentType: z.string().refine((val) => allowedContentTypes.includes(val), "Invalid content type"),
+    uploadType: z.enum(["profile", "anonymous-avatar", "forum-media"]).default("profile"),
   }),
 });
 

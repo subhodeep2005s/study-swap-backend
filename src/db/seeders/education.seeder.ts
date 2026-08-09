@@ -270,8 +270,10 @@ export async function runEducationSeeder() {
     let indiaRes = await client.query(`SELECT id FROM countries WHERE name = 'India'`);
     if (indiaRes.rows.length === 0) {
       indiaRes = await client.query(
-        `INSERT INTO countries (name, flag) VALUES ('India', '🇮🇳') RETURNING id`
+        `INSERT INTO countries (name, flag, iso_code) VALUES ('India', '🇮🇳', 'IN') RETURNING id`
       );
+    } else {
+      await client.query(`UPDATE countries SET iso_code = 'IN', flag = '🇮🇳' WHERE name = 'India'`);
     }
     const indiaId = indiaRes.rows[0].id;
 

@@ -11,15 +11,15 @@ async function seedUsers() {
     }
     const countryId = countryRes.rows[0].id;
 
-    // Get Exam IDs
-    const examsRes = await query("SELECT id, name FROM exams WHERE country_id = $1 AND name IN ('JEE', 'NEET', 'UPSC')", [countryId]);
+    // Get Exam IDs from education_nodes
+    const examsRes = await query("SELECT id, name FROM education_nodes WHERE country_id = $1 AND node_type = 'EXAM' AND name IN ('JEE', 'NEET', 'UPSC')", [countryId]);
     const examMap: Record<string, string> = {};
     for (const row of examsRes.rows) {
       examMap[row.name] = row.id;
     }
 
     if (!examMap['JEE'] || !examMap['NEET'] || !examMap['UPSC']) {
-      throw new Error("Target exams not found in database.");
+      throw new Error("Target exam nodes not found in database.");
     }
 
     const states = ["Maharashtra", "Delhi", "Karnataka", "West Bengal", "Tamil Nadu"];
@@ -59,9 +59,9 @@ async function seedUsers() {
           ]
         );
 
-        // Insert User Exam
+        // Insert User Exam Node
         await query(
-          `INSERT INTO user_exams (user_id, exam_id) VALUES ($1, $2)`,
+          `INSERT INTO user_education_nodes (user_id, node_id) VALUES ($1, $2)`,
           [userId, examMap[exam]]
         );
       }
