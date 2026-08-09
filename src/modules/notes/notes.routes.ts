@@ -15,6 +15,8 @@ import { ForbiddenError } from "@/core/errors/AppError";
 
 export const notesRoutes = Router();
 
+import "./notes.openapi";
+
 const requireAdmin = (req: Request, _res: Response, next: NextFunction) => {
   if (req.user?.role !== "admin") {
     next(new ForbiddenError("Admin access required."));
