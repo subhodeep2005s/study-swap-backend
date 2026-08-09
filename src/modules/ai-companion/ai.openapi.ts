@@ -79,14 +79,19 @@ const zSuccessMsg = zSuccess.extend({ message: z.string() });
 
 registry.registerPath({
   method: "get",
-  path: "/ai/routines/today",
+  path: "/ai/routines/daily",
   tags: ["AI Companion — Routine"],
-  summary: "Get today's adaptive study routine",
+  summary: "Get an adaptive study routine by date",
   description:
-    "Returns the structured study plan for today — plan metadata, per-task details, " +
-    "and aggregate stats. `plan` is `null` if the AI has not yet created a plan for today. " +
+    "Returns the structured study plan for a specific date — plan metadata, per-task details, " +
+    "and aggregate stats. `plan` is `null` if the AI has not yet created a plan for that date. " +
     "`actual_duration` on each task reflects total seconds accumulated from personal study sessions.",
   security: [{ bearerAuth: [] }],
+  request: {
+    query: z.object({
+      date: z.string().optional().describe("Date in YYYY-MM-DD format. Defaults to today."),
+    }),
+  },
   responses: {
     200: {
       description: "Today's routine",
@@ -161,12 +166,12 @@ registry.registerPath({
   path: "/ai/conversations",
   tags: ["AI Companion — Chat"],
   summary: "Create a new AI conversation",
-  description: "**Rate limit:** 50 conversations / hour.",
+  description: "**Rate limit:** 50 conversations / hour. If title is omitted, it defaults to 'New Chat' and the AI will auto-generate a contextual title on the first message.",
   security: [{ bearerAuth: [] }],
   request: {
     body: {
       content: {
-        "application/json": { schema: z.object({ title: z.string().min(1) }) },
+        "application/json": { schema: z.object({ title: z.string().optional() }) },
       },
     },
   },

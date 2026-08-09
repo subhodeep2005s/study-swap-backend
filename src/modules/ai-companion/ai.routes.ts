@@ -13,8 +13,8 @@ router.use(authMiddleware);
 // ROUTINE & TASKS
 // ─────────────────────────────────────────────────────────────────────────────
 
-// Today's structured study plan (plan + stats + tasks)
-router.get("/routines/today", aiController.getTodayRoutine);
+// Daily structured study plan (plan + stats + tasks) - supports ?date=YYYY-MM-DD
+router.get("/routines/daily", aiController.getDailyRoutine);
 
 // Manual task status override (no AI call needed)
 router.post("/routines/tasks/:id/status", aiController.updateTaskStatus);

@@ -13,8 +13,11 @@ export const aiController = {
 
   createConversation: asyncHandler(async (req: Request, res: Response) => {
     const userId = req.user!.id;
-    const { title } = req.body;
-    if (!title) throw new AppError("Title is required", 400);
+    let { title } = req.body;
+    
+    if (!title) {
+      title = "New Chat";
+    }
 
     const conversation = await AIRepository.createConversation(userId, title);
     res.json({ success: true, data: conversation });
@@ -59,11 +62,15 @@ export const aiController = {
     res.json({ success: true, data: response });
   }),
 
-  getTodayRoutine: asyncHandler(async (req: Request, res: Response) => {
+  getDailyRoutine: asyncHandler(async (req: Request, res: Response) => {
     const userId = req.user!.id;
-    const dateStr = new Date().toISOString().split("T")[0];
+    let dateStr = req.query.date as string;
     
-    const progress = await AIRepository.getDailyProgress(userId, dateStr as string);
+    if (!dateStr) {
+      dateStr = new Date().toISOString().split("T")[0]!;
+    }
+    
+    const progress = await AIRepository.getDailyProgress(userId, dateStr);
     res.json({ success: true, data: progress || { plan: null, tasks: [] } });
   }),
 

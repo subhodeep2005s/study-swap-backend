@@ -55,9 +55,29 @@ CRITICAL RULES:
     return prompt;
   }
 
+  static async generateTitle(conversationId: string, firstMessage: string) {
+    try {
+      const response = await ai.models.generateContent({
+        model: MODEL,
+        contents: `Generate a short 3-5 word title for this study conversation based on the user's first message. Do not use quotes or prefixes. Message: "${firstMessage}"`
+      });
+      if (response.text) {
+        const title = response.text.replace(/["']/g, "").trim();
+        await AIRepository.updateConversationTitle(conversationId, title);
+      }
+    } catch (e: any) {
+      logger.error("Title generation failed:", e);
+    }
+  }
+
   static async sendMessage(userId: string, conversationId: string, content: string) {
     // 1. Fetch History
     const messages = await AIRepository.getMessages(conversationId, 15);
+    
+    if (messages.length === 0) {
+      // Asynchronously generate title for the first message
+      this.generateTitle(conversationId, content).catch(e => logger.error("Title error", e));
+    }
     
     // Format history for Gemini
     const history = messages.map(m => ({

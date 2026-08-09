@@ -72,6 +72,10 @@ export class AIRepository {
     await query("DELETE FROM ai_conversations WHERE id = $1 AND user_id = $2", [conversationId, userId]);
   }
 
+  static async updateConversationTitle(conversationId: string, newTitle: string): Promise<void> {
+    await query("UPDATE ai_conversations SET title = $1, updated_at = NOW() WHERE id = $2", [newTitle, conversationId]);
+  }
+
   static async saveMessage(
     conversationId: string,
     role: "user" | "model" | "system",
