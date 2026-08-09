@@ -369,3 +369,132 @@ export const deletePlan = asyncHandler(async (req: Request<{ id: string }>, res:
   await adminService.deletePlan(req.params.id);
   res.status(200).json({ success: true, message: "Plan deleted", data: {} });
 });
+
+// =========================================================================
+// Forum Management (Admin)
+// =========================================================================
+export const getForumPosts = asyncHandler(async (req: Request, res: Response) => {
+  const { page, limit, search, status, type } = req.query as any;
+  const result = await adminService.getForumPosts({
+    page: Number(page) || 1,
+    limit: Number(limit) || 20,
+    search,
+    status,
+    type,
+  });
+  res.status(200).json({
+    success: true,
+    message: "Forum posts fetched",
+    data: result.data,
+    pagination: result.pagination,
+  });
+});
+
+export const getForumPost = asyncHandler(async (req: Request<{ id: string }>, res: Response) => {
+  const post = await adminService.getForumPost(req.params.id);
+  res.status(200).json({ success: true, message: "Forum post fetched", data: post });
+});
+
+export const updateForumPost = asyncHandler(async (req: Request<{ id: string }>, res: Response) => {
+  const post = await adminService.updateForumPost(req.params.id, req.body);
+  res.status(200).json({ success: true, message: "Forum post updated", data: post });
+});
+
+export const getForumComments = asyncHandler(async (req: Request, res: Response) => {
+  const { page, limit, search, status } = req.query as any;
+  const result = await adminService.getForumComments({
+    page: Number(page) || 1,
+    limit: Number(limit) || 20,
+    search,
+    status,
+  });
+  res.status(200).json({
+    success: true,
+    message: "Forum comments fetched",
+    data: result.data,
+    pagination: result.pagination,
+  });
+});
+
+export const updateForumComment = asyncHandler(async (req: Request<{ id: string }>, res: Response) => {
+  const comment = await adminService.updateForumComment(req.params.id, req.body);
+  res.status(200).json({ success: true, message: "Forum comment updated", data: comment });
+});
+
+export const getForumReports = asyncHandler(async (req: Request, res: Response) => {
+  const { page, limit, targetType, resolved } = req.query as any;
+  const resolvedBool = resolved === "true" ? true : resolved === "false" ? false : undefined;
+  const result = await adminService.getForumReports({
+    page: Number(page) || 1,
+    limit: Number(limit) || 20,
+    targetType,
+    resolved: resolvedBool,
+  });
+  res.status(200).json({
+    success: true,
+    message: "Forum reports fetched",
+    data: result.data,
+    pagination: result.pagination,
+  });
+});
+
+export const resolveForumReport = asyncHandler(async (req: Request<{ id: string }>, res: Response) => {
+  const report = await adminService.resolveForumReport(req.params.id, req.body.resolved);
+  res.status(200).json({ success: true, message: "Forum report resolved", data: report });
+});
+
+// =========================================================================
+// Notes Hub Management (Admin)
+// =========================================================================
+export const getNotes = asyncHandler(async (req: Request, res: Response) => {
+  const { page, limit, search, status, isFeatured } = req.query as any;
+  const isFeaturedBool = isFeatured === "true" ? true : isFeatured === "false" ? false : undefined;
+  const result = await adminService.getNotes({
+    page: Number(page) || 1,
+    limit: Number(limit) || 20,
+    search,
+    status,
+    isFeatured: isFeaturedBool,
+  });
+  res.status(200).json({
+    success: true,
+    message: "Notes fetched",
+    data: result.data,
+    pagination: result.pagination,
+  });
+});
+
+export const getNote = asyncHandler(async (req: Request<{ id: string }>, res: Response) => {
+  const note = await adminService.getNote(req.params.id);
+  res.status(200).json({ success: true, message: "Note fetched", data: note });
+});
+
+export const updateNote = asyncHandler(async (req: Request<{ id: string }>, res: Response) => {
+  const note = await adminService.updateNote(req.params.id, req.body);
+  res.status(200).json({ success: true, message: "Note updated", data: note });
+});
+
+export const deleteNote = asyncHandler(async (req: Request<{ id: string }>, res: Response) => {
+  await adminService.deleteNote(req.params.id, req.user!.id);
+  res.status(200).json({ success: true, message: "Note deleted", data: {} });
+});
+
+export const getNoteReports = asyncHandler(async (req: Request, res: Response) => {
+  const { page, limit, status } = req.query as any;
+  const result = await adminService.getNoteReports({
+    page: Number(page) || 1,
+    limit: Number(limit) || 20,
+    status,
+  });
+  res.status(200).json({
+    success: true,
+    message: "Note reports fetched",
+    data: result.data,
+    pagination: result.pagination,
+  });
+});
+
+export const resolveNoteReport = asyncHandler(async (req: Request<{ id: string }>, res: Response) => {
+  const report = await adminService.resolveNoteReport(req.params.id, req.body.status);
+  res.status(200).json({ success: true, message: "Note report resolved", data: report });
+});

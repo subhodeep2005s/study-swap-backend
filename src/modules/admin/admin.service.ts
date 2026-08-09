@@ -467,3 +467,99 @@ export async function deletePlan(planId: string) {
   const result = await AdminRepository.deletePlan(planId);
   if ("error" in result) throw new AppError(result.error as string, result.code as number);
 }
+
+// =========================================================================
+// Forum Management (Admin)
+// =========================================================================
+export async function getForumPosts(params?: PaginationParams & { status?: string; type?: string }) {
+  return await AdminRepository.getForumPosts(params);
+}
+
+export async function getForumPost(id: string) {
+  const post = await AdminRepository.getForumPost(id);
+  if (!post) throw new AppError("Forum post not found", 404);
+  return post;
+}
+
+export async function updateForumPost(id: string, data: { status?: string }) {
+  const fields: string[] = [];
+  const values: any[] = [];
+  
+  if (data.status !== undefined) { fields.push(`status = $1`); values.push(data.status); }
+
+  if (fields.length === 0) throw new AppError("No fields to update", 400);
+
+  const result = await AdminRepository.updateForumPost(id, fields, values);
+  if (!result) throw new AppError("Forum post not found", 404);
+  return result;
+}
+
+export async function getForumComments(params?: PaginationParams & { status?: string }) {
+  return await AdminRepository.getForumComments(params);
+}
+
+export async function updateForumComment(id: string, data: { status?: string }) {
+  const fields: string[] = [];
+  const values: any[] = [];
+  
+  if (data.status !== undefined) { fields.push(`status = $1`); values.push(data.status); }
+
+  if (fields.length === 0) throw new AppError("No fields to update", 400);
+
+  const result = await AdminRepository.updateForumComment(id, fields, values);
+  if (!result) throw new AppError("Forum comment not found", 404);
+  return result;
+}
+
+export async function getForumReports(params?: PaginationParams & { targetType?: string; resolved?: boolean }) {
+  return await AdminRepository.getForumReports(params);
+}
+
+export async function resolveForumReport(id: string, resolved: boolean) {
+  const result = await AdminRepository.resolveForumReport(id, resolved);
+  if (!result) throw new AppError("Report not found", 404);
+  return result;
+}
+
+// =========================================================================
+// Notes Hub Management (Admin)
+// =========================================================================
+export async function getNotes(params?: PaginationParams & { status?: string; isFeatured?: boolean }) {
+  return await AdminRepository.getNotes(params);
+}
+
+export async function getNote(id: string) {
+  const note = await AdminRepository.getNote(id);
+  if (!note) throw new AppError("Note not found", 404);
+  return note;
+}
+
+export async function updateNote(id: string, data: { status?: string; is_featured?: boolean }) {
+  const fields: string[] = [];
+  const values: any[] = [];
+  let idx = 1;
+
+  if (data.status !== undefined) { fields.push(`status = $${idx++}`); values.push(data.status); }
+  if (data.is_featured !== undefined) { fields.push(`is_featured = $${idx++}`); values.push(data.is_featured); }
+
+  if (fields.length === 0) throw new AppError("No fields to update", 400);
+
+  const result = await AdminRepository.updateNote(id, fields, values);
+  if (!result) throw new AppError("Note not found", 404);
+  return result;
+}
+
+export async function deleteNote(id: string, adminId: string) {
+  const deleted = await AdminRepository.deleteNote(id, adminId);
+  if (!deleted) throw new AppError("Note not found", 404);
+}
+
+export async function getNoteReports(params?: PaginationParams & { status?: string }) {
+  return await AdminRepository.getNoteReports(params);
+}
+
+export async function resolveNoteReport(id: string, status: string) {
+  const result = await AdminRepository.resolveNoteReport(id, status);
+  if (!result) throw new AppError("Note report not found", 404);
+  return result;
+}

@@ -14,7 +14,12 @@ import {
   updateMentorSchema,
   updateBookingSchema,
   updatePlanSchema,
-  updateAvailabilitySchema
+  updateAvailabilitySchema,
+  updateForumPostSchema,
+  updateForumCommentSchema,
+  resolveForumReportSchema,
+  updateNoteSchema,
+  resolveNoteReportSchema
 } from "./admin.schema";
 import "./admin.openapi";
 
@@ -114,5 +119,29 @@ router.patch("/mentors/:id/verify", adminController.verifyMentor);
 
 router.get("/mentors/:id/bookings", adminController.getBookingsByMentor);
 router.get("/mentors/:id/plans", adminController.getMentorPlans);
+
+// =========================================================================
+// Forum Management
+// =========================================================================
+router.get("/forum/posts", adminController.getForumPosts);
+router.get("/forum/posts/:id", adminController.getForumPost);
+router.patch("/forum/posts/:id", validate(updateForumPostSchema), adminController.updateForumPost);
+
+router.get("/forum/comments", adminController.getForumComments);
+router.patch("/forum/comments/:id", validate(updateForumCommentSchema), adminController.updateForumComment);
+
+router.get("/forum/reports", adminController.getForumReports);
+router.patch("/forum/reports/:id/resolve", validate(resolveForumReportSchema), adminController.resolveForumReport);
+
+// =========================================================================
+// Notes Hub Management
+// =========================================================================
+router.get("/notes", adminController.getNotes);
+router.get("/notes/:id", adminController.getNote);
+router.patch("/notes/:id", validate(updateNoteSchema), adminController.updateNote);
+router.delete("/notes/:id", adminController.deleteNote);
+
+router.get("/notes/reports", adminController.getNoteReports);
+router.patch("/notes/reports/:id/resolve", validate(resolveNoteReportSchema), adminController.resolveNoteReport);
 
 export default router;

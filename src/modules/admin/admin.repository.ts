@@ -981,4 +981,306 @@ export class AdminRepository {
     `, [bookingId]);
     return result.rows[0];
   }
+
+  // =========================================================================
+  // Forum Management
+  // =========================================================================
+  static async getForumPosts(params?: PaginationParams & { status?: string; type?: string }) {
+    const page = params?.page ?? 1;
+    const limit = params?.limit ?? 20;
+    
+    const queryParams: any[] = [];
+    const conditions: string[] = [];
+
+    if (params?.status) {
+      queryParams.push(params.status);
+      conditions.push(`p.status = $${queryParams.length}`);
+    }
+    if (params?.type) {
+      queryParams.push(params.type);
+      conditions.push(`p.type = $${queryParams.length}`);
+    }
+    if (params?.search) {
+      queryParams.push(`%${params.search}%`);
+      conditions.push(`(p.title ILIKE $${queryParams.length} OR p.content ILIKE $${queryParams.length})`);
+    }
+
+    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+
+    const countResult = await query(`SELECT count(*)::int AS total FROM anonymous_posts p ${whereClause}`, queryParams);
+    const total = countResult.rows[0]!.total;
+
+    queryParams.push(limit, paginationOffset(page, limit));
+    const result = await query(`
+      SELECT 
+        p.*, 
+        ap.display_name, ap.avatar_url,
+        c.name AS category_name,
+        (SELECT count(*) FROM anonymous_comments WHERE post_id = p.id)::int AS comment_count,
+        (SELECT count(*) FROM anonymous_post_likes WHERE post_id = p.id)::int AS like_count
+      FROM anonymous_posts p
+      LEFT JOIN anonymous_profiles ap ON ap.id = p.anonymous_profile_id
+      LEFT JOIN anonymous_categories c ON c.id = p.category_id
+      ${whereClause}
+      ORDER BY p.created_at DESC
+      LIMIT $${queryParams.length - 1} OFFSET $${queryParams.length}
+    `, queryParams);
+
+    return {
+      data: result.rows,
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) }
+    };
+  }
+
+  static async getForumPost(id: string) {
+    const result = await query(`
+      SELECT 
+        p.*, 
+        ap.display_name, ap.avatar_url,
+        c.name AS category_name
+      FROM anonymous_posts p
+      LEFT JOIN anonymous_profiles ap ON ap.id = p.anonymous_profile_id
+      LEFT JOIN anonymous_categories c ON c.id = p.category_id
+      WHERE p.id = $1
+    `, [id]);
+    return result.rows[0];
+  }
+
+  static async updateForumPost(id: string, fields: string[], values: any[]) {
+    fields.push(`updated_at = NOW()`);
+    values.push(id);
+    const result = await query(`
+      UPDATE anonymous_posts SET ${fields.join(", ")} WHERE id = $${values.length} RETURNING *
+    `, values);
+    return result.rows[0];
+  }
+
+  static async getForumComments(params?: PaginationParams & { status?: string }) {
+    const page = params?.page ?? 1;
+    const limit = params?.limit ?? 20;
+
+    const queryParams: any[] = [];
+    const conditions: string[] = [];
+
+    if (params?.status) {
+      queryParams.push(params.status);
+      conditions.push(`c.status = $${queryParams.length}`);
+    }
+    if (params?.search) {
+      queryParams.push(`%${params.search}%`);
+      conditions.push(`c.content ILIKE $${queryParams.length}`);
+    }
+
+    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+
+    const countResult = await query(`SELECT count(*)::int AS total FROM anonymous_comments c ${whereClause}`, queryParams);
+    const total = countResult.rows[0]!.total;
+
+    queryParams.push(limit, paginationOffset(page, limit));
+    const result = await query(`
+      SELECT 
+        c.*, 
+        ap.display_name, ap.avatar_url,
+        p.title AS post_title
+      FROM anonymous_comments c
+      LEFT JOIN anonymous_profiles ap ON ap.id = c.anonymous_profile_id
+      LEFT JOIN anonymous_posts p ON p.id = c.post_id
+      ${whereClause}
+      ORDER BY c.created_at DESC
+      LIMIT $${queryParams.length - 1} OFFSET $${queryParams.length}
+    `, queryParams);
+
+    return {
+      data: result.rows,
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) }
+    };
+  }
+
+  static async updateForumComment(id: string, fields: string[], values: any[]) {
+    fields.push(`updated_at = NOW()`);
+    values.push(id);
+    const result = await query(`
+      UPDATE anonymous_comments SET ${fields.join(", ")} WHERE id = $${values.length} RETURNING *
+    `, values);
+    return result.rows[0];
+  }
+
+  static async getForumReports(params?: PaginationParams & { targetType?: string; resolved?: boolean }) {
+    const page = params?.page ?? 1;
+    const limit = params?.limit ?? 20;
+
+    const queryParams: any[] = [];
+    const conditions: string[] = [];
+
+    if (params?.targetType) {
+      queryParams.push(params.targetType);
+      conditions.push(`r.target_type = $${queryParams.length}`);
+    }
+    if (params?.resolved !== undefined) {
+      queryParams.push(params.resolved);
+      conditions.push(`r.resolved = $${queryParams.length}`);
+    }
+
+    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+
+    const countResult = await query(`SELECT count(*)::int AS total FROM anonymous_reports r ${whereClause}`, queryParams);
+    const total = countResult.rows[0]!.total;
+
+    queryParams.push(limit, paginationOffset(page, limit));
+    const result = await query(`
+      SELECT 
+        r.*, 
+        u.email AS reporter_email,
+        p.full_name AS reporter_name
+      FROM anonymous_reports r
+      LEFT JOIN users u ON u.id = r.user_id
+      LEFT JOIN profiles p ON p.user_id = u.id
+      ${whereClause}
+      ORDER BY r.created_at DESC
+      LIMIT $${queryParams.length - 1} OFFSET $${queryParams.length}
+    `, queryParams);
+
+    return {
+      data: result.rows,
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) }
+    };
+  }
+
+  static async resolveForumReport(id: string, resolved: boolean) {
+    const result = await query(`
+      UPDATE anonymous_reports SET resolved = $1 WHERE id = $2 RETURNING *
+    `, [resolved, id]);
+    return result.rows[0];
+  }
+
+  // =========================================================================
+  // Notes Hub Management
+  // =========================================================================
+  static async getNotes(params?: PaginationParams & { status?: string; isFeatured?: boolean }) {
+    const page = params?.page ?? 1;
+    const limit = params?.limit ?? 20;
+
+    const queryParams: any[] = [];
+    const conditions: string[] = [];
+
+    // Filter out deleted by default in admin view? Usually admins want to see deleted ones if they filter, but let's just do deleted_at IS NULL
+    conditions.push(`n.deleted_at IS NULL`);
+
+    if (params?.status) {
+      queryParams.push(params.status);
+      conditions.push(`n.status = $${queryParams.length}`);
+    }
+    if (params?.isFeatured !== undefined) {
+      queryParams.push(params.isFeatured);
+      conditions.push(`n.is_featured = $${queryParams.length}`);
+    }
+    if (params?.search) {
+      queryParams.push(`%${params.search}%`);
+      conditions.push(`(n.title ILIKE $${queryParams.length} OR n.description ILIKE $${queryParams.length})`);
+    }
+
+    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+
+    const countResult = await query(`SELECT count(*)::int AS total FROM notes n ${whereClause}`, queryParams);
+    const total = countResult.rows[0]!.total;
+
+    queryParams.push(limit, paginationOffset(page, limit));
+    const result = await query(`
+      SELECT 
+        n.id, n.title, n.note_type, n.status, n.is_featured, n.views_count, n.downloads_count, n.created_at,
+        u.email AS uploader_email,
+        p.full_name AS uploader_name
+      FROM notes n
+      LEFT JOIN users u ON u.id = n.uploader_id
+      LEFT JOIN profiles p ON p.user_id = n.uploader_id
+      ${whereClause}
+      ORDER BY n.created_at DESC
+      LIMIT $${queryParams.length - 1} OFFSET $${queryParams.length}
+    `, queryParams);
+
+    return {
+      data: result.rows,
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) }
+    };
+  }
+
+  static async getNote(id: string) {
+    const result = await query(`
+      SELECT 
+        n.*, 
+        u.email AS uploader_email,
+        p.full_name AS uploader_name, p.profile_image AS uploader_image,
+        en.name AS education_node_name,
+        sub.name AS subject_name
+      FROM notes n
+      LEFT JOIN users u ON u.id = n.uploader_id
+      LEFT JOIN profiles p ON p.user_id = n.uploader_id
+      LEFT JOIN education_nodes en ON en.id = n.education_node_id
+      LEFT JOIN education_nodes sub ON sub.id = n.subject_id
+      WHERE n.id = $1
+    `, [id]);
+    return result.rows[0];
+  }
+
+  static async updateNote(id: string, fields: string[], values: any[]) {
+    fields.push(`updated_at = NOW()`);
+    values.push(id);
+    const result = await query(`
+      UPDATE notes SET ${fields.join(", ")} WHERE id = $${values.length} RETURNING *
+    `, values);
+    return result.rows[0];
+  }
+
+  static async deleteNote(id: string, deletedBy?: string) {
+    const result = await query(`
+      UPDATE notes SET deleted_at = NOW(), deleted_by = $1, status = 'HIDDEN' WHERE id = $2 RETURNING id
+    `, [deletedBy || null, id]);
+    return result.rows.length > 0;
+  }
+
+  static async getNoteReports(params?: PaginationParams & { status?: string }) {
+    const page = params?.page ?? 1;
+    const limit = params?.limit ?? 20;
+
+    const queryParams: any[] = [];
+    const conditions: string[] = [];
+
+    if (params?.status) {
+      queryParams.push(params.status);
+      conditions.push(`r.status = $${queryParams.length}`);
+    }
+
+    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+
+    const countResult = await query(`SELECT count(*)::int AS total FROM note_reports r ${whereClause}`, queryParams);
+    const total = countResult.rows[0]!.total;
+
+    queryParams.push(limit, paginationOffset(page, limit));
+    const result = await query(`
+      SELECT 
+        r.*, 
+        n.title AS note_title,
+        u.email AS reporter_email,
+        p.full_name AS reporter_name
+      FROM note_reports r
+      LEFT JOIN notes n ON n.id = r.note_id
+      LEFT JOIN users u ON u.id = r.user_id
+      LEFT JOIN profiles p ON p.user_id = u.id
+      ${whereClause}
+      ORDER BY r.created_at DESC
+      LIMIT $${queryParams.length - 1} OFFSET $${queryParams.length}
+    `, queryParams);
+
+    return {
+      data: result.rows,
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) }
+    };
+  }
+
+  static async resolveNoteReport(id: string, status: string) {
+    const result = await query(`
+      UPDATE note_reports SET status = $1, updated_at = NOW() WHERE id = $2 RETURNING *
+    `, [status, id]);
+    return result.rows[0];
+  }
 }

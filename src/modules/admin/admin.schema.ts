@@ -349,3 +349,46 @@ export type UpdateMentorUserInput = z.infer<typeof updateMentorUserSchema>["body
 export type UpdateMentorInput = z.infer<typeof updateMentorSchema>["body"];
 export type UpdateBookingInput = z.infer<typeof updateBookingSchema>["body"];
 export type UpdatePlanInput = z.infer<typeof updatePlanSchema>["body"];
+
+// =========================================================================
+// Forum Management
+// =========================================================================
+export const updateForumPostSchema = z.object({
+  body: z.object({
+    status: z.enum(["PUBLISHED", "HIDDEN", "DELETED", "FLAGGED"]).optional(),
+  }),
+});
+
+export const updateForumCommentSchema = z.object({
+  body: z.object({
+    status: z.enum(["PUBLISHED", "HIDDEN", "DELETED", "FLAGGED"]).optional(),
+  }),
+});
+
+export const resolveForumReportSchema = z.object({
+  body: z.object({
+    resolved: z.boolean(),
+  }),
+});
+
+// =========================================================================
+// Notes Hub Management
+// =========================================================================
+export const updateNoteSchema = z.object({
+  body: z.object({
+    status: z.enum(["PUBLISHED", "HIDDEN"]).optional(),
+    is_featured: z.boolean().optional(),
+  }),
+});
+
+export const resolveNoteReportSchema = z.object({
+  body: z.object({
+    status: z.enum(["PENDING", "RESOLVED", "DISMISSED"]).optional(),
+  }),
+});
+
+export type UpdateForumPostInput = z.infer<typeof updateForumPostSchema>["body"];
+export type UpdateForumCommentInput = z.infer<typeof updateForumCommentSchema>["body"];
+export type ResolveForumReportInput = z.infer<typeof resolveForumReportSchema>["body"];
+export type UpdateNoteInput = z.infer<typeof updateNoteSchema>["body"];
+export type ResolveNoteReportInput = z.infer<typeof resolveNoteReportSchema>["body"];
