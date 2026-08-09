@@ -1,19 +1,22 @@
 import dotenv from "dotenv";
 import path from "path";
+import fs from "fs";
 
-// ─── Load the correct .env file based on NODE_ENV ────────────────────────────
-// Priority:
-//   production  → .env.production  (production DB + Redis at 72.61.255.43)
-//   development → .env             (local DB + local Redis)
-//   test        → .env             (local, same as development)
+// ─── Load the correct .env file ──────────────────────────────────────────────
+// It tries to load `.env.{NODE_ENV}` first (e.g. .env.production)
+// If that file doesn't exist (like on the server), it falls back to `.env`
 // ─────────────────────────────────────────────────────────────────────────────
 const nodeEnv = process.env.NODE_ENV ?? "development";
-const envFile = nodeEnv === "production" ? ".env.production" : ".env";
-const envPath = path.join(process.cwd(), envFile);
+const envSpecificPath = path.join(process.cwd(), `.env.${nodeEnv}`);
+const defaultEnvPath = path.join(process.cwd(), ".env");
 
-dotenv.config({ path: envPath });
-
-console.log(`[env] Loaded: ${envFile}  (NODE_ENV=${nodeEnv})`);
+if (fs.existsSync(envSpecificPath)) {
+  dotenv.config({ path: envSpecificPath });
+  console.log(`[env] Loaded: .env.${nodeEnv}  (NODE_ENV=${nodeEnv})`);
+} else {
+  dotenv.config({ path: defaultEnvPath });
+  console.log(`[env] Loaded: .env  (NODE_ENV=${nodeEnv})`);
+}
 
 
 import { z } from "zod";
