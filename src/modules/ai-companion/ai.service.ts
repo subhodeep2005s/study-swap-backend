@@ -67,7 +67,6 @@ CRITICAL RULES:
 
     // Save user message
     await AIRepository.saveMessage(conversationId, "user", content);
-    history.push({ role: "user", parts: [{ text: content }] });
 
     // 2. Build System Instruction
     const systemInstruction = await this.buildSystemPrompt(userId);
@@ -79,12 +78,11 @@ CRITICAL RULES:
         config: {
           systemInstruction: systemInstruction,
           tools: [aiToolsDeclaration] as any
-        }
+        },
+        history: history as any
       });
 
-      let response = await chat.sendMessage({
-        message: history as any
-      });
+      let response = await chat.sendMessage({ message: content });
 
       let toolCalls = response.functionCalls || [];
       const toolResponses: any[] = [];
@@ -102,34 +100,35 @@ CRITICAL RULES:
                  args.plannedMinutes,
                  args.tasks
                );
-               toolResponses.push({ name: call.name, response: { success: true, planId: plan.id }});
+               toolResponses.push({ name: call.name, id: call.id, response: { success: true, planId: plan.id }});
              } 
              else if (call.name === "RESCHEDULE_TASK") {
                const task = await AIRepository.updateTaskStatus(args.taskId, userId, "rescheduled");
-               toolResponses.push({ name: call.name, response: { success: true, taskId: task?.id }});
+               toolResponses.push({ name: call.name, id: call.id, response: { success: true, taskId: task?.id }});
              }
              else if (call.name === "GET_DAILY_PROGRESS") {
                const progress = await AIRepository.getDailyProgress(userId, args.date);
-               toolResponses.push({ name: call.name, response: progress || { error: "No plan found" }});
+               toolResponses.push({ name: call.name, id: call.id, response: progress || { error: "No plan found" }});
              }
              else {
-               toolResponses.push({ name: call.name, response: { error: "Unknown function" }});
+               toolResponses.push({ name: call.name, id: call.id, response: { error: "Unknown function" }});
              }
           } catch (e: any) {
              logger.error("Tool execution error", e);
-             toolResponses.push({ name: call.name, response: { error: e.message }});
+             toolResponses.push({ name: call.name, id: call.id, response: { error: e.message }});
           }
         }
 
         // Send tool responses back to Gemini
-        response = await chat.sendMessage({
-           message: toolResponses.map(tr => ({
-              functionResponse: {
-                name: tr.name,
-                response: tr.response
-              }
-           })) as any
-        });
+        const functionResponseParts = toolResponses.map(tr => ({
+           functionResponse: {
+             name: tr.name,
+             id: tr.id,
+             response: tr.response
+           }
+        }));
+
+        response = await chat.sendMessage({ message: functionResponseParts as any });
 
         finalContent = response.text || "";
       }
@@ -149,6 +148,7 @@ CRITICAL RULES:
       };
 
     } catch (e: any) {
+      console.error("\n\n=== GEMINI REAL ERROR ===", e, "\n\n");
       logger.error("Gemini Error:", e);
       throw new Error("AI Companion is currently unavailable.");
     }
