@@ -21,7 +21,17 @@ import {
   mentorProfileResponseSchema,
   mentorSlotResponseSchema,
   mentorPlanResponseSchema,
-  bookingResponseSchema
+  bookingResponseSchema,
+  updateForumPostSchema,
+  updateForumCommentSchema,
+  resolveForumReportSchema,
+  updateNoteSchema,
+  resolveNoteReportSchema,
+  forumPostResponseSchema,
+  forumCommentResponseSchema,
+  forumReportResponseSchema,
+  noteResponseSchema,
+  noteReportResponseSchema
 } from "./admin.schema";
 
 const tags = ["Admin"];
@@ -50,6 +60,18 @@ const MentorProfileResponse = registry.register("MentorProfileResponse", mentorP
 const MentorSlotResponse = registry.register("MentorSlotResponse", mentorSlotResponseSchema);
 const MentorPlanResponse = registry.register("MentorPlanResponse", mentorPlanResponseSchema);
 const BookingResponse = registry.register("BookingResponse", bookingResponseSchema);
+
+const UpdateForumPost = registry.register("UpdateForumPost", updateForumPostSchema.shape.body);
+const UpdateForumComment = registry.register("UpdateForumComment", updateForumCommentSchema.shape.body);
+const ResolveForumReport = registry.register("ResolveForumReport", resolveForumReportSchema.shape.body);
+const UpdateNote = registry.register("UpdateNote", updateNoteSchema.shape.body);
+const ResolveNoteReport = registry.register("ResolveNoteReport", resolveNoteReportSchema.shape.body);
+
+const ForumPostResponse = registry.register("ForumPostResponse", forumPostResponseSchema);
+const ForumCommentResponse = registry.register("ForumCommentResponse", forumCommentResponseSchema);
+const ForumReportResponse = registry.register("ForumReportResponse", forumReportResponseSchema);
+const NoteResponse = registry.register("NoteResponse", noteResponseSchema);
+const NoteReportResponse = registry.register("NoteReportResponse", noteReportResponseSchema);
 
 const PaginationResponse = z.object({
   page: z.number(),
@@ -883,6 +905,277 @@ registry.registerPath({
     200: {
       description: "Plan deleted",
       content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({}).openapi({ description: "No data returned for this operation", example: {} }) }) } },
+    },
+  },
+});
+
+// =========================================================================
+// Forum Management
+// =========================================================================
+registry.registerPath({
+  method: "get",
+  path: "/admin/forum/posts",
+  tags,
+  security,
+  summary: "Get all forum posts",
+  description: "Admin only. Supports pagination, search, status, and type filtering.",
+  request: {
+    query: z.object({
+      page: z.coerce.number().optional(),
+      limit: z.coerce.number().optional(),
+      search: z.string().optional(),
+      status: z.string().optional(),
+      type: z.string().optional(),
+    }),
+  },
+  responses: {
+    200: {
+      description: "Forum posts fetched",
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.array(ForumPostResponse), pagination: PaginationResponse }) } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/admin/forum/posts/{id}",
+  tags,
+  security,
+  summary: "Get forum post by ID",
+  description: "Admin only.",
+  request: {
+    params: z.object({ id: z.string().uuid() }),
+  },
+  responses: {
+    200: {
+      description: "Forum post fetched",
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: ForumPostResponse }) } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "patch",
+  path: "/admin/forum/posts/{id}",
+  tags,
+  security,
+  summary: "Update forum post status",
+  description: "Admin only.",
+  request: {
+    params: z.object({ id: z.string().uuid() }),
+    body: { content: { "application/json": { schema: UpdateForumPost } } },
+  },
+  responses: {
+    200: {
+      description: "Forum post updated",
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: ForumPostResponse }) } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/admin/forum/comments",
+  tags,
+  security,
+  summary: "Get all forum comments",
+  description: "Admin only. Supports pagination, search, and status filtering.",
+  request: {
+    query: z.object({
+      page: z.coerce.number().optional(),
+      limit: z.coerce.number().optional(),
+      search: z.string().optional(),
+      status: z.string().optional(),
+    }),
+  },
+  responses: {
+    200: {
+      description: "Forum comments fetched",
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.array(ForumCommentResponse), pagination: PaginationResponse }) } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "patch",
+  path: "/admin/forum/comments/{id}",
+  tags,
+  security,
+  summary: "Update forum comment status",
+  description: "Admin only.",
+  request: {
+    params: z.object({ id: z.string().uuid() }),
+    body: { content: { "application/json": { schema: UpdateForumComment } } },
+  },
+  responses: {
+    200: {
+      description: "Forum comment updated",
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: ForumCommentResponse }) } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/admin/forum/reports",
+  tags,
+  security,
+  summary: "Get all forum reports",
+  description: "Admin only. Supports pagination, targetType, and resolved filtering.",
+  request: {
+    query: z.object({
+      page: z.coerce.number().optional(),
+      limit: z.coerce.number().optional(),
+      targetType: z.string().optional(),
+      resolved: z.enum(["true", "false"]).optional(),
+    }),
+  },
+  responses: {
+    200: {
+      description: "Forum reports fetched",
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.array(ForumReportResponse), pagination: PaginationResponse }) } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "patch",
+  path: "/admin/forum/reports/{id}/resolve",
+  tags,
+  security,
+  summary: "Resolve forum report",
+  description: "Admin only.",
+  request: {
+    params: z.object({ id: z.string().uuid() }),
+    body: { content: { "application/json": { schema: ResolveForumReport } } },
+  },
+  responses: {
+    200: {
+      description: "Forum report resolved",
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: ForumReportResponse }) } },
+    },
+  },
+});
+
+// =========================================================================
+// Notes Hub Management
+// =========================================================================
+registry.registerPath({
+  method: "get",
+  path: "/admin/notes",
+  tags,
+  security,
+  summary: "Get all notes",
+  description: "Admin only. Supports pagination, search, status, and isFeatured filtering.",
+  request: {
+    query: z.object({
+      page: z.coerce.number().optional(),
+      limit: z.coerce.number().optional(),
+      search: z.string().optional(),
+      status: z.string().optional(),
+      isFeatured: z.enum(["true", "false"]).optional(),
+    }),
+  },
+  responses: {
+    200: {
+      description: "Notes fetched",
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.array(NoteResponse), pagination: PaginationResponse }) } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/admin/notes/{id}",
+  tags,
+  security,
+  summary: "Get note by ID",
+  description: "Admin only.",
+  request: {
+    params: z.object({ id: z.string().uuid() }),
+  },
+  responses: {
+    200: {
+      description: "Note fetched",
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: NoteResponse }) } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "patch",
+  path: "/admin/notes/{id}",
+  tags,
+  security,
+  summary: "Update note",
+  description: "Admin only.",
+  request: {
+    params: z.object({ id: z.string().uuid() }),
+    body: { content: { "application/json": { schema: UpdateNote } } },
+  },
+  responses: {
+    200: {
+      description: "Note updated",
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: NoteResponse }) } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "delete",
+  path: "/admin/notes/{id}",
+  tags,
+  security,
+  summary: "Delete note",
+  description: "Admin only.",
+  request: {
+    params: z.object({ id: z.string().uuid() }),
+  },
+  responses: {
+    200: {
+      description: "Note deleted",
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.object({}).openapi({ description: "No data returned for this operation", example: {} }) }) } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/admin/notes/reports",
+  tags,
+  security,
+  summary: "Get note reports",
+  description: "Admin only. Supports pagination and status filtering.",
+  request: {
+    query: z.object({
+      page: z.coerce.number().optional(),
+      limit: z.coerce.number().optional(),
+      status: z.string().optional(),
+    }),
+  },
+  responses: {
+    200: {
+      description: "Note reports fetched",
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.array(NoteReportResponse), pagination: PaginationResponse }) } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "patch",
+  path: "/admin/notes/reports/{id}/resolve",
+  tags,
+  security,
+  summary: "Resolve note report",
+  description: "Admin only.",
+  request: {
+    params: z.object({ id: z.string().uuid() }),
+    body: { content: { "application/json": { schema: ResolveNoteReport } } },
+  },
+  responses: {
+    200: {
+      description: "Note report resolved",
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: NoteReportResponse }) } },
     },
   },
 });

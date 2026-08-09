@@ -387,6 +387,64 @@ export const resolveNoteReportSchema = z.object({
   }),
 });
 
+export const forumPostResponseSchema = z.object({
+  id: z.string().uuid(),
+  title: z.string(),
+  content: z.string(),
+  type: z.string(),
+  status: z.string(),
+  display_name: z.string().nullable(),
+  category_name: z.string().nullable(),
+  comment_count: z.number().optional(),
+  like_count: z.number().optional(),
+  created_at: z.string().or(z.date()),
+}).passthrough();
+
+export const forumCommentResponseSchema = z.object({
+  id: z.string().uuid(),
+  post_id: z.string().uuid(),
+  content: z.string(),
+  status: z.string(),
+  display_name: z.string().nullable(),
+  post_title: z.string().nullable(),
+  created_at: z.string().or(z.date()),
+}).passthrough();
+
+export const forumReportResponseSchema = z.object({
+  id: z.string().uuid(),
+  target_type: z.string(),
+  target_id: z.string().uuid(),
+  reason: z.string(),
+  resolved: z.boolean(),
+  reporter_email: z.string().nullable(),
+  reporter_name: z.string().nullable(),
+  created_at: z.string().or(z.date()),
+}).passthrough();
+
+export const noteResponseSchema = z.object({
+  id: z.string().uuid(),
+  title: z.string(),
+  note_type: z.string(),
+  status: z.string(),
+  is_featured: z.boolean(),
+  views_count: z.number(),
+  downloads_count: z.number(),
+  uploader_email: z.string().nullable(),
+  uploader_name: z.string().nullable(),
+  created_at: z.string().or(z.date()),
+}).passthrough();
+
+export const noteReportResponseSchema = z.object({
+  id: z.string().uuid(),
+  note_id: z.string().uuid(),
+  reason: z.string(),
+  status: z.string(),
+  note_title: z.string().nullable(),
+  reporter_email: z.string().nullable(),
+  reporter_name: z.string().nullable(),
+  created_at: z.string().or(z.date()),
+}).passthrough();
+
 export type UpdateForumPostInput = z.infer<typeof updateForumPostSchema>["body"];
 export type UpdateForumCommentInput = z.infer<typeof updateForumCommentSchema>["body"];
 export type ResolveForumReportInput = z.infer<typeof resolveForumReportSchema>["body"];
