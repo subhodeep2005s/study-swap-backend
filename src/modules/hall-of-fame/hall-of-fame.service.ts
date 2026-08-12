@@ -3,12 +3,14 @@ import { NotFoundError, ForbiddenError, BadRequestError } from "@/core/errors/Ap
 import { getS3ObjectUrl } from "@/config/s3";
 import type { 
   AdminHallOfFameFilters, 
-  PublicHallOfFameFilters,
+  PublicHallOfFameFilters
+} from "./hall-of-fame.types";
+import type {
   CreateHallOfFameInput,
   UpdateHallOfFameInput,
   CreateCommentInput,
   UpdateCommentInput
-} from "./hall-of-fame.types";
+} from "./hall-of-fame.schema";
 
 const formatStoryWithUrls = (story: any) => {
   if (!story) return story;

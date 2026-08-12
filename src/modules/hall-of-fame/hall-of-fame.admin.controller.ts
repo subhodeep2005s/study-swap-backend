@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import { asyncHandler } from "@/core/utils/async-handler";
 import { HallOfFameService } from "./hall-of-fame.service";
-import type { CreateHallOfFameInput, UpdateHallOfFameInput } from "./hall-of-fame.types";
+import type { CreateHallOfFameInput, UpdateHallOfFameInput } from "./hall-of-fame.schema";
 
 export const getAdminStories = asyncHandler(async (req: Request, res: Response) => {
   const result = await HallOfFameService.getAdminStories(req.query as any);

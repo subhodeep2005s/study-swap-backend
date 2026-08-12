@@ -2,12 +2,14 @@ import { query, getClient } from "@/config/db";
 import type { 
   AdminHallOfFameFilters, 
   PublicHallOfFameFilters,
+  HallOfFame
+} from "./hall-of-fame.types";
+import type {
   CreateHallOfFameInput,
   UpdateHallOfFameInput,
   CreateCommentInput,
   UpdateCommentInput,
-  HallOfFame
-} from "./hall-of-fame.types";
+} from "./hall-of-fame.schema";
 
 export class HallOfFameRepository {
 
@@ -206,7 +208,7 @@ export class HallOfFameRepository {
     }
 
     const countRes = await query(countSqlBase + whereClause, values);
-    const total = parseInt(countRes.rows[0].count, 10);
+    const total = parseInt(countRes?.rows[0]?.count || '0', 10);
 
     const sortMap: Record<string, string> = {
       'latest': 'created_at DESC',
@@ -300,7 +302,7 @@ export class HallOfFameRepository {
     let nextCursor = null;
 
     if (rows.length === limit) {
-      nextCursor = rows[rows.length - 2].published_at.toISOString();
+      nextCursor = rows[rows.length - 2]?.published_at?.toISOString() || null;
       rows.pop(); // remove the extra one
     }
 
@@ -309,8 +311,9 @@ export class HallOfFameRepository {
 
   static async getStoryById(id: string): Promise<any> {
     const res = await query("SELECT * FROM hall_of_fame WHERE id = $1", [id]);
-    if (res.rowCount === 0) return null;
+    if (!res || res.rowCount === 0) return null;
     const story = res.rows[0];
+    if (!story) return null;
 
     const nodesRes = await query(`
       SELECT en.id, en.name, en.node_type 
@@ -318,10 +321,10 @@ export class HallOfFameRepository {
       JOIN hall_of_fame_education_nodes hen ON en.id = hen.education_node_id
       WHERE hen.hall_of_fame_id = $1
     `, [id]);
-    story.education_nodes = nodesRes.rows;
+    story.education_nodes = nodesRes?.rows || [];
 
     const countryRes = await query("SELECT id, name FROM countries WHERE id = $1", [story.country_id]);
-    story.country = countryRes.rows[0];
+    story.country = countryRes?.rows[0] || null;
 
     return story;
   }
@@ -595,15 +598,15 @@ export class HallOfFameRepository {
     `);
 
     return {
-      total_stories: parseInt(total.rows[0].count, 10),
-      published_stories: parseInt(published.rows[0].count, 10),
-      drafts: parseInt(drafts.rows[0].count, 10),
-      featured: parseInt(featured.rows[0].count, 10),
-      total_views: parseInt(sums.rows[0].views || '0', 10),
-      total_likes: parseInt(sums.rows[0].likes || '0', 10),
-      total_helpful: parseInt(sums.rows[0].helpful || '0', 10),
-      total_saves: parseInt(sums.rows[0].saves || '0', 10),
-      total_comments: parseInt(sums.rows[0].comments || '0', 10),
+      total_stories: parseInt(total?.rows[0]?.count || '0', 10),
+      published_stories: parseInt(published?.rows[0]?.count || '0', 10),
+      drafts: parseInt(drafts?.rows[0]?.count || '0', 10),
+      featured: parseInt(featured?.rows[0]?.count || '0', 10),
+      total_views: parseInt(sums?.rows[0]?.views || '0', 10),
+      total_likes: parseInt(sums?.rows[0]?.likes || '0', 10),
+      total_helpful: parseInt(sums?.rows[0]?.helpful || '0', 10),
+      total_saves: parseInt(sums?.rows[0]?.saves || '0', 10),
+      total_comments: parseInt(sums?.rows[0]?.comments || '0', 10),
     };
   }
 }
