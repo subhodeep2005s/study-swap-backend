@@ -5,7 +5,7 @@ import { aiToolsDeclaration } from "./ai.tools";
 import { logger } from "@/config/logger";
 
 const ai = new GoogleGenAI({ apiKey: env.GEMINI_API_KEY });
-const MODEL = "gemini-3.5-flash";
+const MODEL = "gemini-flash-latest";
 
 export class AIService {
   static async buildSystemPrompt(userId: string): Promise<string> {

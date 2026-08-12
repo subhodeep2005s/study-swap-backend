@@ -249,20 +249,22 @@ describe("2. Chat Contract Tests", () => {
     expect(r.body.data.title).toBe("My Study Chat");
   });
 
-  it("2.2 Create conversation with empty title → 400", async () => {
+  it("2.2 Create conversation with empty title defaults to 'New Chat'", async () => {
     const r = await request(app)
       .post("/ai/conversations")
       .set("Authorization", `Bearer ${userA.token}`)
       .send({ title: "" });
-    expect(r.status).toBe(400);
+    expect(r.status).toBe(200);
+    expect(r.body.data.title).toBe("New Chat");
   });
 
-  it("2.3 Create conversation with missing title field → 400", async () => {
+  it("2.3 Create conversation with missing title field defaults to 'New Chat'", async () => {
     const r = await request(app)
       .post("/ai/conversations")
       .set("Authorization", `Bearer ${userA.token}`)
       .send({});
-    expect(r.status).toBe(400);
+    expect(r.status).toBe(200);
+    expect(r.body.data.title).toBe("New Chat");
   });
 
   it("2.4 Multiple conversations per user are listed in order of update_time DESC", async () => {
@@ -602,9 +604,9 @@ describe("5. Progress Engine — Math Correctness", () => {
     expect(result).toBeNull();
   });
 
-  it("5.2 GET /ai/routines/today with no plan returns { plan: null, tasks: [] }", async () => {
+  it("5.2 GET /ai/routines/daily with no plan returns { plan: null, tasks: [] }", async () => {
     const r = await request(app)
-      .get("/ai/routines/today")
+      .get("/ai/routines/daily")
       .set("Authorization", `Bearer ${userB.token}`); // userB has no plan
     expect(r.status).toBe(200);
     expect(r.body.data.plan).toBeNull();
@@ -817,7 +819,7 @@ describe("8. Security — Authorization & IDOR", () => {
   it("8.1 Missing Authorization header → 401 on all AI endpoints", async () => {
     const endpoints = [
       { method: "get", path: "/ai/conversations" },
-      { method: "get", path: "/ai/routines/today" },
+      { method: "get", path: "/ai/routines/daily" },
     ] as const;
     for (const ep of endpoints) {
       const r = await (request(app) as any)[ep.method](ep.path);
@@ -1056,9 +1058,9 @@ describe("11. API Contract Tests", () => {
     expect(Array.isArray(r.body.data.toolExecutions)).toBe(true);
   });
 
-  it("11.5 GET /ai/routines/today → { success: true, data: { plan, stats, tasks } }", async () => {
+  it("11.5 GET /ai/routines/daily → { success: true, data: { plan, stats, tasks } }", async () => {
     const r = await request(app)
-      .get("/ai/routines/today")
+      .get("/ai/routines/daily")
       .set("Authorization", `Bearer ${userA.token}`);
     expect(r.status).toBe(200);
     expect(r.body.success).toBe(true);
@@ -1143,7 +1145,7 @@ describe("12. Full Journey Test", () => {
 
     // STEP 5: Student opens Today's Routine
     const routineRes = await request(app)
-      .get("/ai/routines/today")
+      .get("/ai/routines/daily")
       .set("Authorization", `Bearer ${userA.token}`);
     expect(routineRes.status).toBe(200);
     const tasks = routineRes.body.data.tasks;

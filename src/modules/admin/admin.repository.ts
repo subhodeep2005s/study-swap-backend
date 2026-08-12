@@ -1231,10 +1231,79 @@ export class AdminRepository {
     return result.rows[0];
   }
 
+  static async getExams() {
+    const result = await query(`
+      SELECT e.id, e.name, c.name as country_name 
+      FROM education_nodes e
+      JOIN countries c ON e.country_id = c.id
+      WHERE e.node_type = 'EXAM'
+      ORDER BY e.name ASC
+    `);
+    return result.rows;
+  }
+
+  static async createNote(data: any, adminId: string) {
+    const client = await getClient();
+    try {
+      await client.query("BEGIN");
+      
+      const sql = `
+        INSERT INTO notes (
+          title, description, note_type,
+          country_id,
+          uploader_id, uploader_role,
+          file_key, mime_type, file_size, page_count, file_hash,
+          status
+        ) VALUES (
+          $1, $2, $3,
+          $4,
+          $5, 'admin',
+          $6, $7, $8, $9, $10,
+          $11
+        ) RETURNING *;
+      `;
+
+      const values = [
+        data.title || null,
+        data.description || null,
+        data.noteType,
+        data.countryId || null,
+        adminId,
+        data.fileKey,
+        data.mimeType,
+        data.fileSize,
+        data.pageCount || null,
+        data.fileHash,
+        data.status || 'PUBLISHED'
+      ];
+
+      const result = await client.query(sql, values);
+      const note = result.rows[0];
+
+      if (data.educationNodeIds && data.educationNodeIds.length > 0) {
+        for (const nodeId of data.educationNodeIds) {
+          await client.query(
+            "INSERT INTO note_education_nodes (note_id, education_node_id) VALUES ($1, $2)",
+            [note.id, nodeId]
+          );
+        }
+      }
+
+      await client.query("COMMIT");
+      note.educationNodeIds = data.educationNodeIds;
+      return note;
+    } catch (e) {
+      await client.query("ROLLBACK");
+      throw e;
+    } finally {
+      client.release();
+    }
+  }
+
   static async deleteNote(id: string, deletedBy?: string) {
     const result = await query(`
-      UPDATE notes SET deleted_at = NOW(), deleted_by = $1, status = 'HIDDEN' WHERE id = $2 RETURNING id
-    `, [deletedBy || null, id]);
+      DELETE FROM notes WHERE id = $1 RETURNING id
+    `, [id]);
     return result.rows.length > 0;
   }
 

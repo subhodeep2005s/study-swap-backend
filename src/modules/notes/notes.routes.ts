@@ -34,6 +34,16 @@ notesRoutes.get(
 );
 
 notesRoutes.get(
+  "/categories",
+  NotesController.getCategories
+);
+
+notesRoutes.get(
+  "/filters",
+  NotesController.getFilters
+);
+
+notesRoutes.get(
   "/context",
   authMiddleware,
   NotesController.getContext

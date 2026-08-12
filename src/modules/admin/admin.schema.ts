@@ -376,6 +376,11 @@ export const resolveForumReportSchema = z.object({
 // =========================================================================
 export const updateNoteSchema = z.object({
   body: z.object({
+    title: z.string().min(3).max(255).optional(),
+    description: z.string().max(2000).optional(),
+    noteType: z.enum(["LECTURE_NOTES", "STUDY_GUIDE", "CHEAT_SHEET", "PRACTICE_TEST", "DOCUMENT", "OTHER"]).optional(),
+    educationNodeIds: z.array(z.string().uuid()).optional(),
+    countryId: z.string().uuid().optional(),
     status: z.enum(["PUBLISHED", "HIDDEN"]).optional(),
     is_featured: z.boolean().optional(),
   }),
@@ -445,8 +450,26 @@ export const noteReportResponseSchema = z.object({
   created_at: z.string().or(z.date()),
 }).passthrough();
 
+export const createNoteSchema = z.object({
+  body: z.object({
+    title: z.string().min(3).max(255).optional(),
+    description: z.string().max(2000).optional(),
+    noteType: z.enum(["LECTURE_NOTES", "STUDY_GUIDE", "CHEAT_SHEET", "PRACTICE_TEST", "DOCUMENT", "OTHER"]),
+    countryId: z.string().uuid().optional(),
+    educationNodeIds: z.array(z.string().uuid()).optional(),
+    fileKey: z.string(),
+    mimeType: z.string(),
+    fileSize: z.number().positive(),
+    pageCount: z.number().int().positive().optional(),
+    fileHash: z.string(),
+    status: z.enum(["PUBLISHED", "HIDDEN"]).optional(),
+  })
+});
+
 export type UpdateForumPostInput = z.infer<typeof updateForumPostSchema>["body"];
 export type UpdateForumCommentInput = z.infer<typeof updateForumCommentSchema>["body"];
 export type ResolveForumReportInput = z.infer<typeof resolveForumReportSchema>["body"];
+export type CreateNoteInput = z.infer<typeof createNoteSchema>["body"];
 export type UpdateNoteInput = z.infer<typeof updateNoteSchema>["body"];
 export type ResolveNoteReportInput = z.infer<typeof resolveNoteReportSchema>["body"];
+

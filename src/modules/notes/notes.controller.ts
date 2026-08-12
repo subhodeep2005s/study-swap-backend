@@ -31,7 +31,7 @@ export class NotesController {
   static getNotes = asyncHandler(async (req: Request, res: Response) => {
     const { cursor, limit, ...filters } = req.query as any;
     
-    const result = await NotesService.getNotes(filters, cursor, Number(limit));
+    const result = await NotesService.getNotes(filters, cursor, limit ? Number(limit) : undefined);
     
     res.status(200).json({
       success: true,
@@ -39,11 +39,27 @@ export class NotesController {
     });
   });
 
+  static getCategories = asyncHandler(async (req: Request, res: Response) => {
+    const categories = await NotesService.getCategories();
+    res.status(200).json({
+      success: true,
+      data: categories
+    });
+  });
+
+  static getFilters = asyncHandler(async (req: Request, res: Response) => {
+    const filters = await NotesService.getFilters();
+    res.status(200).json({
+      success: true,
+      data: filters
+    });
+  });
+
   static getMyNotes = asyncHandler(async (req: Request, res: Response) => {
     const userId = req.user!.id;
     const { filter, cursor, limit } = req.query as any;
     
-    const result = await NotesService.getMyNotes(userId, filter, cursor, Number(limit));
+    const result = await NotesService.getMyNotes(userId, filter, cursor, limit ? Number(limit) : undefined);
     
     res.status(200).json({
       success: true,

@@ -27,7 +27,8 @@ const NoteItemResponse = z.object({
   note_type: z.string(),
   status: z.string(),
   is_featured: z.boolean(),
-  file_url: z.string(),
+  file_url: z.string().nullable(),
+  thumbnail_url: z.string().nullable(),
   mime_type: z.string(),
   file_size: z.number(),
   views_count: z.number(),
@@ -35,6 +36,8 @@ const NoteItemResponse = z.object({
   avg_rating: z.number().nullable(),
   rating_count: z.number(),
   uploader_id: z.string().uuid(),
+  uploader_name: z.string().nullable().optional(),
+  uploader_avatar_url: z.string().nullable().optional(),
   created_at: z.string(),
 }).passthrough();
 
@@ -92,6 +95,60 @@ registry.registerPath({
           schema: z.object({
             success: z.boolean(),
             data: z.any(),
+          }),
+        },
+      },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/notes/categories",
+  tags,
+  security,
+  summary: "Get notes categories",
+  description: "Returns top education node categories with their note counts for the home screen.",
+  responses: {
+    200: {
+      description: "Categories fetched",
+      content: {
+        "application/json": {
+          schema: z.object({
+            success: z.boolean(),
+            data: z.array(z.object({
+              id: z.string().uuid(),
+              name: z.string(),
+              subtitle: z.string(),
+              icon: z.string(),
+              color: z.string(),
+            })),
+          }),
+        },
+      },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/notes/filters",
+  tags,
+  security,
+  summary: "Get dynamic filter options",
+  description: "Returns available dynamic filter options (categories, note types, uploaders) for filter modals.",
+  responses: {
+    200: {
+      description: "Filters fetched",
+      content: {
+        "application/json": {
+          schema: z.object({
+            success: z.boolean(),
+            data: z.object({
+              categories: z.array(z.string()),
+              noteTypes: z.array(z.string()),
+              uploaders: z.array(z.string()),
+            }),
           }),
         },
       },

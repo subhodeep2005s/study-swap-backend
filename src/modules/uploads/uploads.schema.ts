@@ -18,13 +18,16 @@ const allowedContentTypes = [
   "application/vnd.ms-excel", // .xls
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", // .xlsx
   "text/plain", // .txt
+  "application/octet-stream", // generic fallback
+  "application/zip", // .zip
+  "application/x-zip-compressed", // windows zip
 ];
 
 export const presignedUrlSchema = z.object({
   body: z.object({
     fileName: z.string().min(1, "File name is required"),
     contentType: z.string().refine((val) => allowedContentTypes.includes(val), "Invalid content type"),
-    uploadType: z.enum(["profile", "anonymous-avatar", "forum-media"]).default("profile"),
+    uploadType: z.enum(["profile", "anonymous-avatar", "forum-media", "note-document"]).default("profile"),
   }),
 });
 

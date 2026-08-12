@@ -18,76 +18,128 @@ export class NotesRepository {
   /**
    * Creates a new note.
    */
-  static async createNote(uploaderId: string, uploaderRole: string, data: UploadNoteBody): Promise<any> {
-    const sql = `
-      INSERT INTO notes (
-        title, description, note_type,
-        country_id, education_node_id, category_id, subcategory_id,
-        exam_id, board_id, class_id, course_id, subject_id,
-        uploader_id, uploader_role,
-        file_key, mime_type, file_size, page_count, file_hash
-      ) VALUES (
-        $1, $2, $3,
-        $4, $5, $6, $7,
-        $8, $9, $10, $11, $12,
-        $13, $14,
-        $15, $16, $17, $18, $19
-      ) RETURNING *;
-    `;
+  static async createNote(uploaderId: string, uploaderRole: string, data: UploadNoteBody & { thumbnailKey?: string | null }): Promise<any> {
+    const client = await getClient();
+    try {
+      await client.query("BEGIN");
 
-    const values = [
-      data.title || null,
-      data.description || null,
-      data.noteType,
-      data.countryId || null,
-      data.educationNodeId || null,
-      data.categoryId || null,
-      data.subcategoryId || null,
-      data.examId || null,
-      data.boardId || null,
-      data.classId || null,
-      data.courseId || null,
-      data.subjectId || null,
-      uploaderId,
-      uploaderRole,
-      data.fileKey,
-      data.mimeType,
-      data.fileSize,
-      data.pageCount || null,
-      data.fileHash
-    ];
+      const sql = `
+        INSERT INTO notes (
+          title, description, note_type,
+          country_id,
+          uploader_id, uploader_role,
+          file_key, thumbnail_key, mime_type, file_size, page_count, file_hash
+        ) VALUES (
+          $1, $2, $3,
+          $4,
+          $5, $6,
+          $7, $8, $9, $10, $11, $12
+        ) RETURNING *;
+      `;
 
-    const res = await query(sql, values);
-    return res.rows[0];
+      const values = [
+        data.title || null,
+        data.description || null,
+        data.noteType,
+        data.countryId || null,
+        uploaderId,
+        uploaderRole,
+        data.fileKey,
+        data.thumbnailKey || null,
+        data.mimeType,
+        data.fileSize,
+        data.pageCount || null,
+        data.fileHash
+      ];
+
+      const res = await client.query(sql, values);
+      const note = res.rows[0];
+
+      // Insert taxonomy links
+      if (data.educationNodeIds && data.educationNodeIds.length > 0) {
+        for (const nodeId of data.educationNodeIds) {
+          await client.query(
+            "INSERT INTO note_education_nodes (note_id, education_node_id) VALUES ($1, $2)",
+            [note.id, nodeId]
+          );
+        }
+      }
+
+      await client.query("COMMIT");
+      note.educationNodeIds = data.educationNodeIds;
+      return note;
+    } catch (e) {
+      await client.query("ROLLBACK");
+      throw e;
+    } finally {
+      client.release();
+    }
   }
 
   static async getNoteById(noteId: string): Promise<any> {
-    const res = await query("SELECT * FROM notes WHERE id = $1 AND deleted_at IS NULL", [noteId]);
+    const res = await query(`
+      SELECT n.*, p.full_name as uploader_name, p.profile_image as uploader_avatar 
+      FROM notes n 
+      LEFT JOIN profiles p ON n.uploader_id = p.user_id 
+      WHERE n.id = $1 AND n.deleted_at IS NULL
+    `, [noteId]);
     if (res.rowCount === 0) return null;
-    return res.rows[0];
+    const note = res.rows[0];
+    if (!note) return null;
+
+    const nodesRes = await query("SELECT education_node_id FROM note_education_nodes WHERE note_id = $1", [noteId]);
+    note.educationNodeIds = nodesRes.rows.map((r: any) => r.education_node_id);
+    return note;
+  }
+
+  static async getCategoriesWithNoteCounts() {
+    const res = await query(`
+      SELECT 
+        en.id, 
+        en.name, 
+        COUNT(nen.note_id) as note_count
+      FROM education_nodes en
+      JOIN note_education_nodes nen ON en.id = nen.education_node_id
+      JOIN notes n ON nen.note_id = n.id
+      WHERE n.status = 'PUBLISHED' AND n.deleted_at IS NULL
+      GROUP BY en.id, en.name
+      ORDER BY note_count DESC
+      LIMIT 10
+    `);
+    return res.rows;
   }
 
   static async getNotesWithCursor(filters: any, cursor?: string, limit: number = 20): Promise<{ items: any[], nextCursor: string | null }> {
-    let baseQuery = `SELECT * FROM notes WHERE deleted_at IS NULL`;
+    let baseQuery = `
+      SELECT n.*, p.full_name as uploader_name, p.profile_image as uploader_avatar 
+      FROM notes n 
+      LEFT JOIN profiles p ON n.uploader_id = p.user_id 
+      WHERE n.deleted_at IS NULL
+    `;
     const values: any[] = [];
     let paramIndex = 1;
     
     // Applying filters
     if (filters.q) {
-      baseQuery += ` AND (title ILIKE $${paramIndex} OR description ILIKE $${paramIndex})`;
+      baseQuery += ` AND (n.title ILIKE $${paramIndex} OR n.description ILIKE $${paramIndex})`;
       values.push(`%${filters.q}%`);
       paramIndex++;
     }
+
+    if (filters.educationNodeId) {
+      baseQuery += ` AND n.id IN (SELECT note_id FROM note_education_nodes WHERE education_node_id = $${paramIndex})`;
+      values.push(filters.educationNodeId);
+      paramIndex++;
+    }
+
     const filterKeys = [
-      'countryId', 'educationNodeId', 'categoryId', 'subcategoryId',
-      'examId', 'boardId', 'classId', 'courseId', 'subjectId', 'noteType', 'uploaderRole'
+      'countryId', 'noteType', 'uploaderRole'
     ];
     
     for (const key of filterKeys) {
       if (filters[key]) {
-        // map camelCase to snake_case
         const dbCol = key.replace(/([A-Z])/g, "_$1").toLowerCase();
-        baseQuery += ` AND ${dbCol} = $${paramIndex}`;
+        baseQuery += ` AND n.${dbCol} = $${paramIndex}`;
         values.push(filters[key]);
         paramIndex++;
       }
@@ -106,13 +158,13 @@ export class NotesRepository {
     }
 
     // Default sorting based on filters.sort
-    let orderBy = `ORDER BY created_at DESC, id DESC`;
+    let orderBy = `ORDER BY n.created_at DESC, n.id DESC`;
     if (filters.sort === 'most_viewed') {
-      orderBy = `ORDER BY views_count DESC, created_at DESC, id DESC`;
+      orderBy = `ORDER BY n.views_count DESC, n.created_at DESC, n.id DESC`;
     } else if (filters.sort === 'most_downloaded') {
-      orderBy = `ORDER BY downloads_count DESC, created_at DESC, id DESC`;
+      orderBy = `ORDER BY n.downloads_count DESC, n.created_at DESC, n.id DESC`;
     } else if (filters.sort === 'highest_rated') {
-      orderBy = `ORDER BY average_rating DESC, created_at DESC, id DESC`;
+      orderBy = `ORDER BY n.average_rating DESC, n.created_at DESC, n.id DESC`;
     }
 
     baseQuery += ` ${orderBy} LIMIT $${paramIndex}`;
@@ -140,14 +192,19 @@ export class NotesRepository {
   }
   
   static async getMyNotes(uploaderId: string, filterState: string, cursor?: string, limit: number = 20) {
-    let baseQuery = `SELECT * FROM notes WHERE uploader_id = $1`;
+    let baseQuery = `
+      SELECT n.*, p.full_name as uploader_name, p.profile_image as uploader_avatar 
+      FROM notes n 
+      LEFT JOIN profiles p ON n.uploader_id = p.user_id 
+      WHERE n.uploader_id = $1
+    `;
     const values: any[] = [uploaderId];
     let paramIndex = 2;
 
     if (filterState === 'published') {
-      baseQuery += ` AND status = 'PUBLISHED' AND deleted_at IS NULL`;
+      baseQuery += ` AND n.status = 'PUBLISHED' AND n.deleted_at IS NULL`;
     } else if (filterState === 'deleted') {
-      baseQuery += ` AND deleted_at IS NOT NULL`;
+      baseQuery += ` AND n.deleted_at IS NOT NULL`;
     }
 
     if (cursor) {
@@ -162,7 +219,7 @@ export class NotesRepository {
       }
     }
 
-    baseQuery += ` ORDER BY created_at DESC, id DESC LIMIT $${paramIndex}`;
+    baseQuery += ` ORDER BY n.created_at DESC, n.id DESC LIMIT $${paramIndex}`;
     values.push(limit + 1);
 
     const res = await query(baseQuery, values);
@@ -251,8 +308,10 @@ export class NotesRepository {
 
   static async getSavedNotes(userId: string) {
     const res = await query(
-      `SELECT n.* FROM notes n 
+      `SELECT n.*, p.full_name as uploader_name, p.profile_image as uploader_avatar 
+       FROM notes n 
        JOIN note_saves s ON n.id = s.note_id 
+       LEFT JOIN profiles p ON n.uploader_id = p.user_id
        WHERE s.user_id = $1 AND n.deleted_at IS NULL 
        ORDER BY s.created_at DESC`,
       [userId]
@@ -367,27 +426,62 @@ export class NotesRepository {
   }
   
   static async updateNote(noteId: string, data: any): Promise<any> {
-    const fields: string[] = [];
-    const values: any[] = [];
-    let paramIndex = 1;
+    const client = await getClient();
+    try {
+      await client.query("BEGIN");
 
-    for (const [key, value] of Object.entries(data)) {
-      if (value !== undefined) {
-        const dbCol = key.replace(/([A-Z])/g, "_$1").toLowerCase();
-        fields.push(`${dbCol} = $${paramIndex}`);
-        values.push(value);
-        paramIndex++;
+      const fields: string[] = [];
+      const values: any[] = [];
+      let paramIndex = 1;
+      
+      const educationNodeIds = data.educationNodeIds;
+      delete data.educationNodeIds;
+
+      for (const [key, value] of Object.entries(data)) {
+        if (value !== undefined) {
+          const dbCol = key.replace(/([A-Z])/g, "_$1").toLowerCase();
+          fields.push(`${dbCol} = $${paramIndex}`);
+          values.push(value);
+          paramIndex++;
+        }
       }
+
+      let updatedNote;
+      if (fields.length > 0) {
+        fields.push(`updated_at = NOW()`);
+        values.push(noteId);
+
+        const sql = `UPDATE notes SET ${fields.join(", ")} WHERE id = $${paramIndex} AND deleted_at IS NULL RETURNING *`;
+        const res = await client.query(sql, values);
+        updatedNote = res.rows[0];
+      } else {
+        const res = await client.query(`
+          SELECT n.*, p.full_name as uploader_name, p.profile_image as uploader_avatar 
+          FROM notes n 
+          LEFT JOIN profiles p ON n.uploader_id = p.user_id 
+          WHERE n.id = $1 AND n.deleted_at IS NULL
+        `, [noteId]);
+        updatedNote = res.rows[0];
+      }
+
+      if (educationNodeIds && Array.isArray(educationNodeIds)) {
+        await client.query("DELETE FROM note_education_nodes WHERE note_id = $1", [noteId]);
+        for (const nodeId of educationNodeIds) {
+          await client.query(
+            "INSERT INTO note_education_nodes (note_id, education_node_id) VALUES ($1, $2)",
+            [noteId, nodeId]
+          );
+        }
+      }
+
+      await client.query("COMMIT");
+      return this.getNoteById(noteId);
+    } catch (e) {
+      await client.query("ROLLBACK");
+      throw e;
+    } finally {
+      client.release();
     }
-
-    if (fields.length === 0) return this.getNoteById(noteId);
-
-    fields.push(`updated_at = NOW()`);
-    values.push(noteId);
-
-    const sql = `UPDATE notes SET ${fields.join(", ")} WHERE id = $${paramIndex} AND deleted_at IS NULL RETURNING *`;
-    const res = await query(sql, values);
-    return res.rows[0];
   }
   
   static async getMyRating(userId: string, noteId: string): Promise<number | null> {

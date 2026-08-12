@@ -18,6 +18,7 @@ import {
   updateForumPostSchema,
   updateForumCommentSchema,
   resolveForumReportSchema,
+  createNoteSchema,
   updateNoteSchema,
   resolveNoteReportSchema
 } from "./admin.schema";
@@ -136,12 +137,20 @@ router.patch("/forum/reports/:id/resolve", validate(resolveForumReportSchema), a
 // =========================================================================
 // Notes Hub Management
 // =========================================================================
+// Notes Hub Management & Exams
+// =========================================================================
+router.get("/exams", adminController.getExams);
+
 router.get("/notes", adminController.getNotes);
+router.post("/notes", validate(createNoteSchema), adminController.createNote);
+
+// Specific routes BEFORE parameterized ones to prevent matching "reports" as :id
+router.get("/notes/reports", adminController.getNoteReports);
+router.patch("/notes/reports/:id/resolve", validate(resolveNoteReportSchema), adminController.resolveNoteReport);
+
 router.get("/notes/:id", adminController.getNote);
 router.patch("/notes/:id", validate(updateNoteSchema), adminController.updateNote);
 router.delete("/notes/:id", adminController.deleteNote);
 
-router.get("/notes/reports", adminController.getNoteReports);
-router.patch("/notes/reports/:id/resolve", validate(resolveNoteReportSchema), adminController.resolveNoteReport);
-
 export default router;
+

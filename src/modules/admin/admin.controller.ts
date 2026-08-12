@@ -464,6 +464,16 @@ export const getNotes = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
+export const getExams = asyncHandler(async (_req: Request, res: Response) => {
+  const exams = await adminService.getExams();
+  res.status(200).json({ success: true, message: "Exams fetched", data: exams });
+});
+
+export const createNote = asyncHandler(async (req: Request, res: Response) => {
+  const note = await adminService.createNote(req.body, req.user!.id);
+  res.status(201).json({ success: true, message: "Note created", data: note });
+});
+
 export const getNote = asyncHandler(async (req: Request<{ id: string }>, res: Response) => {
   const note = await adminService.getNote(req.params.id);
   res.status(200).json({ success: true, message: "Note fetched", data: note });
@@ -498,3 +508,4 @@ export const resolveNoteReport = asyncHandler(async (req: Request<{ id: string }
   const report = await adminService.resolveNoteReport(req.params.id, req.body.status);
   res.status(200).json({ success: true, message: "Note report resolved", data: report });
 });
+

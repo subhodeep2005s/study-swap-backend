@@ -563,3 +563,11 @@ export async function resolveNoteReport(id: string, status: string) {
   if (!result) throw new AppError("Note report not found", 404);
   return result;
 }
+
+export async function getExams() {
+  return await AdminRepository.getExams();
+}
+
+export async function createNote(data: any, adminId: string) {
+  return await AdminRepository.createNote(data, adminId);
+}

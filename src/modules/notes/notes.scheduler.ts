@@ -29,12 +29,10 @@ export class NotesScheduler {
   static async processDailyDigest() {
     // 1. Fetch notes created in the last 24 hours
     const notesRes = await query(`
-      SELECT n.id, n.title, n.exam_id, n.board_id, n.class_id, 
-             COALESCE(e.name, b.name, c.name) as context_name
+      SELECT n.id, n.title, nen.education_node_id as node_id, e.name as context_name
       FROM notes n
-      LEFT JOIN education_nodes e ON n.exam_id = e.id
-      LEFT JOIN education_nodes b ON n.board_id = b.id
-      LEFT JOIN education_nodes c ON n.class_id = c.id
+      JOIN note_education_nodes nen ON n.id = nen.note_id
+      JOIN education_nodes e ON nen.education_node_id = e.id
       WHERE n.created_at >= NOW() - INTERVAL '24 HOURS'
         AND n.deleted_at IS NULL
         AND n.status = 'PUBLISHED'
@@ -50,8 +48,7 @@ export class NotesScheduler {
     const nodeStats = new Map<string, { count: number, name: string }>();
 
     for (const row of notesRes.rows) {
-      // Prioritize the context node (exam > board > class)
-      const nodeId = row.exam_id || row.board_id || row.class_id;
+      const nodeId = row.node_id;
       if (!nodeId) continue;
 
       const current = nodeStats.get(nodeId) || { count: 0, name: row.context_name || "your subjects" };

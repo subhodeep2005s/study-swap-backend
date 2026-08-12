@@ -2,12 +2,49 @@ import { NotesRepository } from "./notes.repository";
 import type { UploadNoteBody, PresignedUrlBody } from "./notes.schema";
 import { getPresignedUploadUrl, getPresignedDownloadUrl } from "@/config/s3";
 import crypto from "crypto";
+import { NotificationService } from "@/modules/notifications/notification.service";
 import { ConflictError, ForbiddenError, NotFoundError, BadRequestError } from "@/core/errors/AppError";
 import { query } from "@/config/db";
 import { redis } from "@/config/redis";
-import { NotificationService } from "@/modules/notifications/notification.service";
+import { ThumbnailService } from "./thumbnail.service";
+import { getS3ObjectUrl } from "@/config/s3";
 
 export class NotesService {
+  
+  static formatNoteResponse(note: any) {
+    if (!note) return null;
+    const formatted = { ...note };
+    
+    // Map internal keys to public URLs
+    if (formatted.file_key) {
+      formatted.file_url = getS3ObjectUrl(formatted.file_key);
+    } else {
+      formatted.file_url = null;
+    }
+    
+    if (formatted.thumbnail_key) {
+      formatted.thumbnail_url = getS3ObjectUrl(formatted.thumbnail_key);
+    } else {
+      formatted.thumbnail_url = null;
+    }
+    
+    // Process Uploader Avatar
+    if (!formatted.uploader_avatar) {
+      const name = formatted.uploader_name ? encodeURIComponent(formatted.uploader_name) : 'Anonymous';
+      formatted.uploader_avatar_url = `https://ui-avatars.com/api/?name=${name}&background=random&size=128`;
+    } else if (formatted.uploader_avatar.startsWith('http')) {
+      formatted.uploader_avatar_url = formatted.uploader_avatar;
+    } else {
+      formatted.uploader_avatar_url = getS3ObjectUrl(formatted.uploader_avatar);
+    }
+    
+    // Clean up internal keys
+    delete formatted.file_key;
+    delete formatted.thumbnail_key;
+    delete formatted.uploader_avatar;
+    
+    return formatted;
+  }
   
   static async generatePresignedUrl(userId: string, data: PresignedUrlBody) {
     const { fileName, contentType } = data;
@@ -25,26 +62,18 @@ export class NotesService {
     };
   }
   
-  static async validateTaxonomyAccess(userId: string, userRole: string, data: UploadNoteBody): Promise<void> {
+  static async validateTaxonomyAccess(userId: string, userRole: string, data: any): Promise<void> {
     if (userRole === "admin") return; // Admin has full access
 
-    if (userRole === "student") {
-      const taxonomyIds = [data.examId, data.classId, data.boardId, data.courseId, data.subjectId].filter(Boolean);
-      if (taxonomyIds.length > 0) {
-        const placeholders = taxonomyIds.map((_, i) => `$${i + 2}`).join(',');
-        const res = await query(`SELECT node_id FROM user_education_nodes WHERE user_id = $1 AND node_id IN (${placeholders})`, [userId, ...taxonomyIds]);
-        if ((res?.rowCount ?? 0) === 0) {
-          throw new ForbiddenError("You can only upload notes for academic areas associated with your profile.");
-        }
-      }
-    } else if (userRole === "mentor") {
-      // For mentors, they upload to permitted teaching areas
-      const taxonomyIds = [data.examId, data.classId, data.boardId, data.courseId, data.subjectId].filter(Boolean);
-      if (taxonomyIds.length > 0) {
-        const placeholders = taxonomyIds.map((_, i) => `$${i + 2}`).join(',');
-        const res = await query(`SELECT node_id FROM user_education_nodes WHERE user_id = $1 AND node_id IN (${placeholders})`, [userId, ...taxonomyIds]);
-        if ((res?.rowCount ?? 0) === 0) {
-          throw new ForbiddenError("You are not authorized to upload notes for this academic area.");
+    const taxonomyIds = data.educationNodeIds || [];
+    if (taxonomyIds.length > 0) {
+      const placeholders = taxonomyIds.map((_: any, i: number) => `$${i + 2}`).join(',');
+      const res = await query(`SELECT node_id FROM user_education_nodes WHERE user_id = $1 AND node_id IN (${placeholders})`, [userId, ...taxonomyIds]);
+      if ((res?.rowCount ?? 0) === 0) {
+        if (userRole === "student") {
+           throw new ForbiddenError("You can only upload notes for academic areas associated with your profile.");
+        } else if (userRole === "mentor") {
+           throw new ForbiddenError("You are not authorized to upload notes for this academic area.");
         }
       }
     }
@@ -60,17 +89,70 @@ export class NotesService {
       throw new ConflictError("This file has already been uploaded to Notes Hub.", { existingNoteId: duplicateId });
     }
 
-    // 3. Create Note
-    const note = await NotesRepository.createNote(userId, userRole, data);
-    return note;
+    // 3. Generate Thumbnail
+    const thumbnailKey = await ThumbnailService.generateAndUploadThumbnail(data.fileKey, data.mimeType, userId);
+
+    // 4. Create Note
+    const note = await NotesRepository.createNote(userId, userRole, { ...data, thumbnailKey });
+    return this.formatNoteResponse(note);
   }
 
-  static async getNotes(filters: any, cursor?: string, limit?: number) {
-    return NotesRepository.getNotesWithCursor(filters, cursor, limit);
+  static async getNotes(filters: any, cursor?: string, limit: number = 20) {
+    const result = await NotesRepository.getNotesWithCursor(filters, cursor, limit);
+    return {
+      ...result,
+      items: result.items.map(this.formatNoteResponse)
+    };
   }
 
-  static async getMyNotes(userId: string, filter: string, cursor?: string, limit?: number) {
-    return NotesRepository.getMyNotes(userId, filter, cursor, limit);
+  static async getCategories() {
+    const categories = await NotesRepository.getCategoriesWithNoteCounts();
+    const colors = ["#F59E0B", "#3B82F6", "#10B981", "#8B5CF6", "#EF4444"];
+    const icons = ["award", "book", "file-text", "zap", "star"];
+    
+    return categories.map((cat: any, i: number) => {
+      const noteCount = parseInt(cat.note_count, 10);
+      const subtitle = noteCount >= 1000 
+        ? `${(noteCount / 1000).toFixed(1)}k notes` 
+        : `${noteCount} notes`;
+        
+      return {
+        id: cat.id,
+        name: cat.name,
+        subtitle,
+        icon: icons[i % icons.length],
+        color: colors[i % colors.length]
+      };
+    });
+  }
+
+  static async getFilters() {
+    return {
+      categories: ["Engineering", "Medical", "Law", "Commerce", "Arts", "Science", "School Education"],
+      noteTypes: [
+        'LECTURE_NOTES',
+        'REVISION_NOTES',
+        'SHORT_NOTES',
+        'FORMULA_SHEET',
+        'CHEAT_SHEET',
+        'PYQ',
+        'QUESTION_PAPER',
+        'MOCK_TEST',
+        'SOLUTION',
+        'STUDY_GUIDE',
+        'FLASHCARDS',
+        'OTHER'
+      ],
+      uploaders: ["All", "Verified Educators", "Students"]
+    };
+  }
+
+  static async getMyNotes(userId: string, filter: 'all' | 'published' | 'deleted', cursor?: string, limit: number = 20) {
+    const result = await NotesRepository.getMyNotes(userId, filter, cursor, limit);
+    return {
+      ...result,
+      items: result.items.map(this.formatNoteResponse)
+    };
   }
 
   static async getNoteById(noteId: string, userId?: string) {
@@ -85,7 +167,7 @@ export class NotesService {
       myRating = await NotesRepository.getMyRating(userId, noteId);
     }
     
-    return { ...note, is_saved: isSaved, my_rating: myRating };
+    return this.formatNoteResponse({ ...note, is_saved: isSaved, my_rating: myRating });
   }
 
   static async updateNote(noteId: string, userId: string, userRole: string, data: any) {
@@ -96,11 +178,23 @@ export class NotesService {
       throw new ForbiddenError("You can only modify your own notes.");
     }
 
-    if (data.examId || data.classId || data.boardId || data.courseId || data.subjectId) {
+    if (data.educationNodeIds && data.educationNodeIds.length > 0) {
        await this.validateTaxonomyAccess(userId, userRole, data);
     }
+    
+    let updatedData = { ...data };
+    
+    // If the file was replaced, regenerate thumbnail
+    if (data.fileKey && data.fileKey !== note.file_key) {
+      const mimeType = data.mimeType || note.mime_type;
+      const thumbnailKey = await ThumbnailService.generateAndUploadThumbnail(data.fileKey, mimeType, note.uploader_id);
+      if (thumbnailKey) {
+         updatedData.thumbnail_key = thumbnailKey;
+      }
+    }
 
-    return NotesRepository.updateNote(noteId, data);
+    const updatedNote = await NotesRepository.updateNote(noteId, updatedData);
+    return this.formatNoteResponse(updatedNote);
   }
 
   static async softDeleteNote(noteId: string, userId: string, userRole: string) {
@@ -155,7 +249,8 @@ export class NotesService {
   }
 
   static async getSavedNotes(userId: string) {
-    return NotesRepository.getSavedNotes(userId);
+    const notes = await NotesRepository.getSavedNotes(userId);
+    return notes.map(this.formatNoteResponse);
   }
 
   static async rateNote(userId: string, noteId: string, rating: number) {

@@ -82,10 +82,18 @@ describe("Booking Flow - E2E (Google Meet Integration)", () => {
     });
 
     it("should apply as mentor and auto-verify", async () => {
-      const countryRes = await query("SELECT id FROM countries LIMIT 1");
+      let countryRes = await query("SELECT id FROM countries LIMIT 1");
+      if (countryRes.rows.length === 0) {
+        await query("INSERT INTO countries (id, name, iso_code) VALUES ('b594b2a3-6b74-42b7-a3f1-d007c0f0a4f5', 'Test Country', 'TC')");
+        countryRes = await query("SELECT id FROM countries LIMIT 1");
+      }
       const countryId = countryRes.rows[0]?.id;
 
-      const nodeRes = await query("SELECT id FROM education_nodes LIMIT 1");
+      let nodeRes = await query("SELECT id FROM education_nodes LIMIT 1");
+      if (nodeRes.rows.length === 0) {
+        await query("INSERT INTO education_nodes (name, node_type, country_id) VALUES ('Test Exam', 'EXAM', $1)", [countryId]);
+        nodeRes = await query("SELECT id FROM education_nodes LIMIT 1");
+      }
       const educationNodeIds = nodeRes.rows.map(r => r.id);
 
       const res = await request(app)

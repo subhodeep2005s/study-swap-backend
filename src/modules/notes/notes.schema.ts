@@ -27,37 +27,14 @@ const uploadNoteBody = z.object({
 
   // Taxonomy References
   countryId: z.string().uuid().optional(),
-  educationNodeId: z.string().uuid().optional(),
-  categoryId: z.string().uuid().optional(),
-  subcategoryId: z.string().uuid().optional(),
-  examId: z.string().uuid().optional(),
-  boardId: z.string().uuid().optional(),
-  classId: z.string().uuid().optional(),
-  courseId: z.string().uuid().optional(),
-  subjectId: z.string().uuid().optional(),
+  educationNodeIds: z.array(z.string().uuid()).min(1),
 
   // File Details
   fileKey: z.string().min(1),
-  mimeType: z.string().min(1),
+  mimeType: z.literal("application/pdf"),
   fileSize: z.number().int().positive(),
   pageCount: z.number().int().positive().optional(),
   fileHash: z.string().min(1),
-}).refine(data => {
-  // At least one taxonomy node must be provided
-  return !!(
-    data.countryId ||
-    data.educationNodeId ||
-    data.categoryId ||
-    data.subcategoryId ||
-    data.examId ||
-    data.boardId ||
-    data.classId ||
-    data.courseId ||
-    data.subjectId
-  );
-}, {
-  message: "Academic classification is required. Please select the appropriate exam, board, class, or course.",
-  path: ["countryId"]
 });
 
 export const uploadNoteBodySchema = z.object({ body: uploadNoteBody });
@@ -68,21 +45,14 @@ export const updateNoteBodySchema = z.object({
     description: z.string().optional(),
     noteType: noteTypeEnum.optional(),
     countryId: z.string().uuid().optional(),
-    educationNodeId: z.string().uuid().optional(),
-    categoryId: z.string().uuid().optional(),
-    subcategoryId: z.string().uuid().optional(),
-    examId: z.string().uuid().optional(),
-    boardId: z.string().uuid().optional(),
-    classId: z.string().uuid().optional(),
-    courseId: z.string().uuid().optional(),
-    subjectId: z.string().uuid().optional(),
+    educationNodeIds: z.array(z.string().uuid()).optional(),
   })
 });
 
 export const presignedUrlBodySchema = z.object({
   body: z.object({
     fileName: z.string().min(1),
-    contentType: z.string().min(1),
+    contentType: z.literal("application/pdf"),
   })
 });
 
@@ -108,13 +78,6 @@ export const getNotesQuerySchema = z.object({
     q: z.string().optional(),
     countryId: z.string().uuid().optional(),
     educationNodeId: z.string().uuid().optional(),
-    categoryId: z.string().uuid().optional(),
-    subcategoryId: z.string().uuid().optional(),
-    examId: z.string().uuid().optional(),
-    boardId: z.string().uuid().optional(),
-    classId: z.string().uuid().optional(),
-    courseId: z.string().uuid().optional(),
-    subjectId: z.string().uuid().optional(),
     noteType: noteTypeEnum.optional(),
     uploaderRole: z.enum(['student', 'mentor', 'admin']).optional(),
     sort: z.enum(['recommended', 'newest', 'most_viewed', 'most_downloaded', 'highest_rated']).default('newest'),

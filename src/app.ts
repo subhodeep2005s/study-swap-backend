@@ -22,6 +22,8 @@ import communicationRoutes from "@/modules/communication/communication.routes";
 import { forumRoutes } from "@/modules/forum/forum.routes";
 import { aiRoutes } from "@/modules/ai-companion/ai.routes";
 import { notesRoutes } from "@/modules/notes/notes.routes";
+import hallOfFameRoutes from "@/modules/hall-of-fame/hall-of-fame.routes";
+import hallOfFameAdminRoutes from "@/modules/hall-of-fame/hall-of-fame.admin.routes";
 
 import { env } from "./config/env";
 import { scalarMiddleware } from "./config/scalar";
@@ -70,6 +72,8 @@ export function createApp(): Application {
   app.use("/forum", forumRoutes);
   app.use("/ai", aiRoutes);
   app.use("/notes", notesRoutes);
+  app.use("/hall-of-fame", hallOfFameRoutes);
+  app.use("/admin/hall-of-fame", hallOfFameAdminRoutes);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

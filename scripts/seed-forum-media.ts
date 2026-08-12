@@ -122,18 +122,23 @@ async function main() {
       const mediaChoice = Math.random();
       let selectedMedia: any[] = [];
       
-      if (mediaChoice < 0.25 && images.length > 0) {
-        // Only Image
+      if (images.length > 0 && videos.length > 0) {
+        if (mediaChoice < 0.33) {
+          // Only Image
+          selectedMedia.push(images[Math.floor(Math.random() * images.length)]);
+        } else if (mediaChoice < 0.66) {
+          // Only Video
+          selectedMedia.push(videos[Math.floor(Math.random() * videos.length)]);
+        } else {
+          // Image + Video
+          selectedMedia.push(images[Math.floor(Math.random() * images.length)]);
+          selectedMedia.push(videos[Math.floor(Math.random() * videos.length)]);
+        }
+      } else if (images.length > 0) {
         selectedMedia.push(images[Math.floor(Math.random() * images.length)]);
-      } else if (mediaChoice < 0.5 && videos.length > 0) {
-        // Only Video
-        selectedMedia.push(videos[Math.floor(Math.random() * videos.length)]);
-      } else if (mediaChoice < 0.75 && images.length > 0 && videos.length > 0) {
-        // Image + Video
-        selectedMedia.push(images[Math.floor(Math.random() * images.length)]);
+      } else if (videos.length > 0) {
         selectedMedia.push(videos[Math.floor(Math.random() * videos.length)]);
       }
-      // > 0.75 is Text Only (no media)
 
       const hasPoll = Math.random() < 0.2;
       const poll = hasPoll ? {

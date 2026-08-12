@@ -34,7 +34,9 @@ export async function initSocketIO(server: any) {
       await subClient.connect();
     }
   } catch (e) { /* ignore */ }
-  io.adapter(createAdapter(pubClient, subClient));
+  if (process.env.NODE_ENV !== 'test') {
+    io.adapter(createAdapter(pubClient, subClient));
+  }
 
   // Middleware for Authentication
   io.use((socket, next) => {

@@ -70,7 +70,7 @@ describe("Notes Hub Module (Integration Tests)", () => {
         .send({
           title: "My Physics Notes",
           noteType: "SHORT_NOTES",
-          examId,
+          educationNodeIds: [examId],
           countryId,
           fileKey: "some_s3_key",
           mimeType: "application/pdf",
@@ -93,7 +93,7 @@ describe("Notes Hub Module (Integration Tests)", () => {
         .send({
           title: "Hacked Notes",
           noteType: "SHORT_NOTES",
-          examId: randomExamId,
+          educationNodeIds: [randomExamId],
           countryId,
           fileKey: "some_s3_key2",
           mimeType: "application/pdf",
@@ -113,7 +113,7 @@ describe("Notes Hub Module (Integration Tests)", () => {
         .send({
           title: "Admin Note",
           noteType: "LECTURE_NOTES",
-          examId,
+          educationNodeIds: [examId],
           fileKey: "admin_key",
           mimeType: "application/pdf",
           fileSize: 2048,
@@ -127,7 +127,7 @@ describe("Notes Hub Module (Integration Tests)", () => {
         .send({
           title: "Another Note (Duplicate)",
           noteType: "LECTURE_NOTES",
-          examId,
+          educationNodeIds: [examId],
           fileKey: "mentor_key",
           mimeType: "application/pdf",
           fileSize: 2048,
@@ -147,7 +147,7 @@ describe("Notes Hub Module (Integration Tests)", () => {
         .send({
           title: "Action Notes",
           noteType: "PYQ",
-          examId,
+          educationNodeIds: [examId],
           fileKey: "action_key",
           mimeType: "application/pdf",
           fileSize: 1024,

@@ -31,7 +31,8 @@ import {
   forumCommentResponseSchema,
   forumReportResponseSchema,
   noteResponseSchema,
-  noteReportResponseSchema
+  noteReportResponseSchema,
+  createNoteSchema
 } from "./admin.schema";
 
 const tags = ["Admin"];
@@ -72,6 +73,7 @@ const ForumCommentResponse = registry.register("ForumCommentResponse", forumComm
 const ForumReportResponse = registry.register("ForumReportResponse", forumReportResponseSchema);
 const NoteResponse = registry.register("NoteResponse", noteResponseSchema);
 const NoteReportResponse = registry.register("NoteReportResponse", noteReportResponseSchema);
+const CreateNote = registry.register("CreateNote", createNoteSchema.shape.body);
 
 const PaginationResponse = z.object({
   page: z.number(),
@@ -1058,8 +1060,22 @@ registry.registerPath({
 });
 
 // =========================================================================
-// Notes Hub Management
+// Notes Hub Management & Exams
 // =========================================================================
+registry.registerPath({
+  method: "get",
+  path: "/admin/exams",
+  tags,
+  security,
+  summary: "Get all exams (Admin)",
+  description: "Admin only. Returns all exam nodes.",
+  responses: {
+    200: {
+      description: "Exams fetched",
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.any() }) } },
+    },
+  },
+});
 registry.registerPath({
   method: "get",
   path: "/admin/notes",
@@ -1080,6 +1096,24 @@ registry.registerPath({
     200: {
       description: "Notes fetched",
       content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: z.array(NoteResponse), pagination: PaginationResponse }) } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "post",
+  path: "/admin/notes",
+  tags,
+  security,
+  summary: "Create an admin note",
+  description: "Admin only. Creates a note directly on behalf of the platform.",
+  request: {
+    body: { content: { "application/json": { schema: CreateNote } } },
+  },
+  responses: {
+    201: {
+      description: "Note created",
+      content: { "application/json": { schema: z.object({ success: z.boolean(), message: z.string(), data: NoteResponse }) } },
     },
   },
 });
