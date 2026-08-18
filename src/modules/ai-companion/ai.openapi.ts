@@ -14,15 +14,19 @@ const zTask = z.object({
   status:          z.enum(["pending", "completed", "skipped", "rescheduled"]),
   priority:        z.enum(["low", "medium", "high"]),
   completed_at:    z.string().datetime().nullable(),
+  created_at:      z.string().datetime(),
+  updated_at:      z.string().datetime(),
 });
 
 const zStudyPlan = z.object({
   id:              z.string().uuid(),
   user_id:         z.string().uuid(),
-  date:            z.string().describe("YYYY-MM-DD"),
+  date:            z.string().datetime().describe("ISO Timestamp or YYYY-MM-DD"),
   status:          z.enum(["active", "completed", "cancelled"]),
   planned_minutes: z.number(),
   actual_minutes:  z.number(),
+  created_at:      z.string().datetime(),
+  updated_at:      z.string().datetime(),
 });
 
 const zStats = z.object({
@@ -42,6 +46,7 @@ const zConversation = z.object({
 });
 
 const zToolExecution = z.object({
+  id:       z.string().describe("Tool call ID from Gemini"),
   name:     z.string().describe("Tool name e.g. CREATE_STUDY_PLAN, GET_DAILY_PROGRESS"),
   response: z.record(z.string(), z.unknown()).describe("Tool output data"),
 });
