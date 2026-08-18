@@ -181,7 +181,7 @@ describe("1. AI Failure Scenarios", () => {
     const convId = await createConv(userA.token);
     const err429 = new Error("Resource has been exhausted (e.g. check quota).");
     (err429 as any).status = 429;
-    geminiStore.sendMessage.mockRejectedValueOnce(err429);
+    geminiStore.sendMessage.mockRejectedValue(err429);
 
     const r = await sendMsg(userA.token, convId, "Help me");
     expect(r.status).toBe(500);

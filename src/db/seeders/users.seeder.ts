@@ -2,6 +2,7 @@ import { getClient } from "../../config/db";
 import { logger } from "../../config/logger";
 import { fakerEN_IN as faker } from "@faker-js/faker";
 import { fileURLToPath } from 'url';
+import crypto from "crypto";
 
 const NUM_STUDENTS = 100;
 const NUM_MENTORS = 50;
@@ -59,13 +60,17 @@ export async function runUsersSeeder() {
       
       const userId = userRes.rows[0].id;
 
+      const randomId = crypto.randomBytes(10).toString("hex");
+      const profileImage = `https://i.pravatar.cc/500?u=${randomId}`;
+
       // Insert Profile
       await client.query(`
-        INSERT INTO profiles (user_id, full_name, state, bio, age, gender, country_id, strong_in, need_help_with, study_time, looking_for)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+        INSERT INTO profiles (user_id, full_name, profile_image, state, bio, age, gender, country_id, strong_in, need_help_with, study_time, looking_for)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
       `, [
         userId, 
         name, 
+        profileImage,
         state, 
         bio, 
         Math.floor(Math.random() * 10) + 15, // Age 15-25
